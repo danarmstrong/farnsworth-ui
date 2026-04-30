@@ -31,7 +31,7 @@ export const useAuthStore = defineStore('auth', () => {
     async function login(loginDto: LoginDto) {
         loading.value = true;
         try {
-            const { data } = await axios.post<AuthUser>(authPath, loginDto);
+            const { data } = await axios.post<AuthUser>(authPath, loginDto, { skip401Redirect: true });
             user.value = data.user;
             accessToken.value = data.accessToken;
             localStorage.setItem('user', JSON.stringify(user.value));
@@ -45,12 +45,28 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
-    function logout() {
+    function clearSession() {
         user.value = null;
         accessToken.value = null;
         localStorage.removeItem('user');
         localStorage.removeItem('accessToken');
-        router.push('/');
+    }
+
+    /** Clears session and sends user to login (e.g. explicit logout). */
+    function logout() {
+        returnUrl.value = null;
+        clearSession();
+        router.replace('/auth/login');
+    }
+
+    /** Clears session after API 401; preserves return path for post-login redirect. */
+    function redirectToLoginAfterUnauthorized() {
+        const path = router.currentRoute.value.fullPath;
+        if (!path.startsWith('/auth/login')) {
+            returnUrl.value = path;
+        }
+        clearSession();
+        router.replace('/auth/login');
     }
 
     return {
@@ -58,6 +74,7 @@ export const useAuthStore = defineStore('auth', () => {
         accessToken,
         returnUrl,
         login,
-        logout
+        logout,
+        redirectToLoginAfterUnauthorized
     };
 });
