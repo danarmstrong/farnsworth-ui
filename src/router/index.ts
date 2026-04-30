@@ -8,7 +8,7 @@ export const router = createRouter({
     routes: [
         {
             path: '/:pathMatch(.*)*',
-            component: () => import('@/views/authentication/Error.vue')
+            component: () => import('../views/Error.vue')
         },
         MainRoutes,
         AuthRoutes

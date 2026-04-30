@@ -1,4 +1,5 @@
-.v-stepper-item--selected .v-stepper-item__avatar.v-avatar, .v-stepper-item--complete .v-stepper-item__avatar.v-avatar {
+.v-stepper-item--selected .v-stepper-item__avatar.v-avatar,
+.v-stepper-item--complete .v-stepper-item__avatar.v-avatar {
     background: rgb(var(--v-theme-primary)) !important;
 }
 

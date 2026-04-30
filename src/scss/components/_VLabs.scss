@@ -1,10 +1,11 @@
-.v-time-picker-clock{
-    background: rgb(var(--v-theme-bglight)) ; 
-}   
-.v-time-picker-controls__ampm__btn.v-btn.v-btn--density-default{
+.v-time-picker-clock {
+    background: rgb(var(--v-theme-bglight));
+}
+.v-time-picker-controls__ampm__btn.v-btn.v-btn--density-default {
     border: 0 !important;
 }
-.v-stepper-header,.v-stepper.v-sheet{
+.v-stepper-header,
+.v-stepper.v-sheet {
     box-shadow: none !important;
 }
 

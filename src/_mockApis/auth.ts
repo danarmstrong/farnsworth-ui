@@ -52,5 +52,3 @@ mock.onPost('/auth/login').reply((config) => {
         ];
     }
 });
-
-

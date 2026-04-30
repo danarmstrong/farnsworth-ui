@@ -16,7 +16,7 @@ $btn-font-weight: 400 !default;
 $btn-letter-spacing: 0 !default;
 
 // Global Shadow
-$box-shadow: 0 2px 6px rgba(37,83,185,.1) ;
+$box-shadow: 0 2px 6px rgba(37, 83, 185, 0.1);
 
 // Global Radius as per breakeven point
 
@@ -28,8 +28,7 @@ $box-shadow: 0 2px 6px rgba(37,83,185,.1) ;
     $body-font-family: $body-font-family,
     $heading-font-family: $body-font-family !default,
     // 👉 Typography
-    $typography:
-        (
+    $typography: (
             'h1': (
                 'size': 2.25rem,
                 'weight': 600,
@@ -126,8 +125,7 @@ $box-shadow: 0 2px 6px rgba(37,83,185,.1) ;
     $tooltip-padding: 4px 8px !default,
 
     // 👉 Rounded
-    $rounded:
-        (
+    $rounded: (
             0: 0,
             'sm': $border-radius-root * 0.5,
             null: $border-radius-root,
@@ -145,6 +143,5 @@ $box-shadow: 0 2px 6px rgba(37,83,185,.1) ;
     $card-text-padding: 30px !default,
     $card-item-padding: 30px 30px 30px !default,
     $card-actions-padding: 10px 24px 24px !default,
-    $card-subtitle-opacity: 1 !default,
-    // $card-border-color	$border-color-root
+    $card-subtitle-opacity: 1 !default // $card-border-color	$border-color-root
 );

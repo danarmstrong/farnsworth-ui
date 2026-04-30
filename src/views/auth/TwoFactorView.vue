@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Logo from '@/layouts/full/logo/Logo.vue';
 /*form component*/
-import TwoStepForm from '@/components/auth/TwoStepForm.vue';
+import TwoStepForm from '@/features/auth/components/TwoStepForm.vue';
 </script>
 <template>
     <div class="authentication">

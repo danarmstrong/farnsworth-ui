@@ -1,34 +1,45 @@
 html {
-    .bg-success,.bg-primary,.bg-secondary,.bg-warning,.bg-error,.bg-info,.bg-indigo{
+    .bg-success,
+    .bg-primary,
+    .bg-secondary,
+    .bg-warning,
+    .bg-error,
+    .bg-info,
+    .bg-indigo {
         color: white !important;
     }
-    .text-h1,.text-h2,.text-h3,.text-h4,.text-h5,.text-h6{
+    .text-h1,
+    .text-h2,
+    .text-h3,
+    .text-h4,
+    .text-h5,
+    .text-h6 {
         color: rgb(var(--v-theme-grey200));
     }
 }
 
 //Button Bg Shadow
-.v-btn--elevated{
-    &.bg-primary{
-        box-shadow: 0 4px 12px rgba(var(--v-theme-primary),0.3);
+.v-btn--elevated {
+    &.bg-primary {
+        box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.3);
     }
-    &.bg-secondary{
-        box-shadow: 0 4px 12px rgba(var(--v-theme-secondary),0.3);
+    &.bg-secondary {
+        box-shadow: 0 4px 12px rgba(var(--v-theme-secondary), 0.3);
     }
-    &.bg-info{
-        box-shadow: 0 4px 12px rgba(var(--v-theme-info),0.3);
+    &.bg-info {
+        box-shadow: 0 4px 12px rgba(var(--v-theme-info), 0.3);
     }
-    &.bg-error{
-        box-shadow: 0 4px 12px rgba(var(--v-theme-error),0.3);
+    &.bg-error {
+        box-shadow: 0 4px 12px rgba(var(--v-theme-error), 0.3);
     }
-    &.bg-success{
-        box-shadow: 0 4px 12px rgba(var(--v-theme-success),0.3);
+    &.bg-success {
+        box-shadow: 0 4px 12px rgba(var(--v-theme-success), 0.3);
     }
-    &.bg-warning{
-        box-shadow: 0 4px 12px rgba(var(--v-theme-warning),0.3);
+    &.bg-warning {
+        box-shadow: 0 4px 12px rgba(var(--v-theme-warning), 0.3);
     }
-    &.bg-indigo{
-        box-shadow: 0 4px 12px rgba(var(--v-theme-indigo),0.3);
+    &.bg-indigo {
+        box-shadow: 0 4px 12px rgba(var(--v-theme-indigo), 0.3);
     }
 }
 
@@ -36,39 +47,41 @@ html {
 .v-divider {
     border-color: rgba(var(--v-border-color), 1) !important;
 }
-.v-divider{
+.v-divider {
     opacity: 1;
 }
 .avtar-border {
     border: 2px solid rgb(var(--v-theme-surface)) !important;
 }
-.subtext{
+.subtext {
     font-size: $font-size-root;
     line-height: 1.75rem;
 }
 .border-right {
     border-right: 1px solid rgba(var(--v-border-color), 1) !important;
 }
-.color-inherit{
+.color-inherit {
     color: inherit;
 }
 //*Calender font-color*//
-.vc-container,.vc-pane-container{
+.vc-container,
+.vc-pane-container {
     font-family: inherit !important;
     border-color: rgba(var(--v-border-color), 1) !important;
 }
-.vc-title{
+.vc-title {
     color: inherit !important;
 }
-.vc-select select,.vc-am-pm{
+.vc-select select,
+.vc-am-pm {
     color: inherit !important;
     background-color: inherit !important;
 }
-.v-chip--size-x-small{
+.v-chip--size-x-small {
     --v-chip-height: 22px !important;
     font-size: 12px !important;
 }
-.line-clamp{
+.line-clamp {
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 2;
@@ -76,7 +89,7 @@ html {
     width: 100%;
     max-width: 200px;
 }
-.v-badge__badge{
+.v-badge__badge {
     height: 17px;
     width: 17px;
     font-size: 11px;
@@ -86,10 +99,10 @@ html {
     min-width: auto;
     padding: 0;
 }
-.no-scrollbar{
+.no-scrollbar {
     height: calc(100vh - 315px);
 }
-.add-class .ps__thumb-x{
+.add-class .ps__thumb-x {
     display: none !important;
 }
 .round-40 {
@@ -116,7 +129,6 @@ html {
     line-height: 0 !important;
 }
 
-
 .lh-28 {
     line-height: 28px !important;
 }
@@ -127,7 +139,6 @@ html {
 
 .space-p-96 {
     padding: 96px 0 !important;
-
 }
 
 .ps-96 {
@@ -154,14 +165,14 @@ html {
     height: calc(-500px + 100vh);
 }
 
-@media screen and (max-width:991px) {
+@media screen and (max-width: 991px) {
     .overflow-x-reposive {
         overflow-x: scroll;
         overflow-y: hidden;
     }
 }
 
-@media screen and (max-height:767px) {
+@media screen and (max-height: 767px) {
     .msg-chat-height {
         height: calc(-315px + 100vh);
     }
@@ -171,7 +182,6 @@ html {
     max-height: 600px;
     height: calc(100vh - 100px);
 }
-
 
 .custom-hover-primary {
     .iconify {
@@ -184,13 +194,10 @@ html {
         .iconify {
             color: rgb(var(--v-theme-primary)) !important;
         }
-
     }
-
 }
 
 .no-icon {
-
     .v-input__prepend,
     .v-input__append {
         display: none !important;

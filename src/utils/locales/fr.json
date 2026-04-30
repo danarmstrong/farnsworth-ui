@@ -143,13 +143,13 @@
     "Blog Details": "Détails du blog",
     "Portfolio": "Portefeuille",
 
-    "Invoice":"Facture",
-    "Create":"Créer",
-    "Edit":"Modifier",
-    "Tickets":"Billets",
-    "Details":"Détails",
+    "Invoice": "Facture",
+    "Create": "Créer",
+    "Edit": "Modifier",
+    "Tickets": "Billets",
+    "Details": "Détails",
 
-    "Banners Widgets":"Widgets de bannières",
-    "Cards Widgets":"Widgets de cartes",
-    "Charts Widgets":"Widgets graphiques"
+    "Banners Widgets": "Widgets de bannières",
+    "Cards Widgets": "Widgets de cartes",
+    "Charts Widgets": "Widgets graphiques"
 }

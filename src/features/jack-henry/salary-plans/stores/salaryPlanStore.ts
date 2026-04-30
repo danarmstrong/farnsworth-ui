@@ -11,7 +11,7 @@ export const useSalaryPlanStore = defineStore('salaryPlans', () => {
     const loading = ref(false);
     const error = ref<string | null>(null);
 
-    async function fetchSalaryPlans() : Promise<void> {
+    async function fetchSalaryPlans(): Promise<void> {
         error.value = null;
         loading.value = true;
         try {
@@ -24,10 +24,10 @@ export const useSalaryPlanStore = defineStore('salaryPlans', () => {
         }
     }
 
-    async function getSalaryPlan(id: string) : Promise<SalaryPlan | null> {
+    async function getSalaryPlan(id: string): Promise<SalaryPlan | null> {
         error.value = null;
 
-        const salaryPlan = salaryPlans.value.find(sp => sp.id === id);
+        const salaryPlan = salaryPlans.value.find((sp) => sp.id === id);
         if (salaryPlan) {
             return salaryPlan;
         }
@@ -49,7 +49,7 @@ export const useSalaryPlanStore = defineStore('salaryPlans', () => {
         return null;
     }
 
-    async function createSalaryPlan(newSalaryPlan: CreateSalaryPlanDto) : Promise<void> {
+    async function createSalaryPlan(newSalaryPlan: CreateSalaryPlanDto): Promise<void> {
         error.value = null;
         loading.value = true;
         try {
@@ -62,7 +62,7 @@ export const useSalaryPlanStore = defineStore('salaryPlans', () => {
         }
     }
 
-    async function updateSalaryPlan(id: string, salaryPlan: UpdateSalaryPlanDto) : Promise<void> {
+    async function updateSalaryPlan(id: string, salaryPlan: UpdateSalaryPlanDto): Promise<void> {
         error.value = null;
         loading.value = true;
         try {
@@ -85,7 +85,7 @@ export const useSalaryPlanStore = defineStore('salaryPlans', () => {
         loading.value = true;
         try {
             await axios.delete<SalaryPlan>(`${salaryPlansPath}/${id}`);
-            salaryPlans.value = salaryPlans.value.filter(sp => sp.id !== id);
+            salaryPlans.value = salaryPlans.value.filter((sp) => sp.id !== id);
         } catch (err) {
             error.value = setErrorMessage(err, 'Failed to delete salary plan');
         } finally {
@@ -105,7 +105,14 @@ export const useSalaryPlanStore = defineStore('salaryPlans', () => {
     }
 
     return {
-        salaryPlans, loading, error,
-        fetchSalaryPlans, getSalaryPlan, createSalaryPlan, updateSalaryPlan, deleteSalaryPlan, clearError,
+        salaryPlans,
+        loading,
+        error,
+        fetchSalaryPlans,
+        getSalaryPlan,
+        createSalaryPlan,
+        updateSalaryPlan,
+        deleteSalaryPlan,
+        clearError
     };
 });

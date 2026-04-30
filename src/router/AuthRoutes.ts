@@ -8,7 +8,7 @@ const AuthRoutes = {
         {
             name: 'Landing Page',
             path: '/',
-            redirect: '/dashboard1',
+            redirect: '/dashboard1'
             //component: () => import('@/views/pages/landingpage/index.vue')
         },
         {
@@ -49,32 +49,32 @@ const AuthRoutes = {
         {
             name: 'Boxed Login',
             path: '/auth/login',
-            component: () => import('@/views/authentication/BoxedLogin.vue')
+            component: () => import('../views/auth/LoginView.vue')
         },
         {
             name: 'Boxed Register',
             path: '/auth/register',
-            component: () => import('@/views/authentication/BoxedRegister.vue')
+            component: () => import('../views/auth/RegisterView.vue')
         },
         {
             name: 'Boxed Forgot Password',
             path: '/auth/forgot-password',
-            component: () => import('@/views/authentication/BoxedForgotPassword.vue')
+            component: () => import('../views/auth/ForgotPasswordView.vue')
         },
         {
             name: 'Boxed Two Steps',
             path: '/auth/two-step',
-            component: () => import('@/views/authentication/BoxedTwoStep.vue')
+            component: () => import('../views/auth/TwoFactorView.vue')
         },
         {
             name: 'Error',
             path: '/auth/404',
-            component: () => import('@/views/authentication/Error.vue')
+            component: () => import('../views/Error.vue')
         },
         {
             name: 'Maintenance',
             path: '/auth/maintenance',
-            component: () => import('@/views/authentication/Maintenance.vue')
+            component: () => import('../views/Maintenance.vue')
         }
     ]
 };

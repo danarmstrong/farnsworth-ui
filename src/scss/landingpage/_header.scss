@@ -5,15 +5,14 @@
         justify-content: space-between;
         box-shadow: none !important;
 
-        .v-btn{
-            color:rgb(var(--v-theme-grey200)) !important;
-            &:hover{
-                color:rgb(var(--v-theme-primary)) !important;
+        .v-btn {
+            color: rgb(var(--v-theme-grey200)) !important;
+            &:hover {
+                color: rgb(var(--v-theme-primary)) !important;
             }
         }
-
     }
-    .login-shadow{
+    .login-shadow {
         box-shadow: 0 4px 12px rgba(var(--v-theme-primary), 0.3);
     }
 }
@@ -22,7 +21,6 @@
 //
 
 .lp_wrapper {
-    
     &.v-menu .v-overlay__content {
         margin: 0 auto;
         left: 0 !important;
@@ -36,7 +34,7 @@
             left: 0px;
             width: 100%;
             height: 100%;
-            background-color: rgba(0,133,219,.3);
+            background-color: rgba(0, 133, 219, 0.3);
             opacity: 0;
             border-radius: 10px;
         }

@@ -17,7 +17,7 @@ const categorybg = ref('primary');
 const columnId = ref(props.column?.id);
 
 function addItemAndClear() {
-    (title.value = ''), (subtitle.value = ''), (category.value = 'Mobile'), (categorybg.value = 'primary');
+    ((title.value = ''), (subtitle.value = ''), (category.value = 'Mobile'), (categorybg.value = 'primary'));
 }
 </script>
 
@@ -44,7 +44,7 @@ function addItemAndClear() {
             <v-card>
                 <v-card-text class="mb-4">
                     <h4 class="text-h6 mb-5">Add Task</h4>
-                    <form @submit.prevent="store.addTask(columnId, title, subtitle, category, categorybg), addItemAndClear()">
+                    <form @submit.prevent="(store.addTask(columnId, title, subtitle, category, categorybg), addItemAndClear())">
                         <v-text-field outlined name="Task" v-model="title" label="Title"></v-text-field>
                         <v-textarea outlined name="Task-subtitle" v-model="subtitle" label="Subtitle"></v-textarea>
                         <v-select

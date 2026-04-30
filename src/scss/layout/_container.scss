@@ -8,7 +8,7 @@ html {
 
 .v-main {
     min-height: 100vh;
-    padding-left:calc(var(--v-layout-left) + 20px) !important;
+    padding-left: calc(var(--v-layout-left) + 20px) !important;
 }
 
 .v-application {
@@ -23,14 +23,12 @@ html {
 //     min-height: calc(100vh - 75px);
 // }
 
-@media screen and (min-width:1300px) {
+@media screen and (min-width: 1300px) {
     .maxWidth {
         max-width: 1300px;
         margin: 0 auto;
     }
 }
-
-
 
 .fixed-width {
     max-width: 1300px;
@@ -43,12 +41,12 @@ html {
     height: 100%;
 }
 
-@media screen and (max-width:1024px) {
+@media screen and (max-width: 1024px) {
     .v-toolbar__content {
         justify-content: space-between;
     }
 
-    .v-toolbar__content>.v-btn:last-child {
+    .v-toolbar__content > .v-btn:last-child {
         margin-inline-end: 0px !important;
     }
 }

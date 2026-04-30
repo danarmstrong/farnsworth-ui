@@ -5,4 +5,3 @@ export function useConfirm() {
 
     return (message: string) => confirmDialogStore.openConfirm(message);
 }
-

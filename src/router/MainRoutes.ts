@@ -9,13 +9,13 @@ const MainRoutes = {
         {
             name: 'Staff',
             path: '/staff',
-            component: () => import('../views/jack-henry/staff/StaffView.vue'),
+            component: () => import('../views/jack-henry/staff/StaffView.vue')
         },
         // Admin routes
         {
             name: 'Salary Plans',
             path: '/admin/salary-plans',
-            component: () => import('../views/admin/salary-plans/SalaryPlansView.vue'),
+            component: () => import('../views/admin/salary-plans/SalaryPlansView.vue')
         },
         // Legacy template routes
         {

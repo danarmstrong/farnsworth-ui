@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import Logo from '@/layouts/full/logo/Logo.vue';
-/* Register form */
-import RegisterForm from '@/components/auth/RegisterForm.vue';
+/* Login form */
+import LoginForm from '@/features/auth/components/LoginForm.vue';
 </script>
 <template>
     <div class="authentication">
@@ -15,10 +15,16 @@ import RegisterForm from '@/components/auth/RegisterForm.vue';
                                     <Logo />
                                 </div>
                                 <!-- <div class="text-h6 text-medium-emphasis text-center mb-6">Your Social Campaigns</div> -->
-                                <RegisterForm />
+                                <LoginForm />
                                 <h6 class="text-subtitle-1 text-grey100 d-flex justify-center align-center mt-3">
-                                    Already have an Account?
-                                    <v-btn variant="plain" to="/auth/login" class="text-primary text-body-1 opacity-1 pl-2">Sign In</v-btn>
+                                    New to Spike?
+                                    <v-btn
+                                        class="pl-0 text-primary text-body-1 opacity-1 pl-2"
+                                        height="auto"
+                                        to="/auth/register"
+                                        variant="plain"
+                                        >Create an account</v-btn
+                                    >
                                 </h6>
                             </v-card-item>
                         </v-card>

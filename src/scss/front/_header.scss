@@ -1,12 +1,10 @@
 .front-lp-header {
-
-    .v-toolbar{
+    .v-toolbar {
         background: rgb(var(--v-theme-surface));
     }
-    
+
     &.v-app-bar .v-toolbar__content {
         padding: 0;
-
     }
 
     .v-toolbar__content {
@@ -28,18 +26,15 @@
         top: 0 !important;
         transition: 0.5s;
         background-color: rgba(var(--v-theme-surface)) !important;
-        
     }
-
 }
 //
 // mega menu
 //
-.white-btn{
-    background-color: #769CFF;
+.white-btn {
+    background-color: #769cff;
 }
 .front_wrapper {
-   
     &.v-menu .v-overlay__content {
         margin: 0 auto;
         left: 0 !important;

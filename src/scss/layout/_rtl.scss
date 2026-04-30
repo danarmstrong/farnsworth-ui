@@ -10,9 +10,6 @@
         padding-right: 12px;
     }
 
-
-
-
     .bg-img-1 {
         position: absolute;
         bottom: 0;
@@ -95,7 +92,6 @@
         margin-top: 20px;
     }
 
-
     .ml-5 {
         margin-left: unset !important;
         margin-right: 20px;
@@ -151,8 +147,6 @@
         right: -8px;
     }
 
-   
-
     .text-right {
         text-align: left !important;
     }
@@ -189,7 +183,7 @@
         justify-content: flex-end !important;
     }
 
-    .vertical-table .v-table>.v-table__wrapper>table>tbody>tr>th {
+    .vertical-table .v-table > .v-table__wrapper > table > tbody > tr > th {
         border-left: thin solid rgba(var(--v-border-color), 1) !important;
     }
 
@@ -310,14 +304,12 @@
         }
     }
 
-
-
     .horizontal-navbar .ddMenu {
         padding: 10px 15px 10px 0px;
     }
 
     /*RTL Horizontal dropdown menu*/
-    .ps--active-y>.ps__rail-y {
+    .ps--active-y > .ps__rail-y {
         right: unset !important;
         left: 0;
     }
@@ -329,7 +321,6 @@
     }
 
     @media (min-width: 960px) {
-
         .horizontal-navbar .ddLevel-2,
         .horizontal-navbar .ddLevel-3 {
             top: -5px;
@@ -342,19 +333,16 @@
             right: 290px !important;
             left: 0px !important;
 
-            @media (max-width:1279px) {
+            @media (max-width: 1279px) {
                 left: 20px !important;
             }
         }
-
-        
-    
 
         .v-main {
             padding-right: calc(var(--v-layout-right) + 20px) !important;
             padding-left: 0 !important;
 
-            @media (max-width:1279px) {
+            @media (max-width: 1279px) {
                 padding-right: calc(var(--v-layout-right) + 0px) !important;
             }
         }
@@ -366,9 +354,8 @@
         transform: scaleX(-1) !important;
     }
 
-    @media (max-width:1279px) {
+    @media (max-width: 1279px) {
         .leftSidebar {
-
             &.ml-lg-5 {
                 margin-left: unset !important;
                 margin-right: 0px !important;
@@ -376,7 +363,6 @@
 
             &.mt-lg-5 {
                 margin-top: 0px !important;
-                ;
             }
         }
 
@@ -389,9 +375,9 @@
                 }
             }
         }
-     
+
         .v-navigation-drawer.v-navigation-drawer--right {
-            margin-left:unset !important;
+            margin-left: unset !important;
             &.v-navigation-drawer--active {
                 width: 270px !important;
                 margin-left: 0 !important;
@@ -400,7 +386,7 @@
         }
     }
 
-    @media (max-width:600px) {
+    @media (max-width: 600px) {
         .verticalLayout {
             .v-app-bar.v-toolbar {
                 left: 15px !important;
@@ -462,9 +448,7 @@
                 .rtlnav {
                     transform: scaleX(-1);
                 }
-
             }
         }
     }
-
 }

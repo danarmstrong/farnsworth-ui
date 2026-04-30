@@ -28,10 +28,7 @@ const isBusy = computed(() => saving.value || deleting.value || store.loading);
 const filteredList = computed(() => {
     const normalizedSearch = search.value.toLowerCase();
     return store.salaryPlans.filter((salaryPlan: SalaryPlan) => {
-        return (
-            salaryPlan.code.toLowerCase().includes(normalizedSearch) ||
-            salaryPlan.note?.toLowerCase().includes(normalizedSearch)
-        );
+        return salaryPlan.code.toLowerCase().includes(normalizedSearch) || salaryPlan.note?.toLowerCase().includes(normalizedSearch);
     });
 });
 

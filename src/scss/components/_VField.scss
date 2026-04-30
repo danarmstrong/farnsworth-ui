@@ -10,7 +10,7 @@
 
 .v-field {
     font-size: 14px;
-    color:  rgba(var(--v-theme-textPrimary));
+    color: rgba(var(--v-theme-textPrimary));
 }
 
 // select outlined
@@ -21,7 +21,6 @@
     opacity: 1;
 }
 
-
-.v-field--active .v-label.v-field-label{
+.v-field--active .v-label.v-field-label {
     color: rgb(var(--v-theme-textPrimary));
 }

@@ -1,6 +1,6 @@
 .authentication {
     &::before {
-        content: "";
+        content: '';
         position: absolute;
         height: 100%;
         width: 100%;
@@ -17,14 +17,13 @@
         left: 0;
     }
 
-
     .boxed-auth-wrap {
         margin: 0 auto;
         max-width: 450px;
         position: relative;
 
         &::before {
-            content: "";
+            content: '';
             position: absolute;
             left: -125px;
             bottom: -100px;
@@ -35,7 +34,7 @@
         }
 
         &::after {
-            content: "";
+            content: '';
             position: absolute;
             top: -65px;
             right: -104px;
@@ -48,15 +47,11 @@
         }
     }
 
-    @media screen and (max-width:1280px) {
+    @media screen and (max-width: 1280px) {
         .auth-header {
             position: unset;
         }
     }
-
-
-
-
 }
 
 .verification {
@@ -75,7 +70,7 @@
         width: 100%;
         border-top: thin solid rgb(229, 234, 239);
         top: 50%;
-        content: "";
+        content: '';
         transform: translateY(50%);
         left: 0;
     }
@@ -85,7 +80,7 @@
         width: 100%;
         border-top: thin solid rgb(229, 234, 239);
         top: 50%;
-        content: "";
+        content: '';
         transform: translateY(50%);
         right: 0;
     }
@@ -103,16 +98,15 @@
             max-width: 33.33%;
         }
     }
-
 }
 
-@media screen and (max-width:1280px) {
+@media screen and (max-width: 1280px) {
     .mh-100 {
         height: 100% !important;
     }
 }
 
-@media screen and (max-width:600px) {
+@media screen and (max-width: 600px) {
     .mw-100 {
         width: 100%;
         padding: 0 15px;
@@ -122,16 +116,14 @@
 .authpage {
     .v-application__wrap {
         display: block;
-        
     }
 
-    .login-app-wrapper{
+    .login-app-wrapper {
         height: 100%;
         display: flex;
         justify-content: center;
         overflow: hidden;
     }
-    
 
     .auth-login {
         max-width: 1600px;
@@ -140,15 +132,13 @@
         display: flex !important;
         justify-content: center;
 
-
-
         .auth-login-wrapper {
-            box-shadow: 0 2px 30px 15px rgba(37, 83, 185, .1);
+            box-shadow: 0 2px 30px 15px rgba(37, 83, 185, 0.1);
             z-index: 2;
             max-width: 1200px;
 
             &::before {
-                content: "";
+                content: '';
                 position: absolute;
                 left: -125px;
                 bottom: -100px;
@@ -159,7 +149,7 @@
             }
 
             &::after {
-                content: "";
+                content: '';
                 position: absolute;
                 top: -100px;
                 right: -75px;
@@ -172,4 +162,3 @@
         }
     }
 }
-

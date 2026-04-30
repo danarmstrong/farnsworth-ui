@@ -136,12 +136,12 @@
     "Time Picker": "時間選擇器",
     "Stepper": "步進機",
 
-    "Front Pages":"首頁",
-    "Homepage":"首頁",
-    "Blog Details":"博客詳細信息",
-    "About Us" : "關於我們",
-    "Contact Us":"聯絡我們",
-    "Portfolio":"資料夾",
+    "Front Pages": "首頁",
+    "Homepage": "首頁",
+    "Blog Details": "博客詳細信息",
+    "About Us": "關於我們",
+    "Contact Us": "聯絡我們",
+    "Portfolio": "資料夾",
 
     "Invoice": "发票",
     "Create": "创造",
@@ -149,7 +149,7 @@
     "Tickets": "门票",
     "Details": "细节",
 
-    "Banners Widgets":"横幅小部件",
-    "Cards Widgets":"卡片小部件",
-    "Charts Widgets":"图表小工具"
+    "Banners Widgets": "横幅小部件",
+    "Cards Widgets": "卡片小部件",
+    "Charts Widgets": "图表小工具"
 }

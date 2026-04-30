@@ -35,8 +35,6 @@
         height: 25px;
     }
 
-
-
     &:before {
         background-repeat: no-repeat;
         content: '';
@@ -76,7 +74,6 @@
     animation: marquee2 45s linear infinite;
 }
 
-
 @keyframes slide {
     0% {
         transform: translate3d(0, 0, 0);
@@ -99,11 +96,11 @@
 
 @keyframes marquee2 {
     0% {
-        transform: translate3d(-2086px, 0, 0)
+        transform: translate3d(-2086px, 0, 0);
     }
 
     100% {
-        transform: translate3d(0, 0, 0)
+        transform: translate3d(0, 0, 0);
     }
 }
 
@@ -128,7 +125,6 @@
         img {
             max-width: 100%;
             height: auto;
-
         }
     }
 
@@ -142,8 +138,8 @@
         .intro {
             opacity: 0;
             bottom: 16px;
-            inset-inline-start: .75rem;
-            inset-inline-end: .75rem;
+            inset-inline-start: 0.75rem;
+            inset-inline-end: 0.75rem;
             transition: 0.5s;
         }
     }
@@ -155,19 +151,17 @@
             padding-bottom: 56px;
         }
 
-
-
         .v-btn {
             background-color: rgba(var(--v-theme-surface));
             padding: 16px 24px;
             border-radius: 12px !important;
             font-size: 16px;
-            box-shadow: 0px 24px 24px -12px rgba(0, 0, 0, .05);
+            box-shadow: 0px 24px 24px -12px rgba(0, 0, 0, 0.05);
         }
 
-       .v-tab--selected {
+        .v-tab--selected {
             background-color: rgba(var(--v-theme-primary));
-            box-shadow: 0px 24px 24px -12px rgba(99, 91, 255, .15);
+            box-shadow: 0px 24px 24px -12px rgba(99, 91, 255, 0.15);
 
             .v-btn__content {
                 color: #fff;
@@ -183,7 +177,6 @@
         &.max-width-1218 {
             max-width: 1218px !important;
         }
-
     }
 
     .v-container {
@@ -218,7 +211,6 @@
         }
     }
 
-
     .feature-tabs {
         .v-tab__slider {
             top: 0;
@@ -231,7 +223,6 @@
     }
 
     .feature-tabs-expansion {
-
         .v-expansion-panel-text__wrapper {
             padding: 0px 0px 16px;
         }
@@ -245,7 +236,7 @@
         }
 
         .v-expansion-panel--active:not(:first-child),
-        .v-expansion-panel--active+.v-expansion-panel {
+        .v-expansion-panel--active + .v-expansion-panel {
             margin-top: 0;
         }
     }
@@ -268,7 +259,7 @@
             margin: 0;
             transform: none;
             display: flex;
-            justify-content: center
+            justify-content: center;
         }
 
         .carousel__next {
@@ -276,7 +267,6 @@
             width: 48px;
             border-radius: 50%;
             background: rgb(var(--v-theme-lightprimary));
-
         }
 
         .carousel__prev {
@@ -300,7 +290,6 @@
     }
 
     .testimonials {
-
         .carousel__prev,
         .carousel__next {
             width: 100%;
@@ -365,31 +354,33 @@
         .v-expansion-panel-title__icon {
             .v-icon {
                 font-size: 20px;
-                opacity: 0.5
+                opacity: 0.5;
             }
         }
 
-        .v-expansion-panels:not(.v-expansion-panels--variant-accordion)> :first-child:not(:last-child):not(.v-expansion-panel--active):not(.v-expansion-panel--before-active) {
+        .v-expansion-panels:not(.v-expansion-panels--variant-accordion)
+            > :first-child:not(:last-child):not(.v-expansion-panel--active):not(.v-expansion-panel--before-active) {
             border-bottom-left-radius: 8px !important;
             border-bottom-right-radius: 8px !important;
         }
 
-        .v-expansion-panels:not(.v-expansion-panels--variant-accordion)> :not(:first-child):not(:last-child):not(.v-expansion-panel--active):not(.v-expansion-panel--after-active) {
+        .v-expansion-panels:not(.v-expansion-panels--variant-accordion)
+            > :not(:first-child):not(:last-child):not(.v-expansion-panel--active):not(.v-expansion-panel--after-active) {
             border-top-left-radius: 8px !important;
             border-top-right-radius: 8px !important;
         }
 
-        .v-expansion-panels:not(.v-expansion-panels--variant-accordion)> :not(:first-child):not(:last-child):not(.v-expansion-panel--active):not(.v-expansion-panel--before-active) {
+        .v-expansion-panels:not(.v-expansion-panels--variant-accordion)
+            > :not(:first-child):not(:last-child):not(.v-expansion-panel--active):not(.v-expansion-panel--before-active) {
             border-bottom-left-radius: 8px !important;
             border-bottom-right-radius: 8px !important;
         }
 
         .v-expansion-panel--active:not(:first-child),
-        .v-expansion-panel--active+.v-expansion-panel {
+        .v-expansion-panel--active + .v-expansion-panel {
             margin-top: 0px !important;
         }
     }
-
 
     .animted-img {
         position: absolute;
@@ -450,8 +441,6 @@
     }
 }
 
-
-
 .v-btn--size-default {
     &.nav-links {
         font-size: $font-size-root !important;
@@ -466,8 +455,6 @@
     }
 }
 
-
-
 .light-primary {
     background-color: rgb(var(--v-theme-primary), 0.1);
 }
@@ -475,14 +462,13 @@
 .announce-close {
     position: absolute;
     right: 15px;
-
 }
 
-.text-align-start{
+.text-align-start {
     text-align: start;
 }
 
-@media screen and (max-width:1199px) {
+@media screen and (max-width: 1199px) {
     .ps-96 {
         padding-inline-start: 60px !important;
     }
@@ -505,10 +491,9 @@
     .offerbar:before {
         display: none;
     }
-   
 }
 
-@media screen and (max-width:1024px) {
+@media screen and (max-width: 1024px) {
     .front-wraper .testimonials .slide-counter {
         left: 67px;
     }
@@ -525,8 +510,6 @@
         background-image: none;
     }
 
-
-
     .front-wraper .our-template .carousel__viewport {
         margin: 0 0px;
     }
@@ -535,16 +518,15 @@
         padding-inline-start: 20px !important;
         padding-inline-end: 20px !important;
     }
-    
 }
 
-@media screen and (max-width:991px) {
-    .text-align-start{
+@media screen and (max-width: 991px) {
+    .text-align-start {
         text-align: center;
     }
 }
 
-@media screen and (max-width:767px) {
+@media screen and (max-width: 767px) {
     .technology {
         .round-54 {
             height: 45px;
@@ -591,5 +573,4 @@
             opacity: 1 !important;
         }
     }
-
 }
