@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore } from '@/features/auth/stores/authStore';
 import { Form } from 'vee-validate';
+
+// TODO refactor this file
 
 /*Social icons*/
 import google from '@/assets/images/svgs/google-icon.svg';
@@ -20,7 +22,7 @@ const emailRules = ref([(v: string) => !!v || 'E-mail is required', (v: string) 
 
 function validate(values: any, { setErrors }: any) {
     const authStore = useAuthStore();
-    return authStore.login(username.value, password.value).catch((error) => setErrors({ apiError: error }));
+    return authStore.login({ email: username.value, password: password.value }).catch((error) => setErrors({ apiError: error }));
 }
 </script>
 

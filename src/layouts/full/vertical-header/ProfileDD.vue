@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { CircleXIcon, MailIcon } from 'vue-tabler-icons';
 import { profileDD } from '@/_mockApis/headerData';
-import { useAuthStore } from '@/stores/auth';
+import { useAuthStore } from '@/features/auth/stores/authStore';
 import { Icon } from '@iconify/vue';
 
 const authStore = useAuthStore();

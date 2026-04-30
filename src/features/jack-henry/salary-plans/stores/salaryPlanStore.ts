@@ -4,6 +4,8 @@ import type { CreateSalaryPlanDto, SalaryPlan, UpdateSalaryPlanDto } from '@/fea
 import { ref } from 'vue';
 import { isAxiosError } from 'axios';
 
+const salaryPlansPath = '/salary-plans';
+
 export const useSalaryPlanStore = defineStore('salaryPlans', () => {
     const salaryPlans = ref<SalaryPlan[]>([]);
     const loading = ref(false);
@@ -13,7 +15,7 @@ export const useSalaryPlanStore = defineStore('salaryPlans', () => {
         error.value = null;
         loading.value = true;
         try {
-            const { data } = await axios.get<SalaryPlan[]>('/api/salary-plans');
+            const { data } = await axios.get<SalaryPlan[]>(salaryPlansPath);
             salaryPlans.value = data;
         } catch (err) {
             error.value = setErrorMessage(err, 'Failed to fetch salary plans');
@@ -32,7 +34,7 @@ export const useSalaryPlanStore = defineStore('salaryPlans', () => {
 
         loading.value = true;
         try {
-            const { data } = await axios.get<SalaryPlan>(`/api/salary-plans/${id}`);
+            const { data } = await axios.get<SalaryPlan>(`${salaryPlansPath}/${id}`);
             const exists = salaryPlans.value.some((sp) => sp.id === data.id);
             if (!exists) {
                 salaryPlans.value.push(data);
@@ -51,7 +53,7 @@ export const useSalaryPlanStore = defineStore('salaryPlans', () => {
         error.value = null;
         loading.value = true;
         try {
-            const { data } = await axios.post<SalaryPlan>('/api/salary-plans', newSalaryPlan);
+            const { data } = await axios.post<SalaryPlan>(salaryPlansPath, newSalaryPlan);
             salaryPlans.value.push(data);
         } catch (err) {
             error.value = setErrorMessage(err, 'Failed to create salary plan');
@@ -64,7 +66,7 @@ export const useSalaryPlanStore = defineStore('salaryPlans', () => {
         error.value = null;
         loading.value = true;
         try {
-            const { data } = await axios.put<SalaryPlan>(`/api/salary-plans/${id}`, salaryPlan);
+            const { data } = await axios.put<SalaryPlan>(`${salaryPlansPath}/${id}`, salaryPlan);
             const index = salaryPlans.value.findIndex((sp) => sp.id === id);
             if (index !== -1) {
                 salaryPlans.value[index] = data;
@@ -82,7 +84,7 @@ export const useSalaryPlanStore = defineStore('salaryPlans', () => {
         error.value = null;
         loading.value = true;
         try {
-            await axios.delete<SalaryPlan>(`/api/salary-plans/${id}`);
+            await axios.delete<SalaryPlan>(`${salaryPlansPath}/${id}`);
             salaryPlans.value = salaryPlans.value.filter(sp => sp.id !== id);
         } catch (err) {
             error.value = setErrorMessage(err, 'Failed to delete salary plan');

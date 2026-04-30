@@ -33,7 +33,7 @@ Tech stack in this package:
 Important entry points:
 - `src/main.ts` - app bootstrap, plugins, and mock wiring
 - `src/router/index.ts` - router and auth guard
-- `src/stores/auth.ts` - login/logout state
+- `src/features/auth/stores/authStore.ts` - login/logout state
 - `src/utils/helpers/fetch-wrapper.ts` - auth-aware `fetch` helper
 - `src/utils/axios.ts` - shared axios instance used by most stores
 
@@ -150,13 +150,13 @@ These are used in `src/_mockApis/auth.ts` and are for local template behavior on
 - Auto-logs out on `401`/`403`
 
 Current state:
-- `src/stores/auth.ts` now uses axios for `/auth/login`
+- `src/features/auth/stores/authStore.ts` now uses axios for `/auth/login`
 - `fetchWrapper` remains available for any fetch-based store calls still in the codebase
 
 ## 7) Recommended Real API Strategy
 
 Use one API style consistently. Current implementation now does:
-- Auth login in `src/stores/auth.ts` via axios
+- Auth login in `src/features/auth/stores/authStore.ts` via axios
 - Calls `POST /auth/login` (resolved through axios `baseURL = VITE_API_URL`)
 - Persists auth user/token in localStorage (`user` key)
 - Adds bearer token automatically in `src/utils/axios.ts` request interceptor
@@ -357,7 +357,7 @@ When `VITE_ENABLE_MOCKS="true"`, the app intercepts `POST /auth/login` via axios
 1. Set `VITE_ENABLE_MOCKS="false"` in `.env`
 2. Update `VITE_API_URL` to point to your backend (e.g., `/api` or full URL)
 3. Ensure your backend's `/auth/login` returns response with `user` object and `accessToken` field
-4. The auth store (`src/stores/auth.ts`) will automatically read and persist the token
+4. The auth store (`src/features/auth/stores/authStore.ts`) will automatically read and persist the token
 
 The mock handler in `src/_mockApis/auth.ts` is safe to leave in place even after deleting the mock wiring, as it will never be called if `VITE_ENABLE_MOCKS="false"`.
 
@@ -584,7 +584,7 @@ There are three things that control what page a user sees first.
 
 ### A) After login — where the auth store redirects
 
-`src/stores/auth.ts` — after a successful login the store does:
+`src/features/auth/stores/authStore.ts` — after a successful login the store does:
 
 ```typescript
 router.push(this.returnUrl || '/dashboard1');
@@ -637,7 +637,7 @@ Deep-linking works automatically — no extra changes needed.
 
 | What to change | File | What to edit |
 |---|---|---|
-| Page shown after login | `src/stores/auth.ts` | Default path in `router.push(this.returnUrl \|\| '...')` |
+| Page shown after login | `src/features/auth/stores/authStore.ts` | Default path in `router.push(returnUrl.value \|\| '...')` |
 | What `/` loads | `src/router/AuthRoutes.ts` | `redirect` value on the `'/'` route |
 | Fallback 404 page | `src/router/index.ts` | Component on the `'/:pathMatch(.*)*'` route |
 

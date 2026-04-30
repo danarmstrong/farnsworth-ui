@@ -11,12 +11,7 @@ const axiosServices = axios.create({
 });
 
 axiosServices.interceptors.request.use((config) => {
-    const storedUser = localStorage.getItem('user');
-    if (!storedUser) return config;
-
-    const user = JSON.parse(storedUser);
-    const token = user?.token || user?.accessToken;
-
+    const token = localStorage.getItem('accessToken');
     if (token) {
         config.headers = config.headers || {};
         config.headers.Authorization = `Bearer ${token}`;

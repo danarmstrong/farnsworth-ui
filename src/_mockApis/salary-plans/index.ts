@@ -47,11 +47,11 @@ const hasDuplicateCode = (code: string, excludeId?: string): boolean => {
     return salaryPlans.some((plan) => plan.id !== excludeId && normalizeCode(plan.code) === normalizedCode);
 };
 
-mock.onGet('/api/salary-plans').reply(() => {
+mock.onGet('/salary-plans').reply(() => {
     return [200, salaryPlans.map((plan) => ({ ...plan }))];
 });
 
-mock.onGet(/\/api\/salary-plans\/[^/]+$/).reply((config) => {
+mock.onGet(/\/salary-plans\/[^/]+$/).reply((config) => {
     const id = getIdFromUrl(config.url);
     if (!id) {
         return [400, { message: 'Invalid salary plan id' }];
@@ -65,7 +65,7 @@ mock.onGet(/\/api\/salary-plans\/[^/]+$/).reply((config) => {
     return [200, { ...salaryPlan }];
 });
 
-mock.onPost('/api/salary-plans').reply((config) => {
+mock.onPost('/salary-plans').reply((config) => {
     try {
         const payload = JSON.parse(config.data) as Partial<CreateSalaryPlanDto>;
         const code = payload.code?.trim();
@@ -91,7 +91,7 @@ mock.onPost('/api/salary-plans').reply((config) => {
     }
 });
 
-mock.onPut(/\/api\/salary-plans\/[^/]+$/).reply((config) => {
+mock.onPut(/\/salary-plans\/[^/]+$/).reply((config) => {
     const id = getIdFromUrl(config.url);
     if (!id) {
         return [400, { message: 'Invalid salary plan id' }];
@@ -127,7 +127,7 @@ mock.onPut(/\/api\/salary-plans\/[^/]+$/).reply((config) => {
     }
 });
 
-mock.onDelete(/\/api\/salary-plans\/[^/]+$/).reply((config) => {
+mock.onDelete(/\/salary-plans\/[^/]+$/).reply((config) => {
     const id = getIdFromUrl(config.url);
     if (!id) {
         return [400, { message: 'Invalid salary plan id' }];

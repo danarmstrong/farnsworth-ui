@@ -9,12 +9,10 @@ import NavCollapse from './NavCollapse/NavCollapse.vue';
 import ExtraBox from './extrabox/ExtraBox.vue';
 import Moreoption from './MoreOption/Moreoption.vue';
 import Logo from '../logo/Logo.vue';
-import { useAuthStore } from '@/stores/auth';
 import { Icon } from '@iconify/vue';
 
 const customizer = useCustomizerStore();
 const sidebarMenu = shallowRef(sidebarItems);
-const authStore = useAuthStore();
 </script>
 
 <template>
