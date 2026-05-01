@@ -22,6 +22,11 @@ const MainRoutes = {
             path: '/admin/pay-grades',
             component: () => import('@/views/admin/pay-grades/PayGradesView.vue')
         },
+        {
+            name: 'Job Families',
+            path: '/admin/job-families',
+            component: () => import('@/views/admin/job-families/JobFamiliesView.vue')
+        },
         // Legacy template routes
         {
             name: 'dashboard',

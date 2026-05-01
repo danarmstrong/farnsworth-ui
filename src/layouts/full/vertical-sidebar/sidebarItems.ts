@@ -36,6 +36,12 @@ const sidebarItems: menu[] = [
         BgColor: 'primary',
         to: '/admin/pay-grades'
     },
+    {
+        title: 'Job Families',
+        icon: 'dollar-line-duotone',
+        BgColor: 'primary',
+        to: '/admin/job-families'
+    },
     { header: 'Home' },
     {
         title: 'Dashboard',
