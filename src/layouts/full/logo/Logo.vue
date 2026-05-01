@@ -2,8 +2,6 @@
 import { computed } from 'vue';
 import LogoLight from './LogoLight.vue';
 import LogoDark from './LogoDark.vue';
-import LogoLightRtl from './LogoLightRtl.vue';
-import LogoDarkRtl from './LogoDarkRtl.vue';
 import { useCustomizerStore } from '@/stores/customizer';
 
 const customizer = useCustomizerStore();
@@ -25,11 +23,7 @@ const dark = computed(() => {
 });
 </script>
 <template>
-    <div v-if="customizer.setRTLLayout" rtl>
-        <LogoLightRtl v-if="dark" />
-        <LogoDarkRtl v-else />
-    </div>
-    <div v-else>
+    <div>
         <LogoLight v-if="dark" />
         <LogoDark v-else />
     </div>

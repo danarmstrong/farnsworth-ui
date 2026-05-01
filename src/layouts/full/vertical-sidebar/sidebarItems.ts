@@ -30,6 +30,12 @@ const sidebarItems: menu[] = [
         BgColor: 'primary',
         to: '/admin/salary-plans'
     },
+    {
+        title: 'Pay Grades',
+        icon: 'dollar-line-duotone',
+        BgColor: 'primary',
+        to: '/admin/pay-grades'
+    },
     { header: 'Home' },
     {
         title: 'Dashboard',

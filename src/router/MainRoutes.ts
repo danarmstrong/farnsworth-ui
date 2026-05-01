@@ -15,7 +15,12 @@ const MainRoutes = {
         {
             name: 'Salary Plans',
             path: '/admin/salary-plans',
-            component: () => import('../views/admin/salary-plans/SalaryPlansView.vue')
+            component: () => import('@/views/admin/salary-plans/SalaryPlansView.vue')
+        },
+        {
+            name: 'Pay Grades',
+            path: '/admin/pay-grades',
+            component: () => import('@/views/admin/pay-grades/PayGradesView.vue')
         },
         // Legacy template routes
         {
