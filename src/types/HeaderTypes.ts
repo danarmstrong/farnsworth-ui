@@ -15,13 +15,6 @@ type profileType = {
     href: string;
 };
 
-type languageType = {
-    avatar: string;
-    title: string;
-    subtext: string;
-    value: string;
-};
-
 type appsLinkType = {
     avatar: string;
     title: string;
@@ -44,4 +37,4 @@ type optionIcon = {
     iconcolor: string;
 };
 
-export type { notificationType, profileType, languageType, appsLinkType, quickLinksType, searchType, optionIcon };
+export type { notificationType, profileType, appsLinkType, quickLinksType, searchType, optionIcon };

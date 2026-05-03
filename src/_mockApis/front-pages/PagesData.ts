@@ -233,7 +233,7 @@ const ThemeFeature2: ThemeFeatures[] = [
     },
     {
         icon: LanguageKatakanaIcon,
-        title: 'i18n Vue',
+        title: 'Localization Ready',
         color: 'error'
     },
     {

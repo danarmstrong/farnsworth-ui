@@ -18,12 +18,6 @@ export interface menu {
 const sidebarItems: menu[] = [
     { header: 'Jack Henry' },
     {
-        title: 'Staff',
-        icon: 'phone-line-duotone',
-        BgColor: 'primary',
-        to: '/staff'
-    },
-    {
         title: 'Staff Members',
         icon: 'users-group-rounded-line-duotone',
         BgColor: 'primary',

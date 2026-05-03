@@ -13,17 +13,8 @@ import Maska from 'maska';
 //LightBox
 import VueEasyLightbox from 'vue-easy-lightbox';
 
-//i18
-import { createI18n } from 'vue-i18n';
-import messages from '@/utils/locales/messages';
 //ScrollTop
 import VueScrollTo from 'vue-scrollto';
-const i18n = createI18n({
-    locale: 'en',
-    messages: messages,
-    silentTranslationWarn: true,
-    silentFallbackWarn: true
-});
 
 async function bootstrap() {
     const enableMocks = import.meta.env.VITE_ENABLE_MOCKS === 'true';
@@ -42,7 +33,6 @@ async function bootstrap() {
     app.use(createPinia());
     app.use(VueTablerIcons);
     // app.use(print);
-    app.use(i18n);
     app.use(Maska);
     app.use(VueApexCharts);
     app.use(VueEasyLightbox);

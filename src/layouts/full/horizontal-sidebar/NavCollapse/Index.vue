@@ -12,7 +12,7 @@ const props = defineProps({ item: Object, level: Number });
 
         <!---Title  -->
         <span class="" v-if="level > 0">
-            <div class="z-index-1"><span class="sublink-dot mr-4"></span> {{ $t(item.title) }}</div>
+            <div class="z-index-1"><span class="sublink-dot mr-4"></span> {{ item.title }}</div>
         </span>
         <span v-else>
             <span class="icon-box">
@@ -25,7 +25,7 @@ const props = defineProps({ item: Object, level: Number });
                         :class="'position-relative z-index-2 texthover-' + item.BgColor"
                     />
                 </i>
-                <span class="z-index-1 ml-3">{{ $t(item.title) }}</span>
+                <span class="z-index-1 ml-3">{{ item.title }}</span>
             </span>
         </span>
 

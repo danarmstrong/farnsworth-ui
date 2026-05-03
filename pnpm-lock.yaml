@@ -26,6 +26,9 @@ importers:
       '@iconify/vue':
         specifier: ^4.1.1
         version: 4.3.0(vue@3.5.11(typescript@5.9.3))
+      '@tabler/icons-vue':
+        specifier: ^3.41.1
+        version: 3.41.1(vue@3.5.11(typescript@5.9.3))
       '@tiptap/extension-text-style':
         specifier: ^2.8.0
         version: 2.27.2(@tiptap/core@2.27.2(@tiptap/pm@2.7.4))
@@ -92,9 +95,6 @@ importers:
       vue-easy-lightbox:
         specifier: ^1.19.0
         version: 1.19.0(vue@3.5.11(typescript@5.9.3))
-      vue-i18n:
-        specifier: 11.1.10
-        version: 11.1.10(vue@3.5.11(typescript@5.9.3))
       vue-router:
         specifier: 4.2.5
         version: 4.2.5(vue@3.5.11(typescript@5.9.3))
@@ -455,18 +455,6 @@ packages:
     peerDependencies:
       vue: '>=3'
 
-  '@intlify/core-base@11.1.10':
-    resolution: {integrity: sha512-JhRb40hD93Vk0BgMgDc/xMIFtdXPHoytzeK6VafBNOj6bb6oUZrGamXkBKecMsmGvDQQaPRGG2zpa25VCw8pyw==}
-    engines: {node: '>= 16'}
-
-  '@intlify/message-compiler@11.1.10':
-    resolution: {integrity: sha512-TABl3c8tSLWbcD+jkQTyBhrnW251dzqW39MPgEUCsd69Ua3ceoimsbIzvkcPzzZvt1QDxNkenMht+5//V3JvLQ==}
-    engines: {node: '>= 16'}
-
-  '@intlify/shared@11.1.10':
-    resolution: {integrity: sha512-6ZW/f3Zzjxfa1Wh0tYQI5pLKUtU+SY7l70pEG+0yd0zjcsYcK0EBt6Fz30Dy0tZhEqemziQQy2aNU3GJzyrMUA==}
-    engines: {node: '>= 16'}
-
   '@jridgewell/gen-mapping@0.3.13':
     resolution: {integrity: sha512-2kkt/7niJ6MgEPxF0bYdQ6etZaA+fQvDcLKckhy1yIQOzaoKjBBjSj63/aLVjYE3qhRt5dvM+uUyfCg6UKCBbA==}
 
@@ -627,6 +615,14 @@ packages:
 
   '@rolldown/pluginutils@1.0.0-rc.13':
     resolution: {integrity: sha512-3ngTAv6F/Py35BsYbeeLeecvhMKdsKm4AoOETVhAA+Qc8nrA2I0kF7oa93mE9qnIurngOSpMnQ0x2nQY2FPviA==}
+
+  '@tabler/icons-vue@3.41.1':
+    resolution: {integrity: sha512-OLLWlyrx6HdQpdgnZ8dO8uBGIIZwQDPgE8Gl6tUuAD7AgtfnmtFz8vb7dTEvxddM5CMpPt21ogPpBhJfEjSY+Q==}
+    peerDependencies:
+      vue: '>=3.0.1'
+
+  '@tabler/icons@3.41.1':
+    resolution: {integrity: sha512-OaRnVbRmH2nHtFeg+RmMJ/7m2oBIF9XCJAUD5gQnMrpK9f05ydj8MZrAf3NZQqOXyxGN1UBL0D5IKLLEUfr74Q==}
 
   '@tiptap/core@2.27.2':
     resolution: {integrity: sha512-ABL1N6eoxzDzC1bYvkMbvyexHacszsKdVPYqhl5GwHLOvpZcv9VE9QaKwDILTyz5voCA0lGcAAXZp+qnXOk5lQ==}
@@ -2773,13 +2769,6 @@ packages:
     peerDependencies:
       eslint: ^8.57.0 || ^9.0.0 || ^10.0.0
 
-  vue-i18n@11.1.10:
-    resolution: {integrity: sha512-C+IwnSg8QDSOAox0gdFYP5tsKLx5jNWxiawNoiNB/Tw4CReXmM1VJMXbduhbrEzAFLhreqzfDocuSVjGbxQrag==}
-    engines: {node: '>= 16'}
-    deprecated: This version is NOT deprecated. Previous deprecation was a mistake.
-    peerDependencies:
-      vue: ^3.0.0
-
   vue-router@4.2.5:
     resolution: {integrity: sha512-DIUpKcyg4+PTQKfFPX88UWhlagBEBEfJ5A8XDXRJLUnZOvcpMF8o/dnL90vpVkGaPbjvXazV/rC1qBKrZlFugw==}
     peerDependencies:
@@ -3096,18 +3085,6 @@ snapshots:
       '@iconify/types': 2.0.0
       vue: 3.5.11(typescript@5.9.3)
 
-  '@intlify/core-base@11.1.10':
-    dependencies:
-      '@intlify/message-compiler': 11.1.10
-      '@intlify/shared': 11.1.10
-
-  '@intlify/message-compiler@11.1.10':
-    dependencies:
-      '@intlify/shared': 11.1.10
-      source-map-js: 1.2.1
-
-  '@intlify/shared@11.1.10': {}
-
   '@jridgewell/gen-mapping@0.3.13':
     dependencies:
       '@jridgewell/sourcemap-codec': 1.5.5
@@ -3235,6 +3212,13 @@ snapshots:
   '@rolldown/pluginutils@1.0.0-rc.12': {}
 
   '@rolldown/pluginutils@1.0.0-rc.13': {}
+
+  '@tabler/icons-vue@3.41.1(vue@3.5.11(typescript@5.9.3))':
+    dependencies:
+      '@tabler/icons': 3.41.1
+      vue: 3.5.11(typescript@5.9.3)
+
+  '@tabler/icons@3.41.1': {}
 
   '@tiptap/core@2.27.2(@tiptap/pm@2.7.4)':
     dependencies:
@@ -5527,13 +5511,6 @@ snapshots:
       semver: 7.7.4
     transitivePeerDependencies:
       - supports-color
-
-  vue-i18n@11.1.10(vue@3.5.11(typescript@5.9.3)):
-    dependencies:
-      '@intlify/core-base': 11.1.10
-      '@intlify/shared': 11.1.10
-      '@vue/devtools-api': 6.6.4
-      vue: 3.5.11(typescript@5.9.3)
 
   vue-router@4.2.5(vue@3.5.11(typescript@5.9.3)):
     dependencies:

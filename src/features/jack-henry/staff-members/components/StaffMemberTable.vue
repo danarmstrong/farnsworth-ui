@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
+import { RouterLink } from 'vue-router';
 import { useStaffMemberStore } from '@/features/jack-henry/staff-members/stores/staffMemberStore';
 import StaffMemberForm, { type StaffMemberFormSubmitPayload } from '@/features/jack-henry/staff-members/components/StaffMemberForm.vue';
 import { useJobTitleStore } from '@/features/jack-henry/job-titles/stores/jobTitleStore';
@@ -31,21 +32,13 @@ const isBusy = computed(() => saving.value || deleting.value || store.loading);
 const filteredList = computed(() => {
     const normalizedSearch = search.value.toLowerCase();
     return store.staffMembers.filter((m: StaffMember) => {
-        const hay = [
-            m.firstName,
-            m.lastName,
-            m.email,
-            m.employeeNumber ?? '',
-            `${m.firstName} ${m.lastName}`
-        ]
-            .join(' ')
-            .toLowerCase();
+        const hay = [m.firstName, m.lastName, m.email, m.employeeNumber ?? '', `${m.firstName} ${m.lastName}`].join(' ').toLowerCase();
         return hay.includes(normalizedSearch);
     });
 });
 
 const jobTitleLabelById = computed(() => {
-    return new Map(jobTitleStore.jobTitles.map((jt) => [jt.id, `${jt.title} (${jt.jobCode})`]));
+    return new Map(jobTitleStore.jobTitles.map((jt) => [jt.id, jt.title]));
 });
 
 const costCenterLabelById = computed(() => {
@@ -53,9 +46,7 @@ const costCenterLabelById = computed(() => {
 });
 
 const staffNameById = computed(() => {
-    return new Map(
-        store.staffMembers.map((m) => [m.id, `${m.firstName} ${m.lastName}`.trim() || m.email])
-    );
+    return new Map(store.staffMembers.map((m) => [m.id, `${m.firstName} ${m.lastName}`.trim() || m.email]));
 });
 
 function getJobTitleLabel(jobTitleId: string): string {
@@ -145,7 +136,6 @@ async function save(payload: StaffMemberFormSubmitPayload) {
                 <thead>
                     <tr>
                         <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-name">Name</th>
-                        <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-email">Email</th>
                         <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-code">Job title</th>
                         <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-note">Cost center</th>
                         <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-manager">Manager</th>
@@ -155,14 +145,29 @@ async function save(payload: StaffMemberFormSubmitPayload) {
                 </thead>
                 <tbody>
                     <tr v-if="store.loading && !store.staffMembers.length">
-                        <td colspan="7" class="text-subtitle-1 text-center py-6">Loading staff members...</td>
+                        <td colspan="6" class="text-subtitle-1 text-center py-6">Loading staff members...</td>
                     </tr>
                     <tr v-else-if="!filteredList.length">
-                        <td colspan="7" class="text-subtitle-1 text-center py-6">No staff members found.</td>
+                        <td colspan="6" class="text-subtitle-1 text-center py-6">No staff members found.</td>
                     </tr>
                     <tr v-else v-for="item in filteredList" :key="item.id">
-                        <td class="text-subtitle-1 text-no-wrap col-name">{{ item.firstName }} {{ item.lastName }}</td>
-                        <td class="text-subtitle-1 text-no-wrap col-email">{{ item.email }}</td>
+                        <td class="text-subtitle-1 text-no-wrap col-name">
+                            <div>
+                                <h4 class="text-subtitle-1 font-weight-semibold text-no-wrap">
+                                    <RouterLink
+                                        v-if="item.id"
+                                        :to="{ name: 'Staff Member Detail', params: { id: item.id } }"
+                                        class="text-primary text-decoration-none font-weight-medium"
+                                    >
+                                        {{ item.firstName }} {{ item.lastName }}
+                                    </RouterLink>
+                                    <template v-else>{{ item.firstName }} {{ item.lastName }}</template>
+                                </h4>
+                                <span class="text-subtitle-1 d-block mt-1 textSecondary">
+                                    {{ item.email }}
+                                </span>
+                            </div>
+                        </td>
                         <td class="text-subtitle-1 text-no-wrap col-code">{{ getJobTitleLabel(item.jobTitleId) }}</td>
                         <td class="text-subtitle-1 text-no-wrap col-note">{{ getCostCenterLabel(item.costCenterId) }}</td>
                         <td class="text-subtitle-1 text-no-wrap col-manager">{{ getManagerLabel(item.managerId) }}</td>

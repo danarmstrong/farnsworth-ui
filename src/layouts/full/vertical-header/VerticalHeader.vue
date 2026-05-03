@@ -3,7 +3,6 @@ import { ref, watch, computed, onBeforeMount } from 'vue';
 import { useCustomizerStore } from '../../../stores/customizer';
 import { useEcomStore } from '@/stores/apps/eCommerce';
 import { DotsIcon } from 'vue-tabler-icons';
-import LanguageDD from './LanguageDD.vue';
 import NotificationDD from './NotificationDD.vue';
 import ProfileDD from './ProfileDD.vue';
 import Searchbar from './Searchbar.vue';
@@ -92,10 +91,6 @@ function handleScroll() {
                 <div class="me-sm-4 me-0">
                     <ThemeToggler />
                 </div>
-                <!--                <div class="hidden-sm-and-down me-sm-4 me-4">
-                    <LanguageDD />
-                </div>-->
-
                 <!-- ---------------------------------------------- -->
                 <!-- ShoppingCart -->
                 <!-- ---------------------------------------------- -->
@@ -129,7 +124,6 @@ function handleScroll() {
 
                     <v-sheet rounded="lg" elevation="10" class="mt-5 dropdown-box px-4 py-6">
                         <div class="d-flex justify-space-between align-center">
-                            <LanguageDD />
                             <v-btn icon variant="text" class="mr-sm-3 mr-2 custom-hover-primary" to="/ecommerce/checkout" size="small">
                                 <v-badge color="primary" :content="getCart?.length" offset-x="-4" offset-y="-6">
                                     <Icon icon="solar:cart-3-line-duotone" height="24" width="24" />

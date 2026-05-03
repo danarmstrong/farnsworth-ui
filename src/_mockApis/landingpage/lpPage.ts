@@ -229,8 +229,8 @@ const listFeature: ListFeatureTypes[] = [
     },
     {
         icon: LanguageKatakanaIcon,
-        title: 'i18n Vue',
-        subtitle: 'Vue i18n is a powerful internationalization framework for Vue.',
+        title: 'Localization Ready',
+        subtitle: 'Built to support internationalized content with your preferred localization tools.',
         bgcolor: 'primary'
     },
     {

@@ -7,14 +7,14 @@ const MainRoutes = {
     component: () => import('@/layouts/full/FullLayout.vue'),
     children: [
         {
-            name: 'Staff',
-            path: '/staff',
-            component: () => import('@/views/jack-henry/staff/StaffView.vue')
-        },
-        {
             name: 'Staff Members',
             path: '/staff-members',
             component: () => import('@/views/jack-henry/staff-members/StaffMembersView.vue')
+        },
+        {
+            name: 'Staff Member Detail',
+            path: '/staff-members/:id',
+            component: () => import('@/views/jack-henry/staff-members/StaffMemberDetailView.vue')
         },
         // Admin routes
         {

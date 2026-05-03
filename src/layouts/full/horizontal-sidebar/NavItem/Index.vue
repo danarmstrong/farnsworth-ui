@@ -15,7 +15,7 @@ const props = defineProps({ item: Object, level: Number });
         <span class="" v-if="level > 0">
             <div class="z-index-1 d-flex align-center">
                 <span class="sublink-dot mr-4"></span>
-                <span>{{ $t(item.title) }}</span>
+                <span>{{ item.title }}</span>
             </div>
         </span>
         <span v-else>
@@ -29,7 +29,7 @@ const props = defineProps({ item: Object, level: Number });
                         :class="'position-relative z-index-2 texthover-' + item.BgColor"
                     />
                 </i>
-                <span class="z-index-1 ml-3">{{ $t(item.title) }}</span>
+                <span class="z-index-1 ml-3">{{ item.title }}</span>
             </span>
         </span>
         <!---If Caption-->
