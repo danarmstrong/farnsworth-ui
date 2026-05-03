@@ -14,18 +14,7 @@ import LoginForm from '@/features/auth/components/LoginForm.vue';
                                 <div class="d-flex justify-center mb-5">
                                     <Logo />
                                 </div>
-                                <!-- <div class="text-h6 text-medium-emphasis text-center mb-6">Your Social Campaigns</div> -->
                                 <LoginForm />
-                                <h6 class="text-subtitle-1 text-grey100 d-flex justify-center align-center mt-3">
-                                    New to Spike?
-                                    <v-btn
-                                        class="pl-0 text-primary text-body-1 opacity-1 pl-2"
-                                        height="auto"
-                                        to="/auth/register"
-                                        variant="plain"
-                                        >Create an account</v-btn
-                                    >
-                                </h6>
                             </v-card-item>
                         </v-card>
                     </div>

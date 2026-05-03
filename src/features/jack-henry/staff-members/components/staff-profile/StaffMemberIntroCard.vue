@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { BrandSkypeIcon, MailIcon, MapPinIcon, PhoneIcon, IdIcon } from 'vue-tabler-icons';
+import { IconBrandTeams, IconBrandSlack, IconBrandJira, IconBrandGithub } from '@tabler/icons-vue';
 import type { StaffMember } from '@/features/jack-henry/staff-members/types/StaffMember';
 
 defineProps<{
@@ -64,7 +65,7 @@ function dash(value: string | null | undefined): string {
                     <h4 class="text-h5 mb-4">Integrations</h4>
                     <div class="d-flex align-center mb-5">
                         <v-avatar size="40" class="bg-lightinfo">
-                            <BrandSlackIcon size="20" stroke-width="1.5" class="text-info" />
+                            <IconBrandSlack size="20" stroke-width="1.5" class="text-info" />
                         </v-avatar>
                         <div class="ml-3">
                             <h5 class="text-subtitle-1 font-weight-semibold text-grey200 mb-1">Slack</h5>
@@ -73,7 +74,7 @@ function dash(value: string | null | undefined): string {
                     </div>
                     <div class="d-flex align-center mb-5">
                         <v-avatar size="40" class="bg-lightindigo">
-                            <BrandTeamsIcon size="20" stroke-width="1.5" class="text-indigo" />
+                            <IconBrandTeams size="20" stroke-width="1.5" class="text-indigo" />
                         </v-avatar>
                         <div class="ml-3">
                             <h5 class="text-subtitle-1 font-weight-semibold text-grey200 mb-1">Teams</h5>
@@ -84,7 +85,7 @@ function dash(value: string | null | undefined): string {
                     </div>
                     <div class="d-flex align-center mb-5">
                         <v-avatar size="40" class="bg-lightindigo">
-                            <BrandGithubIcon size="20" stroke-width="1.5" class="text-indigo" />
+                            <IconBrandGithub size="20" stroke-width="1.5" class="text-indigo" />
                         </v-avatar>
                         <div class="ml-3">
                             <h5 class="text-subtitle-1 font-weight-semibold text-grey200 mb-1">GitHub</h5>
@@ -95,7 +96,7 @@ function dash(value: string | null | undefined): string {
                     </div>
                     <div class="d-flex align-center">
                         <v-avatar size="40" class="bg-lightindigo">
-                            <BrandJiraIcon size="20" stroke-width="1.5" class="text-indigo" />
+                            <IconBrandJira size="20" stroke-width="1.5" class="text-indigo" />
                         </v-avatar>
                         <div class="ml-3">
                             <h5 class="text-subtitle-1 font-weight-semibold text-grey200 mb-1">Jira</h5>

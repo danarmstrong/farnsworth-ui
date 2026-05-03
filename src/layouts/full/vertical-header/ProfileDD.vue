@@ -1,10 +1,21 @@
 <script setup lang="ts">
-import { CircleXIcon, MailIcon } from 'vue-tabler-icons';
+import { computed } from 'vue';
+import { CircleXIcon } from 'vue-tabler-icons';
 import { profileDD } from '@/_mockApis/headerData';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { Icon } from '@iconify/vue';
 
 const authStore = useAuthStore();
+
+const displayName = computed(() => {
+    const u = authStore.user;
+    if (!u) return 'User';
+    const parts = [u.firstName?.trim(), u.lastName?.trim()].filter(Boolean);
+    if (parts.length) return parts.join(' ');
+    return u.email?.trim() || 'User';
+});
+
+const displayEmail = computed(() => authStore.user?.email?.trim() ?? '');
 </script>
 
 <template>
@@ -19,8 +30,8 @@ const authStore = useAuthStore();
                     <!--                        <img src="@/assets/images/profile/user6.jpg" width="50" alt="Mike Nielsen" />-->
                     <!--                    </v-avatar>-->
                     <div class="ml-md-4 d-md-block d-none">
-                        <h6 class="text-h6 d-flex align-center text-black font-weight-semibold">Mike Nielsen</h6>
-                        <span class="text-subtitle-2 font-weight-medium text-grey100">Admin</span>
+                        <h6 class="text-h6 d-flex align-center text-black font-weight-semibold">{{ displayName }}</h6>
+                        <span v-if="displayEmail" class="text-subtitle-2 font-weight-medium text-grey100">{{ displayEmail }}</span>
                     </div>
                 </div>
             </div>
@@ -37,12 +48,8 @@ const authStore = useAuthStore();
                         <img src="@/assets/images/profile/user6.jpg" width="90" />
                     </v-avatar>
                     <div class="ml-5">
-                        <h6 class="text-h5 mb-n1">Mike Nielsen</h6>
-                        <span class="text-subtitle-1 font-weight-regular text-grey100 font-weight-medium">Admin</span>
-                        <div class="d-flex align-center mt-1">
-                            <MailIcon size="18" stroke-width="1.5" class="text-grey100" />
-                            <span class="text-subtitle-1 text-grey100 font-weight-medium ml-2">info@spikeadmin.com</span>
-                        </div>
+                        <h6 class="text-h5 mb-n1">{{ displayName }}</h6>
+                        <span v-if="displayEmail" class="text-subtitle-1 font-weight-regular text-grey100 font-weight-medium">{{ displayEmail }}</span>
                     </div>
                 </div>
                 <v-divider></v-divider>

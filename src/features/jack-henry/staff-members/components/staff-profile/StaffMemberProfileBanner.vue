@@ -16,9 +16,8 @@ const isActive = computed(() => !props.member.endDate);
 </script>
 
 <template>
-    <img :src="profileBg" alt="profile" class="w-100" />
-    <div class="mx-sm-5">
-        <v-card elevation="10" class="overflow-hidden mt-sm-n13 mt-n5">
+    <div>
+        <v-card elevation="10" class="overflow-hidden">
             <v-card-item class="pb-6">
                 <v-row class="mt-1 justify-space-between">
                     <v-col cols="12" md="12" sm="12" class="pt-0">
