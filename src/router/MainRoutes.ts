@@ -9,23 +9,38 @@ const MainRoutes = {
         {
             name: 'Staff',
             path: '/staff',
-            component: () => import('../views/jack-henry/staff/StaffView.vue')
+            component: () => import('@/views/jack-henry/staff/StaffView.vue')
+        },
+        {
+            name: 'Staff Members',
+            path: '/staff-members',
+            component: () => import('@/views/jack-henry/staff-members/StaffMembersView.vue')
         },
         // Admin routes
         {
             name: 'Salary Plans',
             path: '/admin/salary-plans',
-            component: () => import('@/views/admin/salary-plans/SalaryPlansView.vue')
+            component: () => import('@/views/admin/SalaryPlansView.vue')
         },
         {
             name: 'Pay Grades',
             path: '/admin/pay-grades',
-            component: () => import('@/views/admin/pay-grades/PayGradesView.vue')
+            component: () => import('@/views/admin/PayGradesView.vue')
         },
         {
             name: 'Job Families',
             path: '/admin/job-families',
-            component: () => import('@/views/admin/job-families/JobFamiliesView.vue')
+            component: () => import('@/views/admin/JobFamiliesView.vue')
+        },
+        {
+            name: 'Job Titles',
+            path: '/admin/job-titles',
+            component: () => import('@/views/admin/JobTitlesView.vue')
+        },
+        {
+            name: 'Cost Centers',
+            path: '/admin/cost-centers',
+            component: () => import('@/views/admin/CostCentersView.vue')
         },
         // Legacy template routes
         {

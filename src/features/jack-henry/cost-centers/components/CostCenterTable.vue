@@ -1,40 +1,41 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useJobFamilyStore } from '@/features/jack-henry/job-families/stores/jobFamilyStore';
-import JobFamilyForm from '@/features/jack-henry/job-families/components/JobFamilyForm.vue';
-import type { JobFamily } from '@/features/jack-henry/job-families/types/JobFamily';
+import { useCostCenterStore } from '@/features/jack-henry/cost-centers/stores/costCenterStore';
+import CostCenterForm from '@/features/jack-henry/cost-centers/components/CostCenterForm.vue';
+import type { CostCenter } from '@/features/jack-henry/cost-centers/types/CostCenter';
 import { useConfirm } from '@/utils/helpers/useConfirm';
 
-type JobFamilyFormSubmitPayload = {
+type CostCenterFormSubmitPayload = {
     id?: string;
-    description: string;
+    departmentNumber: string;
+    name: string;
 };
 
-const store = useJobFamilyStore();
+const store = useCostCenterStore();
 const confirm = useConfirm();
 
 onMounted(() => {
-    store.fetchJobFamilies();
+    store.fetchCostCenters();
 });
 
 const search = ref('');
 const saving = ref(false);
 const deleting = ref(false);
-const jobFamilyFormRef = ref<InstanceType<typeof JobFamilyForm> | null>(null);
+const costCenterFormRef = ref<InstanceType<typeof CostCenterForm> | null>(null);
 const isBusy = computed(() => saving.value || deleting.value || store.loading);
 
 //Methods
 const filteredList = computed(() => {
     const normalizedSearch = search.value.toLowerCase();
-    return store.jobFamilies.filter((jobFamily: JobFamily) => {
-        return jobFamily.description.toLowerCase().includes(normalizedSearch);
+    return store.costCenters.filter((costCenter: CostCenter) => {
+        return costCenter.departmentNumber.toLowerCase().includes(normalizedSearch) || costCenter.name.toLowerCase().includes(normalizedSearch);
     });
 });
 
-function editItem(item: JobFamily) {
-    jobFamilyFormRef.value?.openEdit(item);
+function editItem(item: CostCenter) {
+    costCenterFormRef.value?.openEdit(item);
 }
-async function deleteItem(item: JobFamily) {
+async function deleteItem(item: CostCenter) {
     if (isBusy.value || !item.id) {
         return;
     }
@@ -46,7 +47,7 @@ async function deleteItem(item: JobFamily) {
 
     deleting.value = true;
     try {
-        await store.deleteJobFamily(item.id);
+        await store.deleteCostCenter(item.id);
     } finally {
         deleting.value = false;
     }
@@ -56,21 +57,23 @@ function clearStoreError() {
     store.clearError();
 }
 
-async function save(payload: JobFamilyFormSubmitPayload) {
+async function save(payload: CostCenterFormSubmitPayload) {
     saving.value = true;
     try {
         if (payload.id) {
-            await store.updateJobFamily(payload.id, {
-                description: payload.description
+            await store.updateCostCenter(payload.id, {
+                departmentNumber: payload.departmentNumber,
+                name: payload.name
             });
         } else {
-            await store.createJobFamily({
-                description: payload.description
+            await store.createCostCenter({
+                departmentNumber: payload.departmentNumber,
+                name: payload.name
             });
         }
 
         if (!store.error) {
-            jobFamilyFormRef.value?.close();
+            costCenterFormRef.value?.close();
         }
     } finally {
         saving.value = false;
@@ -81,11 +84,11 @@ async function save(payload: JobFamilyFormSubmitPayload) {
 <template>
     <v-row>
         <v-col cols="12" lg="4" md="6">
-            <v-text-field density="compact" v-model="search" label="Search Job Families" hide-details variant="outlined"></v-text-field>
+            <v-text-field density="compact" v-model="search" label="Search Cost Centers" hide-details variant="outlined"></v-text-field>
         </v-col>
         <v-col cols="12" lg="8" md="6" class="text-right">
-            <JobFamilyForm
-                ref="jobFamilyFormRef"
+            <CostCenterForm
+                ref="costCenterFormRef"
                 :saving="saving"
                 :submit-disabled="isBusy"
                 :error="store.error"
@@ -98,22 +101,24 @@ async function save(payload: JobFamilyFormSubmitPayload) {
     <!-- The data table -->
     <perfect-scrollbar class="no-scrollbar">
         <div class="border-table">
-            <v-table class="mt-5 job-family-table">
+            <v-table class="mt-5 cost-center-table">
                 <thead>
                     <tr>
-                        <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-note">Description</th>
+                        <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-code">Department Number</th>
+                        <th class="text-subtitle-1 font-weight-semibold col-note">Department Name</th>
                         <th class="text-subtitle-1 font-weight-semibold text-no-wrap text-right col-actions">Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-if="store.loading && !store.jobFamilies.length">
-                        <td colspan="2" class="text-subtitle-1 text-center py-6">Loading pay grades...</td>
+                    <tr v-if="store.loading && !store.costCenters.length">
+                        <td colspan="3" class="text-subtitle-1 text-center py-6">Loading cost centers...</td>
                     </tr>
                     <tr v-else-if="!filteredList.length">
-                        <td colspan="2" class="text-subtitle-1 text-center py-6">No pay grades found.</td>
+                        <td colspan="3" class="text-subtitle-1 text-center py-6">No cost centers found.</td>
                     </tr>
                     <tr v-else v-for="item in filteredList" :key="item.id">
-                        <td class="text-subtitle-1 text-no-wrap col-note">{{ item.description }}</td>
+                        <td class="text-subtitle-1 text-no-wrap col-code">{{ item.departmentNumber }}</td>
+                        <td class="text-subtitle-1 col-note">{{ item.name }}</td>
                         <td class="text-right text-no-wrap col-actions">
                             <div class="d-flex align-center justify-end">
                                 <v-tooltip text="Edit">
@@ -140,7 +145,7 @@ async function save(payload: JobFamilyFormSubmitPayload) {
 </template>
 
 <style lang="scss">
-.job-family-table {
+.cost-center-table {
     .v-table__wrapper > table {
         width: 100%;
     }

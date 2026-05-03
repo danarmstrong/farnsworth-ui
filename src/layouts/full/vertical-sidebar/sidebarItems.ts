@@ -23,24 +23,39 @@ const sidebarItems: menu[] = [
         BgColor: 'primary',
         to: '/staff'
     },
-    { header: 'Admin' },
     {
-        title: 'Salary Plans',
-        icon: 'dollar-line-duotone',
+        title: 'Staff Members',
+        icon: 'users-group-rounded-line-duotone',
         BgColor: 'primary',
-        to: '/admin/salary-plans'
+        to: '/staff-members'
     },
     {
-        title: 'Pay Grades',
-        icon: 'dollar-line-duotone',
+        title: 'Admin',
+        icon: 'settings-minimalistic-line-duotone',
         BgColor: 'primary',
-        to: '/admin/pay-grades'
-    },
-    {
-        title: 'Job Families',
-        icon: 'dollar-line-duotone',
-        BgColor: 'primary',
-        to: '/admin/job-families'
+        to: '/admin',
+        children: [
+            {
+                title: 'Salary Plans',
+                to: '/admin/salary-plans'
+            },
+            {
+                title: 'Pay Grades',
+                to: '/admin/pay-grades'
+            },
+            {
+                title: 'Job Families',
+                to: '/admin/job-families'
+            },
+            {
+                title: 'Job Titles',
+                to: '/admin/job-titles'
+            },
+            {
+                title: 'Cost Centers',
+                to: '/admin/cost-centers'
+            }
+        ]
     },
     { header: 'Home' },
     {
