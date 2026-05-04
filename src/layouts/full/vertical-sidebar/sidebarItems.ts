@@ -24,6 +24,18 @@ const sidebarItems: menu[] = [
         to: '/staff-members'
     },
     {
+        title: 'Calendars',
+        icon: 'calendar-line-duotone',
+        BgColor: 'info',
+        to: '/calendars/team-calendar',
+        children: [
+            {
+                title: 'Team Calendar',
+                to: '/calendars/team-calendar'
+            }
+        ]
+    },
+    {
         title: 'Admin',
         icon: 'settings-minimalistic-line-duotone',
         BgColor: 'primary',

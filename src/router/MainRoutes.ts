@@ -16,6 +16,11 @@ const MainRoutes = {
             path: '/staff-members/:id',
             component: () => import('@/views/jack-henry/staff-members/StaffMemberDetailView.vue')
         },
+        {
+            name: 'Team Calendar',
+            path: '/calendars/team-calendar',
+            component: () => import('@/views/jack-henry/calendars/TeamCalendarView.vue')
+        },
         // Admin routes
         {
             name: 'Salary Plans',

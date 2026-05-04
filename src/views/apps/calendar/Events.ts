@@ -35,9 +35,9 @@ export const INITIAL_EVENTS: EventInput[] = [
     {
         id: createEventId(),
         title: 'Lunch with Mr.Raw',
-        start: new Date(y, m, d - 2),
-        end: new Date(y, m, d - 2),
-        allDay: true,
+        start: new Date(y, m, d - 2, 13, 0, 0),
+        end: new Date(y, m, d - 2, 15, 0, 0),
+        allDay: false,
         color: '#1a97f5'
     },
     {
