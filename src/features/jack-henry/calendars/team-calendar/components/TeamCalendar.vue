@@ -95,8 +95,8 @@ function loadTeamCalendarEvents(
     void (async () => {
         try {
             const result = await teamCalendarStore.fetchEvents({
-                startFromUtc: fetchInfo.start.toISOString(),
-                startToUtc: fetchInfo.end.toISOString()
+                startUtc: fetchInfo.start.toISOString(),
+                endUtc: fetchInfo.end.toISOString()
             });
             if (mySeq !== teamCalendarEventsLoadSeq || result === 'stale') {
                 return;

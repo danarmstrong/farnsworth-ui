@@ -11,27 +11,27 @@ import { isAxiosError } from 'axios';
 const teamCalendarPath = '/team-calendar';
 
 export type FetchTeamCalendarEventsParams = {
-    startFromUtc: string;
-    startToUtc: string;
+    startUtc: string;
+    endUtc: string;
     staffMemberId?: string;
 };
 
 export type FetchEventsResult = 'applied' | 'skipped-dedupe' | 'stale';
 
 function rangeKey(p: FetchTeamCalendarEventsParams): string {
-    return `${p.startFromUtc}\0${p.startToUtc}\0${p.staffMemberId ?? ''}`;
+    return `${p.startUtc}\0${p.endUtc}\0${p.staffMemberId ?? ''}`;
 }
 
 /** Widen the list window so UTC calendar-midnight events align with FullCalendar local `datesSet` bounds. */
 const RANGE_PAD_MS = 2 * 24 * 60 * 60 * 1000;
 
 function padRangeForUtcAllDayOverlap(range: FetchTeamCalendarEventsParams): FetchTeamCalendarEventsParams {
-    const startMs = new Date(range.startFromUtc).getTime() - RANGE_PAD_MS;
-    const endMs = new Date(range.startToUtc).getTime() + RANGE_PAD_MS;
+    const startMs = new Date(range.startUtc).getTime() - RANGE_PAD_MS;
+    const endMs = new Date(range.endUtc).getTime() + RANGE_PAD_MS;
     return {
         ...range,
-        startFromUtc: new Date(startMs).toISOString(),
-        startToUtc: new Date(endMs).toISOString()
+        startUtc: new Date(startMs).toISOString(),
+        endUtc: new Date(endMs).toISOString()
     };
 }
 
@@ -77,8 +77,8 @@ export const useTeamCalendarStore = defineStore('teamCalendar', () => {
         loading.value = true;
         try {
             const params: Record<string, string> = {
-                startFromUtc: queryRange.startFromUtc,
-                startToUtc: queryRange.startToUtc
+                startUtc: queryRange.startUtc,
+                endUtc: queryRange.endUtc
             };
             if (queryRange.staffMemberId) {
                 params.staffMemberId = queryRange.staffMemberId;

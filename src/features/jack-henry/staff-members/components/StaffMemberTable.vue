@@ -31,10 +31,18 @@ const isBusy = computed(() => saving.value || deleting.value || store.loading);
 
 const filteredList = computed(() => {
     const normalizedSearch = search.value.toLowerCase();
-    return store.staffMembers.filter((m: StaffMember) => {
+    const filtered = store.staffMembers.filter((m: StaffMember) => {
         const hay = [m.firstName, m.lastName, m.email, m.employeeNumber ?? '', `${m.firstName} ${m.lastName}`].join(' ').toLowerCase();
         return hay.includes(normalizedSearch);
     });
+    const byName = (a: StaffMember, b: StaffMember) => {
+        const last = a.lastName.localeCompare(b.lastName, undefined, { sensitivity: 'base' });
+        if (last !== 0) {
+            return last;
+        }
+        return a.firstName.localeCompare(b.firstName, undefined, { sensitivity: 'base' });
+    };
+    return [...filtered].sort(byName);
 });
 
 const jobTitleLabelById = computed(() => {

@@ -47,6 +47,11 @@ const MainRoutes = {
             path: '/admin/cost-centers',
             component: () => import('@/views/admin/CostCentersView.vue')
         },
+        {
+            name: 'CAP Projects',
+            path: '/admin/cap-projects',
+            component: () => import('@/views/admin/CapProjectsView.vue')
+        },
         // Legacy template routes
         {
             name: 'dashboard',

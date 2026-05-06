@@ -13,6 +13,8 @@ export interface menu {
     disabled?: boolean;
     type?: string;
     subCaption?: string;
+    /** When true, `VerticalSidebar` replaces `children` with CAP projects from the API (titles use `projectName`). */
+    dynamicCapProjects?: boolean;
 }
 
 const sidebarItems: menu[] = [
@@ -34,6 +36,14 @@ const sidebarItems: menu[] = [
                 to: '/calendars/team-calendar'
             }
         ]
+    },
+    {
+        title: 'CAP Projects',
+        icon: 'widget-add-line-duotone',
+        BgColor: 'success',
+        to: '/admin/cap-projects',
+        dynamicCapProjects: true,
+        children: []
     },
     {
         title: 'Admin',
@@ -60,6 +70,10 @@ const sidebarItems: menu[] = [
             {
                 title: 'Cost Centers',
                 to: '/admin/cost-centers'
+            },
+            {
+                title: 'CAP Projects',
+                to: '/admin/cap-projects'
             }
         ]
     },

@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, shallowRef } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useCustomizerStore } from '@/stores/customizer';
-import sidebarItems from './sidebarItems';
+import { useCapProjectStore } from '@/features/jack-henry/cap-projects/stores/capProjectStore';
+import sidebarItems, { type menu } from './sidebarItems';
 
 import NavGroup from './NavGroup/index.vue';
 import NavItem from './NavItem/index.vue';
@@ -12,7 +13,26 @@ import Logo from '../logo/Logo.vue';
 import { Icon } from '@iconify/vue';
 
 const customizer = useCustomizerStore();
-const sidebarMenu = shallowRef(sidebarItems);
+const capProjectStore = useCapProjectStore();
+
+onMounted(() => {
+    void capProjectStore.fetchCapProjects();
+});
+
+const sidebarMenu = computed((): menu[] =>
+    sidebarItems.map((item) => {
+        if (item.dynamicCapProjects) {
+            return {
+                ...item,
+                children: capProjectStore.capProjects.map((p) => ({
+                    title: p.projectName,
+                    to: `/admin/cap-projects?projectId=${encodeURIComponent(p.id)}`
+                }))
+            };
+        }
+        return item;
+    })
+);
 </script>
 
 <template>
