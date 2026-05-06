@@ -26,9 +26,7 @@ const targetMonthParam = computed(() => {
     return `${y}-${m}-01`;
 });
 
-const monthLabel = computed(() =>
-    targetMonth.value.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })
-);
+const monthLabel = computed(() => targetMonth.value.toLocaleDateString(undefined, { month: 'long', year: 'numeric' }));
 
 const moneyFmt = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
 const rateFmt = new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', minimumFractionDigits: 2 });
@@ -121,18 +119,28 @@ watch(
             <template v-if="projectName">{{ projectName }}</template>
         </p>
 
-        <v-alert v-if="store.reportError" type="error" variant="tonal" density="compact" class="mb-4" closable @click:close="store.clearReportError">
+        <v-alert
+            v-if="store.reportError"
+            type="error"
+            variant="tonal"
+            density="compact"
+            class="mb-4"
+            closable
+            @click:close="store.clearReportError"
+        >
             {{ store.reportError }}
         </v-alert>
 
         <div v-if="store.reportLoading" class="text-subtitle-1 text-center py-8">Loading report…</div>
 
         <template v-else-if="!store.reportError">
-            <p v-if="!store.capReports.length" class="text-subtitle-1 text-center py-8 text-medium-emphasis">No report data for this month.</p>
+            <p v-if="!store.capReports.length" class="text-subtitle-1 text-center py-8 text-medium-emphasis">
+                No report data for this month.
+            </p>
 
             <div v-for="(report, idx) in store.capReports" :key="`${report.date}-${report.costCenter.id}-${idx}`" class="mb-10">
-                <h6 class="text-h6 font-weight-semibold mb-1">{{ formatReportHeading(report.date) }}</h6>
-                <p class="text-body-2 text-medium-emphasis mb-3">{{ formatCostCenterLabel(report.costCenter) }}</p>
+                <h6 class="text-h6 font-weight-semibold mb-1">{{ formatCostCenterLabel(report.costCenter) }}</h6>
+                <p class="text-body-2 text-medium-emphasis mb-3"></p>
                 <div class="border-table">
                     <v-table class="cap-project-report-table">
                         <thead>
@@ -166,7 +174,9 @@ watch(
                                 <td colspan="6" class="text-end text-medium-emphasis text-body-2">Totals</td>
                                 <td class="text-subtitle-1 font-weight-semibold text-end">{{ report.businessDays }}</td>
                                 <td class="text-subtitle-1 font-weight-semibold text-end">{{ report.totalCapHours }}</td>
-                                <td class="text-subtitle-1 font-weight-semibold text-end text-no-wrap">{{ formatMoney(report.totalCapDollars) }}</td>
+                                <td class="text-subtitle-1 font-weight-semibold text-end text-no-wrap">
+                                    {{ formatMoney(report.totalCapDollars) }}
+                                </td>
                             </tr>
                         </tfoot>
                     </v-table>

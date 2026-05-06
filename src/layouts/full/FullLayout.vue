@@ -22,18 +22,6 @@ const customizer = useCustomizerStore();
                 customizer.setBorderCard ? 'cardBordered' : ''
             ]"
         >
-            <!---Customizer location left side--->
-            <v-navigation-drawer
-                app
-                temporary
-                elevation="10"
-                location="left"
-                v-model="customizer.Customizer_drawer"
-                width="320"
-                class="left-customizer"
-            >
-                <Customizer />
-            </v-navigation-drawer>
             <VerticalSidebarVue v-if="!customizer.setHorizontalLayout" />
             <div :class="customizer.boxed ? 'maxWidth' : 'full-header'"><VerticalHeaderVue v-if="!customizer.setHorizontalLayout" /></div>
             <div :class="customizer.boxed ? 'maxWidth' : 'full-header'"><HorizontalHeader v-if="customizer.setHorizontalLayout" /></div>
@@ -45,16 +33,6 @@ const customizer = useCustomizerStore();
                         <div class="">
                             <div :class="customizer.boxed ? 'maxWidth' : ''">
                                 <RouterView />
-                                <v-btn
-                                    class="customizer-btn"
-                                    size="large"
-                                    icon
-                                    variant="flat"
-                                    color="primary"
-                                    @click.stop="customizer.SET_CUSTOMIZER_DRAWER(!customizer.Customizer_drawer)"
-                                >
-                                    <SettingsIcon />
-                                </v-btn>
                             </div>
                         </div>
                     </v-container>
@@ -75,10 +53,6 @@ const customizer = useCustomizerStore();
                 customizer.setBorderCard ? 'cardBordered' : ''
             ]"
         >
-            <!---Customizer location right side--->
-            <v-navigation-drawer app temporary elevation="10" location="right" v-model="customizer.Customizer_drawer" width="320">
-                <Customizer />
-            </v-navigation-drawer>
             <VerticalSidebarVue v-if="!customizer.setHorizontalLayout" />
             <div :class="customizer.boxed ? 'maxWidth' : 'full-header'"><VerticalHeaderVue v-if="!customizer.setHorizontalLayout" /></div>
             <div :class="customizer.boxed ? 'maxWidth' : 'full-header'"><HorizontalHeader v-if="customizer.setHorizontalLayout" /></div>
@@ -90,16 +64,6 @@ const customizer = useCustomizerStore();
                         <div class="">
                             <div :class="customizer.boxed ? 'maxWidth' : ''">
                                 <RouterView />
-                                <v-btn
-                                    class="customizer-btn"
-                                    size="large"
-                                    icon
-                                    variant="flat"
-                                    color="primary"
-                                    @click.stop="customizer.SET_CUSTOMIZER_DRAWER(!customizer.Customizer_drawer)"
-                                >
-                                    <SettingsIcon />
-                                </v-btn>
                             </div>
                         </div>
                     </v-container>
