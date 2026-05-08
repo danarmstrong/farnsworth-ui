@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
-import { useCustomizerStore } from '@/stores/customizer';
+import { useUiStore } from '@/stores/ui';
 import { useCapProjectStore } from '@/features/jack-henry/cap-projects/stores/capProjectStore';
 import sidebarItems, { type menu } from './sidebarItems';
 
@@ -12,7 +12,7 @@ import Moreoption from './MoreOption/Moreoption.vue';
 import Logo from '../logo/Logo.vue';
 import { Icon } from '@iconify/vue';
 
-const customizer = useCustomizerStore();
+const ui = useUiStore();
 const capProjectStore = useCapProjectStore();
 
 onMounted(() => {
@@ -38,12 +38,12 @@ const sidebarMenu = computed((): menu[] =>
 <template>
     <v-navigation-drawer
         left
-        v-model="customizer.Sidebar_drawer"
+        v-model="ui.Sidebar_drawer"
         rail-width="70"
         app
         class="leftSidebar ms-lg-5 mt-sm-5 bg-containerBg"
         elevation="10"
-        :rail="customizer.mini_sidebar"
+        :rail="ui.mini_sidebar"
         expand-on-hover
         width="270"
     >

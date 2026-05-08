@@ -8,13 +8,9 @@ import Customers from '@/components/dashboards/dashboard1/Customers.vue';
 import ProductsTable from '@/components/dashboards/dashboard1/ProductsTable.vue';
 import VisitFromUsa from '@/components/dashboards/dashboard1/VisitFromUsa.vue';
 import LatestReviews1 from '@/components/dashboards/dashboard1/LatestReviews.vue';
-import Snackbar from '@/components/dashboards/snackbar.vue';
 </script>
 
 <template>
-    <!-- Loader -->
-    <Snackbar />
-    <!-- Loader -->
     <v-row>
         <!-- Congratulation Card -->
         <v-col cols="12" sm="12" lg="6">

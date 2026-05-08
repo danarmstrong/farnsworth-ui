@@ -76,19 +76,6 @@
     .v-toolbar__content {
         max-width: 100%;
     }
-
-    .horizontal-header {
-        &.v-app-bar {
-            &.v-toolbar {
-                max-width: 100% !important;
-            }
-
-            .v-toolbar__content {
-                width: 100% !important;
-                max-width: 100% !important;
-            }
-        }
-    }
 }
 
 @media screen and (max-width: 1600px) and (min-width: 1280px) {

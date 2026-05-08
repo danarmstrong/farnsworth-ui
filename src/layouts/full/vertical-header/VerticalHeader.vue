@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, watch, computed, onBeforeMount } from 'vue';
-import { useCustomizerStore } from '../../../stores/customizer';
+import { useUiStore } from '@/stores/ui';
 import { useEcomStore } from '@/stores/apps/eCommerce';
 import { DotsIcon } from 'vue-tabler-icons';
 import NotificationDD from './NotificationDD.vue';
@@ -10,10 +10,10 @@ import RightMobileSidebar from './RightMobileSidebar.vue';
 import Logo from '../logo/Logo.vue';
 import { Icon } from '@iconify/vue';
 import ThemeToggler from './ThemeToggler.vue';
-const customizer = useCustomizerStore();
+const ui = useUiStore();
 const showSearch = ref(false);
 const appsdrawer = ref(false);
-const priority = ref(customizer.setHorizontalLayout ? 0 : 0);
+const priority = ref(0);
 function searchbox() {
     showSearch.value = !showSearch.value;
 }
@@ -50,7 +50,7 @@ function handleScroll() {
                     icon
                     variant="text"
                     size="small"
-                    @click.stop="customizer.SET_MINI_SIDEBAR(!customizer.mini_sidebar)"
+                    @click.stop="ui.SET_MINI_SIDEBAR(!ui.mini_sidebar)"
                 >
                     <Icon icon="solar:list-bold-duotone" height="24" width="24" />
                 </v-btn>
@@ -58,7 +58,7 @@ function handleScroll() {
                     class="hidden-lg-and-up custom-hover-primary"
                     icon
                     variant="text"
-                    @click.stop="customizer.SET_SIDEBAR_DRAWER"
+                    @click.stop="ui.SET_SIDEBAR_DRAWER"
                     size="small"
                 >
                     <Icon icon="solar:list-bold-duotone" height="24" width="24" />

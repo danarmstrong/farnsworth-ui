@@ -7,6 +7,11 @@ const MainRoutes = {
     component: () => import('@/layouts/full/FullLayout.vue'),
     children: [
         {
+            name: 'AI Chat',
+            path: '/chat',
+            component: () => import('@/views/chat/ChatView.vue')
+        },
+        {
             name: 'Staff Members',
             path: '/staff-members',
             component: () => import('@/views/jack-henry/staff-members/StaffMembersView.vue')
@@ -66,7 +71,7 @@ const MainRoutes = {
         {
             name: 'Chats',
             path: '/apps/chats',
-            component: () => import('@/views/apps/chat/Chats.vue')
+            component: () => import('@/views/chat/ChatView.vue')
         },
         {
             name: 'Email',

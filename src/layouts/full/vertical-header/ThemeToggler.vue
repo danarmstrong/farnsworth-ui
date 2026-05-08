@@ -1,11 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useTheme } from 'vuetify';
-import { useCustomizerStore } from '@/stores/customizer';
+import { useUiStore } from '@/stores/ui';
 import { Icon } from '@iconify/vue';
-import { string } from 'yup';
-const theme = useTheme();
-const customizer = useCustomizerStore();
+
+const ui = useUiStore();
 
 // template skin color options
 const themeColors = ref([
@@ -22,7 +20,7 @@ const themeColors = ref([
 
 <template>
     <div class="position-relative">
-        <v-item-group mandatory v-model="customizer.actTheme" class="d-flex">
+        <v-item-group mandatory v-model="ui.actTheme" class="d-flex">
             <div v-for="theme in themeColors" :key="theme.name">
                 <v-item v-slot="{ toggle }" :value="theme.name">
                     <v-btn icon :class="theme.bg" class="custom-hover-primary" variant="text" size="small" @click="toggle">

@@ -1,6 +1,22 @@
 <script setup lang="ts">
-import { notifications } from '@/_mockApis/headerData';
+import { computed } from 'vue';
+import { storeToRefs } from 'pinia';
+import { formatDistanceToNow } from 'date-fns';
 import { Icon } from '@iconify/vue';
+import { useNotificationStore } from '@/features/notifications/stores/notificationStore';
+
+const notifications = useNotificationStore();
+const { items, unreadCount, loading } = storeToRefs(notifications);
+
+const visibleItems = computed(() => items.value.filter((i) => !i.isDismissed));
+
+function relativeTime(iso: string): string {
+    try {
+        return formatDistanceToNow(new Date(iso), { addSuffix: true });
+    } catch {
+        return '';
+    }
+}
 </script>
 <template>
     <!-- ---------------------------------------------- -->
@@ -10,7 +26,12 @@ import { Icon } from '@iconify/vue';
         <template v-slot:activator="{ props }">
             <v-btn icon flat v-bind="props" size="small" class="custom-hover-primary">
                 <div class="position-realtive">
-                    <div class="notify"><span class="heartbit"></span> <span class="point"></span></div>
+                    <div class="notify">
+                        <template v-if="unreadCount > 0">
+                            <span class="heartbit"></span>
+                            <span class="point"></span>
+                        </template>
+                    </div>
                     <Icon icon="solar:bell-bing-line-duotone" height="24" width="24" />
                 </div>
             </v-btn>
@@ -19,27 +40,45 @@ import { Icon } from '@iconify/vue';
             <div class="px-8 pb-4 pt-6">
                 <div class="d-flex align-center">
                     <h6 class="text-h5 font-weight-semibold">Notifications</h6>
-                    <v-chip color="primary" variant="flat" size="x-small" class="text-white ml-4" rounded="xl">5 New</v-chip>
+                    <v-chip
+                        v-if="unreadCount > 0"
+                        color="primary"
+                        variant="flat"
+                        size="x-small"
+                        class="text-white ml-4"
+                        rounded="xl"
+                    >
+                        {{ unreadCount }} New
+                    </v-chip>
                 </div>
             </div>
             <perfect-scrollbar style="height: 300px">
-                <v-list class="py-0 theme-list" lines="two">
-                    <v-list-item v-for="item in notifications" :key="item.title" :value="item" color="primary" class="py-4 px-8">
-                        <template v-slot:prepend>
-                            <v-avatar size="48">
-                                <v-img :src="item.avatar" width="48" :alt="item.avatar" />
-                            </v-avatar>
-                        </template>
-                        <div>
-                            <h6 class="text-h6 font-weight-medium mb-1">{{ item.title }}</h6>
-                        </div>
-                        <p class="text-subtitle-1 font-weight-medium text-grey100">{{ item.subtitle }}</p>
-                    </v-list-item>
-                    <v-divider></v-divider>
+                <div v-if="loading" class="px-8 py-6 text-subtitle-2 text-grey100">Loading…</div>
+                <div v-else-if="visibleItems.length === 0" class="px-8 py-6 text-subtitle-2 text-grey100">No notifications</div>
+                <v-list v-else class="py-0 theme-list" lines="two">
+                    <template v-for="(item, index) in visibleItems" :key="item.id">
+                        <v-list-item :value="item" color="primary" class="py-4 px-8">
+                            <template v-slot:prepend>
+                                <v-avatar size="48" rounded="md" color="lightprimary">
+                                    <Icon icon="solar:bell-bing-bold-duotone" height="26" width="26" class="text-primary" />
+                                </v-avatar>
+                            </template>
+                            <div class="d-flex align-center flex-wrap ga-2 mb-1">
+                                <h6 class="text-h6 font-weight-medium">{{ item.title }}</h6>
+                                <v-chip v-if="item.category" size="x-small" variant="tonal" color="secondary" rounded="sm">
+                                    {{ item.category }}
+                                </v-chip>
+                                <span v-if="item.isUnread" class="text-caption text-primary font-weight-medium">Unread</span>
+                            </div>
+                            <p class="text-subtitle-1 font-weight-medium text-grey100 mb-1">{{ item.message }}</p>
+                            <p class="text-caption text-medium-emphasis">{{ relativeTime(item.createdAtUtc) }}</p>
+                        </v-list-item>
+                        <v-divider v-if="index < visibleItems.length - 1" />
+                    </template>
                 </v-list>
             </perfect-scrollbar>
             <div class="py-4 px-6 text-center">
-                <v-btn color="primary" size="large" rounded="pill" block>See all Notifications</v-btn>
+                <v-btn color="primary" size="large" rounded="pill" block to="/pages/account-settings">Notification settings</v-btn>
             </div>
         </v-sheet>
     </v-menu>

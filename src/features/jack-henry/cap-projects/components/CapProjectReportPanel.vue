@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { ChevronLeftIcon, ChevronRightIcon } from 'vue-tabler-icons';
+import { IconClipboardCopy} from '@tabler/icons-vue';
 import { useCapProjectStore } from '@/features/jack-henry/cap-projects/stores/capProjectStore';
 
 const props = defineProps<{
@@ -53,6 +54,30 @@ function formatCostCenterLabel(cc: { departmentNumber: string; name: string }): 
 
 function formatMoney(n: number): string {
     return moneyFmt.format(n);
+}
+
+const copySnackbar = ref(false);
+const copySnackbarText = ref('');
+const copySnackbarColor = ref<'success' | 'error'>('success');
+
+async function copyMoneyToClipboard(amount: number): Promise<void> {
+    const text = formatMoney(amount);
+    if (typeof navigator === 'undefined' || !navigator.clipboard) {
+        copySnackbarText.value = 'Could not copy';
+        copySnackbarColor.value = 'error';
+        copySnackbar.value = true;
+        return;
+    }
+    try {
+        await navigator.clipboard.writeText(text);
+        copySnackbarText.value = 'Copied';
+        copySnackbarColor.value = 'success';
+        copySnackbar.value = true;
+    } catch {
+        copySnackbarText.value = 'Could not copy';
+        copySnackbarColor.value = 'error';
+        copySnackbar.value = true;
+    }
 }
 
 function formatRate(n: number): string {
@@ -150,6 +175,7 @@ watch(
                                 <th class="text-subtitle-1 font-weight-semibold text-end">Hourly rate</th>
                                 <th class="text-subtitle-1 font-weight-semibold text-end">Available hours</th>
                                 <th class="text-subtitle-1 font-weight-semibold text-end">PTO hours</th>
+                                <th class="text-subtitle-1 font-weight-semibold text-end">Non CAP hours</th>
                                 <th class="text-subtitle-1 font-weight-semibold text-end">Net hours</th>
                                 <th class="text-subtitle-1 font-weight-semibold text-end">CAP %</th>
                                 <th class="text-subtitle-1 font-weight-semibold text-end">CAP hours</th>
@@ -163,6 +189,7 @@ watch(
                                 <td class="text-subtitle-1 text-end text-no-wrap">{{ formatRate(row.hourlyRate) }}</td>
                                 <td class="text-subtitle-1 text-end">{{ report.availableHours }}</td>
                                 <td class="text-subtitle-1 text-end">{{ row.ptoHours }}</td>
+                                <td class="text-subtitle-1 text-end">{{ row.nonCapHours }}</td>
                                 <td class="text-subtitle-1 text-end">{{ row.netHours }}</td>
                                 <td class="text-subtitle-1 text-end">{{ report.capPercent }}%</td>
                                 <td class="text-subtitle-1 text-end">{{ row.capHours }}</td>
@@ -171,11 +198,18 @@ watch(
                         </tbody>
                         <tfoot>
                             <tr class="cap-project-report-foot">
-                                <td colspan="6" class="text-end text-medium-emphasis text-body-2">Totals</td>
-                                <td class="text-subtitle-1 font-weight-semibold text-end">{{ report.businessDays }}</td>
+                                <td colspan="8" class="text-end text-medium-emphasis text-body-2">Totals</td>
                                 <td class="text-subtitle-1 font-weight-semibold text-end">{{ report.totalCapHours }}</td>
                                 <td class="text-subtitle-1 font-weight-semibold text-end text-no-wrap">
-                                    {{ formatMoney(report.totalCapDollars) }}
+                                    <button
+                                        type="button"
+                                        class="cap-project-report-copy-money"
+                                        :aria-label="`Copy ${formatMoney(report.totalCapDollars)} to clipboard`"
+                                        @click="copyMoneyToClipboard(report.totalCapDollars)"
+                                    >
+                                        <IconClipboardCopy class="cap-project-report-copy-money__icon" stroke-width="1.5" :size="18" aria-hidden="true" />
+                                        <span>{{ formatMoney(report.totalCapDollars) }}</span>
+                                    </button>
                                 </td>
                             </tr>
                         </tfoot>
@@ -183,10 +217,49 @@ watch(
                 </div>
             </div>
         </template>
+
+        <v-snackbar
+            v-model="copySnackbar"
+            :color="copySnackbarColor"
+            location="bottom right"
+            :timeout="2000"
+        >
+            {{ copySnackbarText }}
+        </v-snackbar>
     </div>
 </template>
 
 <style lang="scss">
+.cap-project-report-copy-money {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: inherit;
+    font-weight: inherit;
+    color: rgb(var(--v-theme-primary));
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-align: inherit;
+    white-space: nowrap;
+    text-decoration: none;
+
+    > span {
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    &:hover {
+        opacity: 0.85;
+    }
+}
+
+.cap-project-report-copy-money__icon {
+    flex-shrink: 0;
+    opacity: 0.9;
+}
+
 .cap-project-report-table {
     .v-table__wrapper > table {
         width: 100%;

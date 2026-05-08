@@ -18,6 +18,12 @@ export interface menu {
 }
 
 const sidebarItems: menu[] = [
+    {
+        title: 'AI Chat',
+        icon: 'chat-round-line-duotone',
+        BgColor: 'primary',
+        to: '/chat'
+    },
     { header: 'Jack Henry' },
     {
         title: 'Staff Members',
@@ -190,12 +196,6 @@ const sidebarItems: menu[] = [
                 to: '/ecommerce/edit-product'
             }
         ]
-    },
-    {
-        title: 'Chats',
-        icon: 'chat-round-unread-line-duotone',
-        BgColor: 'primary',
-        to: '/apps/chats'
     },
     {
         title: 'User Profile',

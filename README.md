@@ -376,22 +376,16 @@ If you are not sure where to edit layout/navigation, use this file map first.
 
 - Vertical sidebar menu data: `src/layouts/full/vertical-sidebar/sidebarItems.ts`
 - Vertical sidebar renderer: `src/layouts/full/vertical-sidebar/VerticalSidebar.vue`
-- Horizontal menu data: `src/layouts/full/horizontal-sidebar/horizontalItems.ts`
-- Horizontal menu renderer: `src/layouts/full/horizontal-sidebar/HorizontalSidebar.vue`
-
-Important: if you support both vertical and horizontal layouts, keep both menu files in sync.
 
 ### Header, profile menu, and top bar
 
 - Vertical header layout/actions: `src/layouts/full/vertical-header/VerticalHeader.vue`
-- Horizontal header layout/actions: `src/layouts/full/horizontal-header/HorizontalHeader.vue`
 - Profile dropdown (logout button, profile links): `src/layouts/full/vertical-header/ProfileDD.vue`
 - Notification/search/language pieces are in the same `vertical-header` folder.
 
 ### Theme/layout toggles and defaults
 
-- Runtime UI toggles panel: `src/layouts/full/customizer/Customizer.vue`
-- Layout/theme state store: `src/stores/customizer.ts`
+- Layout/theme state store: `src/stores/ui.ts`
 - Default startup values: `src/config.ts`
 - Vuetify theme registration: `src/plugins/vuetify.ts`
 - Theme color definitions: `src/theme/LightTheme.ts`, `src/theme/DarkTheme.ts`
@@ -399,7 +393,7 @@ Important: if you support both vertical and horizontal layouts, keep both menu f
 ### Logo and branding
 
 - Logo selector component: `src/layouts/full/logo/Logo.vue`
-- Actual logo variants: `src/layouts/full/logo/LogoLight.vue`, `src/layouts/full/logo/LogoDark.vue`, `src/layouts/full/logo/LogoLightRtl.vue`, `src/layouts/full/logo/LogoDarkRtl.vue`
+- Actual logo variants: `src/layouts/full/logo/LogoLight.vue`, `src/layouts/full/logo/LogoDark.vue`
 - Image assets: `src/assets/images/logos/`
 
 ### Front/marketing layout files
@@ -413,31 +407,25 @@ These are separate from admin shell and useful if you customize the marketing pa
 
 - Sidebar styles: `src/scss/layout/_sidebar.scss`
 - Top/header styles: `src/scss/layout/_topbar.scss`
-- Horizontal menu styles: `src/scss/layout/_horizontal.scss`
-- RTL, container, customizer styles: `src/scss/layout/_rtl.scss`, `src/scss/layout/_container.scss`, `src/scss/layout/_customizer.scss`
+- Container styles: `src/scss/layout/_container.scss`
 
 ### Common customization recipes
 
 1. Add/remove a sidebar item
     - Add route in `src/router/MainRoutes.ts` (or `src/router/AuthRoutes.ts` if public)
     - Add menu entry in `src/layouts/full/vertical-sidebar/sidebarItems.ts`
-    - If horizontal layout is enabled, mirror it in `src/layouts/full/horizontal-sidebar/horizontalItems.ts`
 
 2. Change default layout behavior
-    - Edit defaults in `src/config.ts` (`mini_sidebar`, `setHorizontalLayout`, `setRTLLayout`, `boxed`, `actTheme`)
+    - Edit defaults in `src/config.ts` (`mini_sidebar`, `boxed`, `actTheme`)
 
-3. Force one layout mode and hide user toggles
-    - Keep desired value in `src/config.ts`
-    - Remove/hide corresponding controls in `src/layouts/full/customizer/Customizer.vue`
-
-4. Replace branding
+3. Replace branding
     - Swap logo assets in `src/assets/images/logos/`
     - Update logo components in `src/layouts/full/logo/*` if dimensions/markup differ
 
-5. Customize header actions (icons, cart, profile, search)
-    - Edit `src/layouts/full/vertical-header/VerticalHeader.vue` and/or `src/layouts/full/horizontal-header/HorizontalHeader.vue`
+4. Customize header actions (icons, cart, profile, search)
+    - Edit `src/layouts/full/vertical-header/VerticalHeader.vue`
 
-6. Customize front-page top nav and footer links
+5. Customize front-page top nav and footer links
     - Edit nav items array in `src/components/frontpages/layout/Navigation.vue`
     - Edit footer component and data source (`@/_mockApis/front-pages/PagesData`) used in `src/components/frontpages/layout/Footer.vue`
 
@@ -448,7 +436,7 @@ Both icon systems used by the template are already installed. You do not need ex
 ### Use Solar icons when you want string-based icons
 
 The template uses Solar icons through `@iconify/vue`. This is the pattern you see in places like:
-- `src/layouts/full/horizontal-header/HorizontalHeader.vue`
+- `src/layouts/full/vertical-header/VerticalHeader.vue`
 - `src/layouts/full/vertical-sidebar/NavItem/index.vue`
 
 Minimal example:
@@ -527,10 +515,9 @@ If you want to strip the template down to a basic admin shell (one layout mode, 
     - Front-page routes (`/`, `/front-page/*`)
     - Keep only: `/auth/login`, `/auth/register`, `/auth/forgot-password` (or your auth routes)
 
-### Step 2 - Sync sidebar and horizontal menu
+### Step 2 - Sync sidebar menu
 
 - [ ] Open `src/layouts/full/vertical-sidebar/sidebarItems.ts`, remove menu items matching deleted routes.
-- [ ] Open `src/layouts/full/horizontal-sidebar/horizontalItems.ts`, apply same removals.
 
 ### Step 3 - Simplify header
 
@@ -538,37 +525,24 @@ If you want to strip the template down to a basic admin shell (one layout mode, 
     - Remove/comment unused badges, icons, search, language switcher if you don't need them
     - Keep essentials: logo, main nav links, profile dropdown, logout
 
-- [ ] Open `src/layouts/full/horizontal-header/HorizontalHeader.vue` if using horizontal layout
-    - Apply same simplifications
-
-### Step 4 - Lock one layout mode
-
-- [ ] Open `src/config.ts`
-    - Set `setHorizontalLayout: false` to force vertical-only (or `true` for horizontal-only)
-    - Set `setRTLLayout: false` unless you need RTL
-
-- [ ] Open `src/layouts/full/customizer/Customizer.vue`
-    - Comment out layout mode toggles (horizontal/vertical switch, RTL toggle) to hide from users
-    - Users will still see theme toggles if you want them
-
-### Step 5 - Replace branding
+### Step 4 - Replace branding
 
 - [ ] Replace logo assets in `src/assets/images/logos/`.
-- [ ] Update logo components only if needed: `src/layouts/full/logo/Logo.vue`, `src/layouts/full/logo/LogoLight.vue`, `src/layouts/full/logo/LogoDark.vue`, `src/layouts/full/logo/LogoLightRtl.vue`, `src/layouts/full/logo/LogoDarkRtl.vue`.
+- [ ] Update logo components only if needed: `src/layouts/full/logo/Logo.vue`, `src/layouts/full/logo/LogoLight.vue`, `src/layouts/full/logo/LogoDark.vue`.
 
-### Step 6 - Remove front/marketing pages if not needed
+### Step 5 - Remove front/marketing pages if not needed
 
 - [ ] Remove front routes from `src/router/AuthRoutes.ts` (`/front-page/*`, `/`).
 - [ ] Optionally stop using front wrapper in `src/views/pages/front-pages/Layout.vue`.
 - [ ] Remove/edit front nav and footer content in `src/components/frontpages/layout/Navigation.vue` and `src/components/frontpages/layout/Footer.vue`.
 
-### Step 7 - Keep only your theme set
+### Step 6 - Keep only your theme set
 
 - [ ] Keep only desired themes in `src/plugins/vuetify.ts` `theme.themes`.
 - [ ] Edit palette values in `src/theme/LightTheme.ts` and `src/theme/DarkTheme.ts`.
 - [ ] Set default startup theme in `src/config.ts` (`actTheme`).
 
-### Step 8 - Final sanity pass
+### Step 7 - Final sanity pass
 
 - [ ] Run `pnpm typecheck`.
 - [ ] Run `pnpm lint`.

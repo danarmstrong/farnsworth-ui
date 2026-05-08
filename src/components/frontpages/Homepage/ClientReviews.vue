@@ -41,7 +41,7 @@ const goToPrevSlide = () => {
                             <v-card elevation="0">
                                 <div class="text-left">
                                     <p class="text-24 opacity-70 clamped-text mb-6">{{ card.review }}</p>
-                                    <div class="d-flex ga-4 align-center justify-space-between rtl-reviews pt-4">
+                                    <div class="d-flex ga-4 align-center justify-space-between pt-4">
                                         <div class="d-flex ga-4 align-center">
                                             <v-avatar size="56">
                                                 <img :src="card.img" :alt="card.img" width="56" />
@@ -63,12 +63,12 @@ const goToPrevSlide = () => {
                             <navigation class="navarrow">
                                 <template #next>
                                     <span @click="goToNextSlide">
-                                        <ChevronRightIcon class="textPrimary rtlnav" size="20" stroke-width="1.5" />
+                                        <ChevronRightIcon class="textPrimary" size="20" stroke-width="1.5" />
                                     </span>
                                 </template>
                                 <template #prev>
                                     <span @click="goToPrevSlide">
-                                        <ChevronLeftIcon class="textPrimary rtlnav" size="20" stroke-width="1.5" />
+                                        <ChevronLeftIcon class="textPrimary" size="20" stroke-width="1.5" />
                                     </span>
                                 </template>
                             </navigation>

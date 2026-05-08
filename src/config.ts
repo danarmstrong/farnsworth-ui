@@ -1,9 +1,6 @@
 export type ConfigProps = {
-    Sidebar_drawer: any;
-    Customizer_drawer: boolean;
+    Sidebar_drawer: boolean | null;
     mini_sidebar: boolean;
-    setHorizontalLayout: boolean;
-    setRTLLayout: boolean;
     actTheme: string;
     boxed: boolean;
     setBorderCard: boolean;
@@ -11,10 +8,7 @@ export type ConfigProps = {
 
 const config: ConfigProps = {
     Sidebar_drawer: null,
-    Customizer_drawer: false,
     mini_sidebar: false,
-    setHorizontalLayout: false, // Horizontal layout
-    setRTLLayout: false, // RTL layout
     actTheme: 'DARK_BLUE_THEME',
     boxed: true,
     setBorderCard: false

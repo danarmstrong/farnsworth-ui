@@ -9,7 +9,7 @@ const items = ref(['General Enquiry', 'option 2', 'option 3', 'option 4']);
             <v-row>
                 <v-col cols="12" lg="4">
                     <div class="bg-primary rounded-lg pa-7 position-relative overflow-hidden mt-md-0 mt-6 position-relative">
-                        <img src="@/assets/images/front-pages/background/contact-icon.png" class="position-absolute end-0 top-0 rtlImg" />
+                        <img src="@/assets/images/front-pages/background/contact-icon.png" class="position-absolute end-0 top-0" />
                         <h4 class="text-18 font-weight-bold mb-4">Reach Out Today</h4>
                         <p class="text-16 font-weight-regular position-relative z-1">
                             Have questions or need assistance? We're just a message away.

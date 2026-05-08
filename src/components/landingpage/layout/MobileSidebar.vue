@@ -4,21 +4,12 @@ import { AppsIcon, CalendarIcon, MailIcon, MessagesIcon } from 'vue-tabler-icons
 import QuickLinks from '@/components/landingpage/layout/PageMenuQuicklinks.vue';
 import AppsLink from '@/components/landingpage/layout/PageMegamenu.vue';
 import { demosMegamenu, appsMegamenu } from '@/_mockApis/landingpage/lpPage';
-import { useCustomizerStore } from '@/stores/customizer';
 import Logo from '@/layouts/full/logo/Logo.vue';
-// import RtlLogo from '@/layouts/full/logo/RtlLogo.vue';
-const customizer = useCustomizerStore();
 </script>
 
 <template>
     <div class="pt-6 lp-mobile-sidebar">
         <div class="ml-6 mb-3">
-            <!-- <div v-if="customizer.setRTLLayout" rtl>
-                <RtlLogo />
-            </div>
-            <div v-else>
-                <Logo />
-            </div> -->
             <Logo />
         </div>
         <v-list class="right-sidebar py-0 px-2">

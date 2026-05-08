@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import { onBeforeMount, ref, watch } from 'vue';
-import { useCustomizerStore } from '@/stores/customizer';
+import { onBeforeMount, ref } from 'vue';
 import Logo from '@/layouts/full/logo/Logo.vue';
 import Navigations from './Navigation.vue';
 /*Mobile Sidebar*/
@@ -8,7 +7,6 @@ import MobileSidebar from '@/components/landingpage/layout/MobileSidebar.vue';
 /*import tabler icons*/
 import { Menu2Icon } from 'vue-tabler-icons';
 const appsdrawer = ref(false);
-const customizer = useCustomizerStore();
 const stickyHeader = ref(false);
 //For on Scroll Effect on Header
 onBeforeMount(() => {

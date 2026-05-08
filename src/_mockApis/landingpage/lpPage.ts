@@ -12,7 +12,6 @@ import img1 from '@/assets/images/landingpage/demos/demo-main.jpg';
 import img2 from '@/assets/images/landingpage/demos/demo-dark.jpg';
 import img3 from '@/assets/images/landingpage/demos/demo-horizontal.jpg';
 import img4 from '@/assets/images/landingpage/demos/demo-mini.jpg';
-import img5 from '@/assets/images/landingpage/demos/demo-rtl.jpg';
 import img6 from '@/assets/images/landingpage/apps/app-calendar.jpg';
 import img7 from '@/assets/images/landingpage/apps/app-chat.jpg';
 import img8 from '@/assets/images/landingpage/apps/app-contact.jpg';
@@ -50,12 +49,6 @@ const productsSlider: ProductsSliderTypes[] = [
         img: img4,
         name: 'Minisidebar',
         link: 'https://spike-vue-minisidebar.netlify.app/dashboard1'
-    },
-    {
-        type: true,
-        img: img5,
-        name: 'RTL',
-        link: 'https://spike-vue-rtl.netlify.app/dashboard1'
     },
     {
         type: false,
@@ -305,11 +298,6 @@ const demosMegamenu: DemosMegaMenuTypes[] = [
         img: img4,
         name: 'Minisidebar',
         link: 'https://spike-vue-minisidebar.netlify.app/dashboard1'
-    },
-    {
-        img: img5,
-        name: 'RTL',
-        link: 'https://spike-vue-rtl.netlify.app/dashboard1'
     }
 ];
 const appsMegamenu: AppsMegaMenuTypes[] = [

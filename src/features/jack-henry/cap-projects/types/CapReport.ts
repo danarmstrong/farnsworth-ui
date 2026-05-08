@@ -5,6 +5,7 @@ export interface CapReportStaffMemberDto {
     firstName: string;
     hourlyRate: number;
     ptoHours: number;
+    nonCapHours: number;
     netHours: number;
     capHours: number;
     capDollars: number;
