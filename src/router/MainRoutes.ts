@@ -8,7 +8,7 @@ const MainRoutes = {
     children: [
         {
             name: 'AI Chat',
-            path: '/chat',
+            path: '/chat/:chatId?',
             component: () => import('@/views/chat/ChatView.vue')
         },
         {
@@ -70,7 +70,7 @@ const MainRoutes = {
         },
         {
             name: 'Chats',
-            path: '/apps/chats',
+            path: '/apps/chats/:chatId?',
             component: () => import('@/views/chat/ChatView.vue')
         },
         {

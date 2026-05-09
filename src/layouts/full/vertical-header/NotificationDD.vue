@@ -1,12 +1,18 @@
 <script setup lang="ts">
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
 import { formatDistanceToNow } from 'date-fns';
 import { Icon } from '@iconify/vue';
 import { useNotificationStore } from '@/features/notifications/stores/notificationStore';
+import { getNotificationHref } from '@/features/notifications/notificationCategoryRoutes';
+import type { NotificationDto } from '@/features/notifications/types/Notification';
 
+const router = useRouter();
 const notifications = useNotificationStore();
 const { items, unreadCount, loading } = storeToRefs(notifications);
+
+const menuOpen = ref(false);
 
 const visibleItems = computed(() => items.value.filter((i) => !i.isDismissed));
 
@@ -17,18 +23,28 @@ function relativeTime(iso: string): string {
         return '';
     }
 }
+
+async function onNotificationClick(item: NotificationDto): Promise<void> {
+    await notifications.markRead(item.id);
+    const href = getNotificationHref(item);
+    menuOpen.value = false;
+    if (href) {
+        console.log(href);
+        await router.push(href);
+    }
+}
 </script>
 <template>
     <!-- ---------------------------------------------- -->
     <!-- notifications DD -->
     <!-- ---------------------------------------------- -->
-    <v-menu :close-on-content-click="false" class="notification_popup">
+    <v-menu v-model="menuOpen" :close-on-content-click="false" class="notification_popup">
         <template v-slot:activator="{ props }">
             <v-btn icon flat v-bind="props" size="small" class="custom-hover-primary">
-                <div class="position-realtive">
+                <div class="position-relative">
                     <div class="notify">
                         <template v-if="unreadCount > 0">
-                            <span class="heartbit"></span>
+                            <span class="heartbeat"></span>
                             <span class="point"></span>
                         </template>
                     </div>
@@ -57,7 +73,12 @@ function relativeTime(iso: string): string {
                 <div v-else-if="visibleItems.length === 0" class="px-8 py-6 text-subtitle-2 text-grey100">No notifications</div>
                 <v-list v-else class="py-0 theme-list" lines="two">
                     <template v-for="(item, index) in visibleItems" :key="item.id">
-                        <v-list-item :value="item" color="primary" class="py-4 px-8">
+                        <v-list-item
+                            :value="item"
+                            color="primary"
+                            class="py-4 px-8 cursor-pointer"
+                            @click="onNotificationClick(item)"
+                        >
                             <template v-slot:prepend>
                                 <v-avatar size="48" rounded="md" color="lightprimary">
                                     <Icon icon="solar:bell-bing-bold-duotone" height="26" width="26" class="text-primary" />

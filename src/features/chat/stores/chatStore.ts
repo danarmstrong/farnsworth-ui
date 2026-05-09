@@ -376,7 +376,9 @@ export const useChatStore = defineStore('chat', () => {
 
     async function connect(): Promise<void> {
         try {
-            await chatHub.connect();
+            if (chatHub.getConnectionState() == 'disconnected') {
+                await chatHub.connect();
+            }
         } catch (err) {
             error.value = setErrorMessage(err, 'Failed to connect to chat hub');
         }

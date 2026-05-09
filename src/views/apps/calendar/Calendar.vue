@@ -30,7 +30,7 @@ const breadcrumbs = ref([
     <BaseBreadcrumb :title="page.title" :breadcrumbs="breadcrumbs"></BaseBreadcrumb>
     <v-row>
         <v-col cols="12">
-            <UiParentCard title="Full Calender">
+            <UiParentCard title="Full Calendar">
                 <FullCalendar />
             </UiParentCard>
         </v-col>

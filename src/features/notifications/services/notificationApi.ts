@@ -12,3 +12,8 @@ export async function listNotifications(params?: ListNotificationsParams): Promi
     const { data } = await axios.get<NotificationDto[]>(NOTIFICATIONS_PATH, { params });
     return data;
 }
+
+export async function markNotificationRead(id: string): Promise<void> {
+    const path = `${NOTIFICATIONS_PATH}/${encodeURIComponent(id)}/read`;
+    await axios.post(path);
+}

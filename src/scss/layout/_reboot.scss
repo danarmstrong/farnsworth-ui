@@ -60,7 +60,7 @@
 }
 
 .notify {
-    .heartbit {
+    .heartbeat {
         position: absolute;
         top: -5px;
         right: -2px;
@@ -69,12 +69,12 @@
         z-index: 10;
         border: 2px solid rgba(var(--v-theme-success));
         border-radius: 70px;
-        animation: heartbit 1s ease-out;
-        -moz-animation: heartbit 1s ease-out;
+        animation: heartbeat 1s ease-out;
+        -moz-animation: heartbeat 1s ease-out;
         -moz-animation-iteration-count: infinite;
-        -o-animation: heartbit 1s ease-out;
+        -o-animation: heartbeat 1s ease-out;
         -o-animation-iteration-count: infinite;
-        -webkit-animation: heartbit 1s ease-out;
+        -webkit-animation: heartbeat 1s ease-out;
         -webkit-animation-iteration-count: infinite;
         animation-iteration-count: infinite;
     }
@@ -90,7 +90,7 @@
     }
 }
 
-@keyframes heartbit {
+@keyframes heartbeat {
     0% {
         -moz-transform: scale(0);
         opacity: 0;
@@ -117,7 +117,7 @@
     }
 }
 
-@-moz-keyframes heartbit {
+@-moz-keyframes heartbeat {
     0% {
         -moz-transform: scale(0);
         opacity: 0;
@@ -144,7 +144,7 @@
     }
 }
 
-@-webkit-keyframes heartbit {
+@-webkit-keyframes heartbeat {
     0% {
         -webkit-transform: scale(0);
         opacity: 0;

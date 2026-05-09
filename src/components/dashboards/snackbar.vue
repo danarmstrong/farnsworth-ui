@@ -12,7 +12,16 @@ function close(): void {
 </script>
 
 <template>
-    <v-snackbar rounded="xl" color="primary" class="mt-4" v-model="snackbarOpen" location="top right" elevation="0">
+    <v-snackbar
+        rounded="xl"
+        color="primary"
+        class="mt-4"
+        v-model="snackbarOpen"
+        location="top right"
+        elevation="0"
+        contained
+        attach="#top"
+    >
         <div class="d-flex gap-2">
             <InfoCircleIcon size="22" />
             <div class="">

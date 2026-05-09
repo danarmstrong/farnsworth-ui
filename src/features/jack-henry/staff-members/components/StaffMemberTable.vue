@@ -144,8 +144,8 @@ async function save(payload: StaffMemberFormSubmitPayload) {
                 <thead>
                     <tr>
                         <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-name">Name</th>
-                        <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-code">Job title</th>
-                        <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-note">Cost center</th>
+                        <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-code">Job Title</th>
+                        <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-note">Phone Number</th>
                         <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-manager">Manager</th>
                         <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-date">Start</th>
                         <th class="text-subtitle-1 font-weight-semibold text-no-wrap text-right col-actions">Actions</th>
@@ -177,7 +177,7 @@ async function save(payload: StaffMemberFormSubmitPayload) {
                             </div>
                         </td>
                         <td class="text-subtitle-1 text-no-wrap col-code">{{ getJobTitleLabel(item.jobTitleId) }}</td>
-                        <td class="text-subtitle-1 text-no-wrap col-note">{{ getCostCenterLabel(item.costCenterId) }}</td>
+                        <td class="text-subtitle-1 text-no-wrap col-note">{{ item.phoneNumber }}</td>
                         <td class="text-subtitle-1 text-no-wrap col-manager">{{ getManagerLabel(item.managerId) }}</td>
                         <td class="text-subtitle-1 text-no-wrap col-date">{{ item.startDate }}</td>
                         <td class="text-right text-no-wrap col-actions">

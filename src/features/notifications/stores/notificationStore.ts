@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 import { computed, ref } from 'vue';
 import type { NotificationDto } from '@/features/notifications/types/Notification';
-import { listNotifications } from '@/features/notifications/services/notificationApi';
+import { listNotifications, markNotificationRead } from '@/features/notifications/services/notificationApi';
 import { notificationHub } from '@/features/notifications/services/notificationHub';
 
 function sortNewestFirst(list: NotificationDto[]): NotificationDto[] {
@@ -94,6 +94,33 @@ export const useNotificationStore = defineStore('notifications', () => {
         snackbarOpen.value = false;
     }
 
+    function patchLocalReadState(id: string): void {
+        const idx = items.value.findIndex((x) => x.id === id);
+        if (idx < 0) {
+            return;
+        }
+        const prev = items.value[idx];
+        if (!prev) {
+            return;
+        }
+        const next = [...items.value];
+        next[idx] = {
+            ...prev,
+            isUnread: false,
+            readAtUtc: new Date().toISOString()
+        };
+        items.value = next;
+    }
+
+    async function markRead(id: string): Promise<void> {
+        try {
+            await markNotificationRead(id);
+            patchLocalReadState(id);
+        } catch {
+            await fetchNotifications();
+        }
+    }
+
     return {
         items,
         loading,
@@ -103,6 +130,7 @@ export const useNotificationStore = defineStore('notifications', () => {
         snackbarMessage,
         unreadCount,
         fetchNotifications,
+        markRead,
         bootstrap,
         reset,
         closeSnackbar
