@@ -90,7 +90,9 @@ function shiftMonth(delta: number): void {
     targetMonth.value = new Date(d.getFullYear(), d.getMonth(), 1);
 }
 
-function exportPlaceholder(): void {}
+async function exportReport(): Promise<void> {
+    await store.exportCapProjectReport(props.projectId, targetMonthParam.value);
+}
 
 async function loadProjectLabel(): Promise<void> {
     const p = await store.getCapProject(props.projectId);
@@ -134,7 +136,15 @@ watch(
                 </v-btn>
             </v-col>
             <v-col cols="12" md="auto" class="ms-md-auto">
-                <v-btn variant="flat" color="primary" @click="exportPlaceholder">Export</v-btn>
+                <v-btn
+                    variant="flat"
+                    color="primary"
+                    :loading="store.reportExportLoading"
+                    :disabled="store.reportExportLoading || store.reportLoading"
+                    @click="exportReport"
+                >
+                    Export
+                </v-btn>
             </v-col>
         </v-row>
 
@@ -143,6 +153,18 @@ watch(
             <template v-if="projectTitle && projectName"> — </template>
             <template v-if="projectName">{{ projectName }}</template>
         </p>
+
+        <v-alert
+            v-if="store.reportExportError"
+            type="error"
+            variant="tonal"
+            density="compact"
+            class="mb-4"
+            closable
+            @click:close="store.clearReportExportError"
+        >
+            {{ store.reportExportError }}
+        </v-alert>
 
         <v-alert
             v-if="store.reportError"

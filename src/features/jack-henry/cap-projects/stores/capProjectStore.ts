@@ -17,6 +17,52 @@ function normalizeCapProject(raw: CapProject): CapProject {
     };
 }
 
+function parseFilenameFromContentDisposition(header: string | undefined): string | null {
+    if (!header) {
+        return null;
+    }
+    const star = /filename\*=(?:UTF-8''|)([^;]+)/i.exec(header);
+    if (star?.[1]) {
+        return decodeURIComponent(star[1].trim().replace(/^["']|["']$/g, ''));
+    }
+    const plain = /filename="([^"]+)"/i.exec(header) || /filename=([^;]+)/i.exec(header);
+    if (plain?.[1]) {
+        return plain[1].trim().replace(/^["']|["']$/g, '');
+    }
+    return null;
+}
+
+function triggerBlobDownload(blob: Blob, filename: string): void {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+}
+
+async function messageFromRejectedApiData(data: unknown, fallback: string): Promise<string> {
+    if (typeof data === 'string') {
+        return data || fallback;
+    }
+    if (data instanceof Blob) {
+        const text = await data.text();
+        try {
+            const j = JSON.parse(text) as { message?: string; title?: string };
+            return j.message || j.title || text || fallback;
+        } catch {
+            return text || fallback;
+        }
+    }
+    if (data && typeof data === 'object' && 'message' in data && typeof (data as { message: unknown }).message === 'string') {
+        return (data as { message: string }).message;
+    }
+    return fallback;
+}
+
 function normalizeCapReport(raw: CapReportDto): CapReportDto {
     const cc = raw.costCenter;
     return {
@@ -40,6 +86,8 @@ export const useCapProjectStore = defineStore('capProjects', () => {
     const capReports = ref<CapReportDto[]>([]);
     const reportLoading = ref(false);
     const reportError = ref<string | null>(null);
+    const reportExportLoading = ref(false);
+    const reportExportError = ref<string | null>(null);
 
     function mergeCapProjectIntoList(project: CapProject): void {
         const normalized = normalizeCapProject(project);
@@ -185,12 +233,37 @@ export const useCapProjectStore = defineStore('capProjects', () => {
         }
     }
 
+    async function exportCapProjectReport(projectId: string, targetMonthIsoDate: string): Promise<void> {
+        reportExportError.value = null;
+        reportExportLoading.value = true;
+        try {
+            const response = await axios.get<Blob>(`${capProjectsPath}/${projectId}/export`, {
+                params: { targetMonth: targetMonthIsoDate },
+                responseType: 'blob'
+            });
+            const blob = response.data instanceof Blob ? response.data : new Blob([response.data]);
+            const cd = response.headers['content-disposition'];
+            const filename = parseFilenameFromContentDisposition(
+                typeof cd === 'string' ? cd : Array.isArray(cd) ? cd[0] : undefined
+            );
+            triggerBlobDownload(blob, filename ?? 'cap-report.xlsx');
+        } catch (err) {
+            reportExportError.value = await messageFromRejectedApiData(err, 'Failed to export CAP project report');
+        } finally {
+            reportExportLoading.value = false;
+        }
+    }
+
     function clearError() {
         error.value = null;
     }
 
     function clearReportError() {
         reportError.value = null;
+    }
+
+    function clearReportExportError() {
+        reportExportError.value = null;
     }
 
     function setErrorMessage(err: unknown, fallback: string): string {
@@ -207,8 +280,11 @@ export const useCapProjectStore = defineStore('capProjects', () => {
         capReports,
         reportLoading,
         reportError,
+        reportExportLoading,
+        reportExportError,
         fetchCapProjects,
         fetchCapProjectReport,
+        exportCapProjectReport,
         getCapProject,
         createCapProject,
         updateCapProject,
@@ -216,6 +292,7 @@ export const useCapProjectStore = defineStore('capProjects', () => {
         addStaffMembers,
         removeStaffMemberFromCapProject,
         clearError,
-        clearReportError
+        clearReportError,
+        clearReportExportError
     };
 });
