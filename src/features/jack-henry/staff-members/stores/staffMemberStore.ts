@@ -6,6 +6,14 @@ import { isAxiosError } from 'axios';
 
 const staffMembersPath = '/staff-members';
 
+function normalizeStaffMember(m: StaffMember): StaffMember {
+    return {
+        ...m,
+        aliases: Array.isArray(m.aliases) ? m.aliases : [],
+        birthDate: m.birthDate ?? null
+    };
+}
+
 export const useStaffMemberStore = defineStore('staffMembers', () => {
     const staffMembers = ref<StaffMember[]>([]);
     const loading = ref(false);
@@ -16,7 +24,7 @@ export const useStaffMemberStore = defineStore('staffMembers', () => {
         loading.value = true;
         try {
             const { data } = await axios.get<StaffMember[]>(staffMembersPath);
-            staffMembers.value = data;
+            staffMembers.value = data.map(normalizeStaffMember);
         } catch (err) {
             error.value = setErrorMessage(err, 'Failed to fetch staff members');
         } finally {
@@ -29,17 +37,18 @@ export const useStaffMemberStore = defineStore('staffMembers', () => {
 
         const existing = staffMembers.value.find((m) => m.id === id);
         if (existing) {
-            return existing;
+            return normalizeStaffMember(existing);
         }
 
         loading.value = true;
         try {
             const { data } = await axios.get<StaffMember>(`${staffMembersPath}/${id}`);
-            const exists = staffMembers.value.some((m) => m.id === data.id);
+            const normalized = normalizeStaffMember(data);
+            const exists = staffMembers.value.some((m) => m.id === normalized.id);
             if (!exists) {
-                staffMembers.value.push(data);
+                staffMembers.value.push(normalized);
             }
-            return data;
+            return normalized;
         } catch (err) {
             error.value = setErrorMessage(err, 'Failed to get staff member');
         } finally {
@@ -54,7 +63,7 @@ export const useStaffMemberStore = defineStore('staffMembers', () => {
         loading.value = true;
         try {
             const { data } = await axios.post<StaffMember>(staffMembersPath, dto);
-            staffMembers.value.push(data);
+            staffMembers.value.push(normalizeStaffMember(data));
         } catch (err) {
             error.value = setErrorMessage(err, 'Failed to create staff member');
         } finally {
@@ -67,11 +76,12 @@ export const useStaffMemberStore = defineStore('staffMembers', () => {
         loading.value = true;
         try {
             const { data } = await axios.put<StaffMember>(`${staffMembersPath}/${id}`, dto);
+            const normalized = normalizeStaffMember(data);
             const index = staffMembers.value.findIndex((m) => m.id === id);
             if (index !== -1) {
-                staffMembers.value[index] = data;
+                staffMembers.value[index] = normalized;
             } else {
-                staffMembers.value.push(data);
+                staffMembers.value.push(normalized);
             }
         } catch (err) {
             error.value = setErrorMessage(err, 'Failed to update staff member');

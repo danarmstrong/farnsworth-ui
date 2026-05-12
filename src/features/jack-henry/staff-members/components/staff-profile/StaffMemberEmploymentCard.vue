@@ -35,6 +35,10 @@ const salaryDisplay = computed(() => {
             <v-table density="comfortable" class="text-subtitle-1">
                 <tbody>
                     <tr>
+                        <td class="text-grey200 font-weight-semibold" style="width: 40%">Birth date</td>
+                        <td>{{ formatDate(member.birthDate) }}</td>
+                    </tr>
+                    <tr>
                         <td class="text-grey200 font-weight-semibold" style="width: 40%">Start date</td>
                         <td>{{ formatDate(member.startDate) }}</td>
                     </tr>

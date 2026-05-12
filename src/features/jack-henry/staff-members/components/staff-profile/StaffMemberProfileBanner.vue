@@ -13,6 +13,8 @@ const props = defineProps<{
 const displayName = computed(() => `${props.member.firstName} ${props.member.lastName}`.trim() || props.member.email);
 
 const isActive = computed(() => !props.member.endDate);
+
+const aliasChips = computed(() => (props.member.aliases ?? []).map((a) => a.trim()).filter(Boolean));
 </script>
 
 <template>
@@ -44,6 +46,18 @@ const isActive = computed(() => !props.member.endDate);
                                     </v-chip>
                                 </h5>
                                 <span class="text-h6 font-weight-medium text-grey100">{{ jobTitleLabel }}</span>
+                                <div v-if="aliasChips.length" class="d-flex flex-wrap align-center gap-1 mt-2 justify-sm-start justify-center">
+                                    <span class="text-caption text-grey200 mr-1">Also known as</span>
+                                    <v-chip
+                                        v-for="(alias, index) in aliasChips"
+                                        :key="`${alias}-${index}`"
+                                        size="small"
+                                        variant="tonal"
+                                        color="secondary"
+                                    >
+                                        {{ alias }}
+                                    </v-chip>
+                                </div>
                                 <div
                                     class="text-subtitle-1 font-weight-semibold text-grey200 d-flex align-center mt-1 justify-sm-start justify-center"
                                 >

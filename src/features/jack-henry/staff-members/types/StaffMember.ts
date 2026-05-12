@@ -5,6 +5,7 @@ export interface StaffMember {
     managerId: string | null;
     firstName: string;
     lastName: string;
+    aliases: string[];
     employeeNumber: string | null;
     email: string;
     phoneNumber: string | null;
@@ -13,6 +14,7 @@ export interface StaffMember {
     githubUserId: string | null;
     slackUserId: string | null;
     teamsUserId: string | null;
+    birthDate: string | null;
     startDate: string;
     endDate: string | null;
     salary: number | null;

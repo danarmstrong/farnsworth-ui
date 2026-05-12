@@ -21,6 +21,8 @@ export type StaffMemberFormSubmitPayload = {
     githubUserId: string | null;
     slackUserId: string | null;
     teamsUserId: string | null;
+    aliases: string[];
+    birthDate: string | null;
     startDate: string;
     endDate: string | null;
     salary: number | null;
@@ -49,6 +51,7 @@ function emptyStaffMember(): StaffMember {
         managerId: null,
         firstName: '',
         lastName: '',
+        aliases: [],
         employeeNumber: '',
         email: '',
         phoneNumber: '',
@@ -57,6 +60,7 @@ function emptyStaffMember(): StaffMember {
         githubUserId: '',
         slackUserId: '',
         teamsUserId: '',
+        birthDate: '',
         startDate: '',
         endDate: '',
         salary: null
@@ -66,6 +70,10 @@ function emptyStaffMember(): StaffMember {
 function nullIfEmpty(s: string): string | null {
     const t = s.trim();
     return t ? t : null;
+}
+
+function normalizedAliases(values: readonly unknown[]): string[] {
+    return values.map((a) => String(a).trim()).filter(Boolean);
 }
 
 const dialog = ref(false);
@@ -150,6 +158,7 @@ function openEdit(member: StaffMember) {
     mode.value = 'edit';
     item.value = {
         ...member,
+        aliases: [...member.aliases],
         employeeNumber: member.employeeNumber ?? '',
         phoneNumber: member.phoneNumber ?? '',
         companyProfileUrl: member.companyProfileUrl ?? '',
@@ -157,6 +166,7 @@ function openEdit(member: StaffMember) {
         githubUserId: member.githubUserId ?? '',
         slackUserId: member.slackUserId ?? '',
         teamsUserId: member.teamsUserId ?? '',
+        birthDate: member.birthDate ?? '',
         endDate: member.endDate ?? ''
     };
     salaryInput.value = member.salary != null ? String(member.salary) : '';
@@ -189,6 +199,7 @@ function save() {
         managerId: item.value.managerId?.trim() ? item.value.managerId.trim() : null,
         firstName,
         lastName,
+        aliases: normalizedAliases(item.value.aliases ?? []),
         employeeNumber: nullIfEmpty(item.value.employeeNumber ?? ''),
         email,
         phoneNumber: nullIfEmpty(item.value.phoneNumber ?? ''),
@@ -197,6 +208,7 @@ function save() {
         githubUserId: nullIfEmpty(item.value.githubUserId ?? ''),
         slackUserId: nullIfEmpty(item.value.slackUserId ?? ''),
         teamsUserId: nullIfEmpty(item.value.teamsUserId ?? ''),
+        birthDate: nullIfEmpty(String(item.value.birthDate ?? '')),
         startDate,
         endDate: item.value.endDate?.trim() ? item.value.endDate.trim() : null,
         salary: parseSalary()
@@ -233,6 +245,17 @@ defineExpose({
                         </v-col>
                         <v-col cols="12" sm="6">
                             <v-text-field variant="outlined" hide-details v-model="item.lastName" label="Last name" />
+                        </v-col>
+                        <v-col cols="12">
+                            <v-combobox
+                                v-model="item.aliases"
+                                variant="outlined"
+                                hide-details
+                                label="Aliases"
+                                multiple
+                                chips
+                                closable-chips
+                            />
                         </v-col>
                         <v-col cols="12" sm="6">
                             <v-text-field variant="outlined" hide-details v-model="item.email" label="Email" type="email" />
@@ -279,6 +302,16 @@ defineExpose({
                         </v-col>
                         <v-col cols="12" sm="6">
                             <v-text-field variant="outlined" hide-details v-model="item.phoneNumber" label="Phone number" />
+                        </v-col>
+                        <v-col cols="12" sm="6">
+                            <v-text-field
+                                variant="outlined"
+                                hide-details
+                                v-model="item.birthDate"
+                                label="Birth date"
+                                type="date"
+                                clearable
+                            />
                         </v-col>
                         <v-col cols="12" sm="6">
                             <v-text-field variant="outlined" hide-details v-model="item.startDate" label="Start date" type="date" />

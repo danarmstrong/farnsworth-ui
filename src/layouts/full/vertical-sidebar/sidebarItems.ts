@@ -80,6 +80,10 @@ const sidebarItems: menu[] = [
             {
                 title: 'CAP Projects',
                 to: '/admin/cap-projects'
+            },
+            {
+                title: 'Jira Board Watchers',
+                to: '/admin/jira-board-watchers'
             }
         ]
     },

@@ -57,6 +57,11 @@ const MainRoutes = {
             path: '/admin/cap-projects',
             component: () => import('@/views/admin/CapProjectsView.vue')
         },
+        {
+            name: 'Jira Board Watchers',
+            path: '/admin/jira-board-watchers',
+            component: () => import('@/views/admin/JiraBoardWatchersView.vue')
+        },
         // Legacy template routes
         {
             name: 'dashboard',
