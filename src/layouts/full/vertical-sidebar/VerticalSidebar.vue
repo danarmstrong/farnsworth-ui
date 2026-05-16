@@ -1,8 +1,6 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue';
 import { useUiStore } from '@/stores/ui';
-import { useCapProjectStore } from '@/features/jack-henry/cap-projects/stores/capProjectStore';
-import sidebarItems, { type menu } from './sidebarItems';
+import sidebarItems from './sidebarItems';
 
 import NavGroup from './NavGroup/index.vue';
 import NavItem from './NavItem/index.vue';
@@ -10,29 +8,8 @@ import NavCollapse from './NavCollapse/NavCollapse.vue';
 import ExtraBox from './extrabox/ExtraBox.vue';
 import Moreoption from './MoreOption/Moreoption.vue';
 import Logo from '../logo/Logo.vue';
-import { Icon } from '@iconify/vue';
 
 const ui = useUiStore();
-const capProjectStore = useCapProjectStore();
-
-onMounted(() => {
-    void capProjectStore.fetchCapProjects();
-});
-
-const sidebarMenu = computed((): menu[] =>
-    sidebarItems.map((item) => {
-        if (item.dynamicCapProjects) {
-            return {
-                ...item,
-                children: capProjectStore.capProjects.map((p) => ({
-                    title: p.projectName,
-                    to: `/admin/cap-projects?projectId=${encodeURIComponent(p.id)}`
-                }))
-            };
-        }
-        return item;
-    })
-);
 </script>
 
 <template>
@@ -56,7 +33,7 @@ const sidebarMenu = computed((): menu[] =>
         <perfect-scrollbar class="scrollnavbar bg-containerBg overflow-y-hidden">
             <v-list class="py-4 px-4 bg-containerBg">
                 <!---Menu Loop -->
-                <template v-for="(item, i) in sidebarMenu">
+                <template v-for="(item, i) in sidebarItems">
                     <!---Item Sub Header -->
                     <NavGroup :item="item" v-if="item.header" :key="item.title" />
                     <!---If Has Child -->

@@ -1,3 +1,5 @@
+import type { RouteLocationNormalized } from 'vue-router';
+
 const MainRoutes = {
     path: '/main',
     meta: {
@@ -26,42 +28,66 @@ const MainRoutes = {
             path: '/calendars/team-calendar',
             component: () => import('@/views/jack-henry/calendars/TeamCalendarView.vue')
         },
-        // Admin routes
+        // Configuration (Jack Henry reference data) — nested under two-panel shell
         {
-            name: 'Salary Plans',
-            path: '/admin/salary-plans',
-            component: () => import('@/views/admin/SalaryPlansView.vue')
+            path: '/configuration',
+            redirect: '/configuration/salary-plans',
+            component: () => import('@/views/configuration/ConfigurationLayout.vue'),
+            children: [
+                {
+                    name: 'Salary Plans',
+                    path: 'salary-plans',
+                    component: () => import('@/views/admin/SalaryPlansView.vue')
+                },
+                {
+                    name: 'Pay Grades',
+                    path: 'pay-grades',
+                    component: () => import('@/views/admin/PayGradesView.vue')
+                },
+                {
+                    name: 'Job Families',
+                    path: 'job-families',
+                    component: () => import('@/views/admin/JobFamiliesView.vue')
+                },
+                {
+                    name: 'Job Titles',
+                    path: 'job-titles',
+                    component: () => import('@/views/admin/JobTitlesView.vue')
+                },
+                {
+                    name: 'Cost Centers',
+                    path: 'cost-centers',
+                    component: () => import('@/views/admin/CostCentersView.vue')
+                },
+                {
+                    name: 'CAP Projects',
+                    path: 'cap-projects',
+                    component: () => import('@/views/admin/CapProjectsView.vue')
+                },
+                {
+                    name: 'Jira Projects',
+                    path: 'jira-projects',
+                    component: () => import('@/views/admin/JiraProjectsView.vue')
+                },
+                {
+                    name: 'Jira Board Watchers',
+                    path: 'jira-board-watchers',
+                    component: () => import('@/views/admin/JiraBoardWatchersView.vue')
+                }
+            ]
         },
+        // Legacy /admin/* URLs → configuration
+        { path: '/admin/salary-plans', redirect: '/configuration/salary-plans' },
+        { path: '/admin/pay-grades', redirect: '/configuration/pay-grades' },
+        { path: '/admin/job-families', redirect: '/configuration/job-families' },
+        { path: '/admin/job-titles', redirect: '/configuration/job-titles' },
+        { path: '/admin/cost-centers', redirect: '/configuration/cost-centers' },
         {
-            name: 'Pay Grades',
-            path: '/admin/pay-grades',
-            component: () => import('@/views/admin/PayGradesView.vue')
-        },
-        {
-            name: 'Job Families',
-            path: '/admin/job-families',
-            component: () => import('@/views/admin/JobFamiliesView.vue')
-        },
-        {
-            name: 'Job Titles',
-            path: '/admin/job-titles',
-            component: () => import('@/views/admin/JobTitlesView.vue')
-        },
-        {
-            name: 'Cost Centers',
-            path: '/admin/cost-centers',
-            component: () => import('@/views/admin/CostCentersView.vue')
-        },
-        {
-            name: 'CAP Projects',
             path: '/admin/cap-projects',
-            component: () => import('@/views/admin/CapProjectsView.vue')
+            redirect: (to: RouteLocationNormalized) => ({ path: '/configuration/cap-projects', query: to.query })
         },
-        {
-            name: 'Jira Board Watchers',
-            path: '/admin/jira-board-watchers',
-            component: () => import('@/views/admin/JiraBoardWatchersView.vue')
-        },
+        { path: '/admin/jira-projects', redirect: '/configuration/jira-projects' },
+        { path: '/admin/jira-board-watchers', redirect: '/configuration/jira-board-watchers' },
         // Legacy template routes
         {
             name: 'dashboard',

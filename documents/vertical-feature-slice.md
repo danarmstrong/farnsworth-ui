@@ -1,6 +1,6 @@
 # Vertical feature slice (Jack Henry admin CRUD)
 
-This guide describes how to add a **vertical feature slice**: colocated domain types, a Pinia store, and Vue components under `src/features/jack-henry/<domain-kebab>/`, plus a thin **page** in `src/views/admin/`, **routing**, and **sidebar** navigation.
+This guide describes how to add a **vertical feature slice**: colocated domain types, a Pinia store, and Vue components under `src/features/jack-henry/<domain-kebab>/`, plus a thin **page** in `src/views/admin/`, **routing** under **`/configuration`**, and **Configuration** left-rail navigation.
 
 The **reference implementation** is **Job Titles**. Use it when copying structure and conventions.
 
@@ -13,8 +13,9 @@ The **reference implementation** is **Job Titles**. Use it when copying structur
 | Form (dialog CRUD UI) | [`src/features/jack-henry/job-titles/components/JobTitleForm.vue`](../src/features/jack-henry/job-titles/components/JobTitleForm.vue) |
 | Table (list + wiring) | [`src/features/jack-henry/job-titles/components/JobTitleTable.vue`](../src/features/jack-henry/job-titles/components/JobTitleTable.vue) |
 | Page shell | [`src/views/admin/JobTitlesView.vue`](../src/views/admin/JobTitlesView.vue) |
-| Route | [`src/router/MainRoutes.ts`](../src/router/MainRoutes.ts) (admin block: `name`, `path`, lazy `component`) |
-| Sidebar | [`src/layouts/full/vertical-sidebar/sidebarItems.ts`](../src/layouts/full/vertical-sidebar/sidebarItems.ts) (`Admin` → `children`) |
+| Route | [`src/router/MainRoutes.ts`](../src/router/MainRoutes.ts) (`/configuration` parent: nested `path`, lazy `component`) |
+| Configuration nav | [`src/views/configuration/configurationNavItems.ts`](../src/views/configuration/configurationNavItems.ts) (`configurationSectionLinks`) and [`ConfigurationLayout.vue`](../src/views/configuration/ConfigurationLayout.vue) (left rail) |
+| Main sidebar | [`src/layouts/full/vertical-sidebar/sidebarItems.ts`](../src/layouts/full/vertical-sidebar/sidebarItems.ts) (top-level **Configuration** only; no per-feature entries here) |
 
 ### Shared infrastructure
 
@@ -33,8 +34,8 @@ flowchart LR
         table[components Table]
     end
     view[views admin View]
-    routes[MainRoutes]
-    sidebar[sidebarItems]
+    routes[MainRoutes configuration children]
+    configNav[configurationNavItems + ConfigurationLayout]
     api[axios REST]
     types --> store
     store --> api
@@ -42,7 +43,7 @@ flowchart LR
     table --> form
     view --> table
     routes --> view
-    sidebar --> routes
+    configNav --> routes
 ```
 
 ---
@@ -129,33 +130,29 @@ Keep the page **thin**: a `v-card`, page title, and a single table component—s
 
 ## 6. Router (`src/router/MainRoutes.ts`)
 
-Under `MainRoutes.children`, add a child next to other **`/admin/*`** routes:
+Under the **`/configuration`** parent route’s **`children`** array (same level as existing feature segments), add:
 
 - **`name`**: human-readable route name (for example `'Job Titles'`).
-- **`path`**: absolute path (for example `'/admin/job-titles'`).
+- **`path`**: **relative** segment (for example `'job-titles'`) so the full URL is `'/configuration/job-titles'`.
 - **`component`**: lazy import — `() => import('@/views/admin/<Feature>View.vue')`.
+
+Legacy URLs under `/admin/...` redirect to the matching `/configuration/...` route.
 
 ---
 
-## 7. Sidebar (`src/layouts/full/vertical-sidebar/sidebarItems.ts`)
+## 7. Configuration navigation
 
-Under the **Admin** item’s **`children`** array, add:
+1. Add a `{ title, to }` entry to **`configurationSectionLinks`** in [`configurationNavItems.ts`](../src/views/configuration/configurationNavItems.ts) — **`to`** must be `'/configuration/<segment>'` and match the route child path.
+2. Add the matching **`children`** entry on the `/configuration` route in `MainRoutes.ts`.
 
-```ts
-{
-    title: 'Job Titles',
-    to: '/admin/job-titles'
-}
-```
-
-Match **`title`** and **`to`** to the route’s display name and path.
+The main sidebar [`sidebarItems.ts`](../src/layouts/full/vertical-sidebar/sidebarItems.ts) only needs the single top-level **Configuration** item unless you are introducing a wholly new top-level area.
 
 ---
 
 ## 8. Optional variations
 
 - **Related entities**: Import other feature stores only where the UI needs them; prefer **fetch-on-demand** in the form/table when caches are empty (see Job Titles + Pay Grades + Job Families).
-- **Non-admin features**: Use a different path prefix (for example `/staff/...`) and add or reuse an appropriate **sidebar** section (compare **Staff** vs **Admin** in [`sidebarItems.ts`](../src/layouts/full/vertical-sidebar/sidebarItems.ts)).
+- **Non-configuration features**: Use a different path prefix (for example `/staff/...`) and add an appropriate **sidebar** section in [`sidebarItems.ts`](../src/layouts/full/vertical-sidebar/sidebarItems.ts) (compare **Staff Members** vs **Configuration**).
 
 ---
 
@@ -164,5 +161,5 @@ Match **`title`** and **`to`** to the route’s display name and path.
 1. **`VITE_API_URL`** (or default `/`) is correct for the environment; REST paths match the API.
 2. Types compile; store methods mirror backend contracts.
 3. Create, edit, delete, and list behave end-to-end with loading and error states.
-4. Route loads under **`FullLayout`** with auth **`requiresAuth`** as for sibling admin routes.
-5. Sidebar entry navigates to the new page.
+4. Route loads under **`FullLayout`** → **`ConfigurationLayout`** with auth **`requiresAuth`** as for sibling main routes.
+5. The new segment appears in the **Configuration** left rail and navigates correctly.

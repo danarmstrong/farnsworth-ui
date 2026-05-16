@@ -13,8 +13,6 @@ export interface menu {
     disabled?: boolean;
     type?: string;
     subCaption?: string;
-    /** When true, `VerticalSidebar` replaces `children` with CAP projects from the API (titles use `projectName`). */
-    dynamicCapProjects?: boolean;
 }
 
 const sidebarItems: menu[] = [
@@ -44,48 +42,10 @@ const sidebarItems: menu[] = [
         ]
     },
     {
-        title: 'CAP Projects',
-        icon: 'widget-add-line-duotone',
-        BgColor: 'success',
-        to: '/admin/cap-projects',
-        dynamicCapProjects: true,
-        children: []
-    },
-    {
-        title: 'Admin',
-        icon: 'settings-minimalistic-line-duotone',
+        title: 'Configuration',
+        icon: 'tuning-2-line-duotone',
         BgColor: 'primary',
-        to: '/admin',
-        children: [
-            {
-                title: 'Salary Plans',
-                to: '/admin/salary-plans'
-            },
-            {
-                title: 'Pay Grades',
-                to: '/admin/pay-grades'
-            },
-            {
-                title: 'Job Families',
-                to: '/admin/job-families'
-            },
-            {
-                title: 'Job Titles',
-                to: '/admin/job-titles'
-            },
-            {
-                title: 'Cost Centers',
-                to: '/admin/cost-centers'
-            },
-            {
-                title: 'CAP Projects',
-                to: '/admin/cap-projects'
-            },
-            {
-                title: 'Jira Board Watchers',
-                to: '/admin/jira-board-watchers'
-            }
-        ]
+        to: '/configuration/salary-plans'
     },
     { header: 'Home' },
     {

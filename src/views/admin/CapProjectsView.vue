@@ -16,7 +16,7 @@ const projectId = computed(() => {
 });
 
 function goToCapProjectsList(): void {
-    void router.replace({ path: '/admin/cap-projects', query: {} });
+    void router.replace({ path: '/configuration/cap-projects', query: {} });
 }
 </script>
 
