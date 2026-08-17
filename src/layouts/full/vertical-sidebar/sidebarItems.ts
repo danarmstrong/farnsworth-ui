@@ -1,7 +1,7 @@
 export interface menu {
     header?: string;
     title?: string;
-    icon?: any;
+    icon?: string;
     to?: string;
     chip?: string;
     BgColor?: string;
@@ -40,6 +40,13 @@ const sidebarItems: menu[] = [
                 to: '/calendars/team-calendar'
             }
         ]
+    },
+    {
+        title: 'CAP Reports',
+        icon: 'chart-2-line-duotone',
+        BgColor: 'info',
+        to: '/cap-reports',
+        children: []
     },
     {
         title: 'Configuration',

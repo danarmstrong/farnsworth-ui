@@ -1,15 +1,46 @@
 <script setup lang="ts">
+import { computed, onMounted } from 'vue';
 import { useUiStore } from '@/stores/ui';
 import sidebarItems from './sidebarItems';
+import { useCapProjectStore } from '@/features/jack-henry/cap-projects/stores/capProjectStore';
 
 import NavGroup from './NavGroup/index.vue';
 import NavItem from './NavItem/index.vue';
 import NavCollapse from './NavCollapse/NavCollapse.vue';
 import ExtraBox from './extrabox/ExtraBox.vue';
-import Moreoption from './MoreOption/Moreoption.vue';
 import Logo from '../logo/Logo.vue';
 
 const ui = useUiStore();
+const capProjectStore = useCapProjectStore();
+
+onMounted(() => {
+    void capProjectStore.fetchCapProjects();
+});
+
+const navItems = computed(() => {
+    const capReportChildren = [...capProjectStore.capProjects]
+        .sort((a, b) => {
+            const aLabel = (a.projectName || a.title || '').trim();
+            const bLabel = (b.projectName || b.title || '').trim();
+            return aLabel.localeCompare(bLabel, undefined, { sensitivity: 'base' });
+        })
+        .map((project) => ({
+            title: (project.projectName || project.title || 'Untitled CAP Project').trim(),
+            to: `/cap-reports/${project.id}`
+        }));
+
+    return sidebarItems.map((item) => {
+        if (item.title !== 'CAP Reports') {
+            return item;
+        }
+
+        return {
+            ...item,
+            to: '/cap-reports',
+            children: capReportChildren
+        };
+    });
+});
 </script>
 
 <template>
@@ -33,13 +64,13 @@ const ui = useUiStore();
         <perfect-scrollbar class="scrollnavbar bg-containerBg overflow-y-hidden">
             <v-list class="py-4 px-4 bg-containerBg">
                 <!---Menu Loop -->
-                <template v-for="(item, i) in sidebarItems">
+                <template v-for="item in navItems" :key="item.title || item.header">
                     <!---Item Sub Header -->
-                    <NavGroup :item="item" v-if="item.header" :key="item.title" />
+                    <NavGroup :item="item" v-if="item.header" :key="item.header" />
                     <!---If Has Child -->
-                    <NavCollapse class="leftPadding" :item="item" :level="0" v-else-if="item.children" />
+                    <NavCollapse class="leftPadding" :item="item" :level="0" :key="item.title" v-else-if="item.children" />
                     <!---Single Item-->
-                    <NavItem :item="item" v-else class="leftPadding" />
+                    <NavItem :item="item" :key="item.title" v-else class="leftPadding" />
                     <!---End Single Item-->
                 </template>
                 <!-- <Moreoption/> -->

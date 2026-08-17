@@ -28,6 +28,16 @@ const MainRoutes = {
             path: '/calendars/team-calendar',
             component: () => import('@/views/jack-henry/calendars/TeamCalendarView.vue')
         },
+        {
+            name: 'CAP Reports',
+            path: '/cap-reports',
+            component: () => import('@/views/jack-henry/cap-reports/CapReportsView.vue')
+        },
+        {
+            name: 'CAP Report Detail',
+            path: '/cap-reports/:projectId',
+            component: () => import('@/views/jack-henry/cap-reports/CapReportsView.vue')
+        },
         // Configuration (Jack Henry reference data) — nested under two-panel shell
         {
             path: '/configuration',
@@ -62,6 +72,21 @@ const MainRoutes = {
                 {
                     name: 'CAP Projects',
                     path: 'cap-projects',
+                    beforeEnter: (to: RouteLocationNormalized) => {
+                        const rawProjectId = to.query.projectId;
+                        const projectId =
+                            typeof rawProjectId === 'string'
+                                ? rawProjectId.trim()
+                                : Array.isArray(rawProjectId)
+                                  ? String(rawProjectId[0] ?? '').trim()
+                                  : '';
+
+                        if (projectId) {
+                            return { path: `/cap-reports/${projectId}` };
+                        }
+
+                        return true;
+                    },
                     component: () => import('@/views/admin/CapProjectsView.vue')
                 },
                 {
@@ -84,7 +109,21 @@ const MainRoutes = {
         { path: '/admin/cost-centers', redirect: '/configuration/cost-centers' },
         {
             path: '/admin/cap-projects',
-            redirect: (to: RouteLocationNormalized) => ({ path: '/configuration/cap-projects', query: to.query })
+            redirect: (to: RouteLocationNormalized) => {
+                const rawProjectId = to.query.projectId;
+                const projectId =
+                    typeof rawProjectId === 'string'
+                        ? rawProjectId.trim()
+                        : Array.isArray(rawProjectId)
+                          ? String(rawProjectId[0] ?? '').trim()
+                          : '';
+
+                if (projectId) {
+                    return { path: `/cap-reports/${projectId}` };
+                }
+
+                return { path: '/configuration/cap-projects', query: to.query };
+            }
         },
         { path: '/admin/jira-projects', redirect: '/configuration/jira-projects' },
         { path: '/admin/jira-board-watchers', redirect: '/configuration/jira-board-watchers' },
