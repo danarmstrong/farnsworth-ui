@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useJiraProjectStore } from '@/features/jack-henry/jira-projects/stores/jiraProjectStore';
 import JiraProjectForm from '@/features/jack-henry/jira-projects/components/JiraProjectForm.vue';
-import type { JiraProject, JiraProjectFormSubmitPayload } from '@/features/jack-henry/jira-projects/types/JiraProject';
+import type { JiraProject, JiraProjectFormSubmitPayload, JiraProjectSyncQueueResponse } from '@/features/jack-henry/jira-projects/types/JiraProject';
 import { useConfirm } from '@/utils/helpers/useConfirm';
 import { PencilIcon, RefreshIcon, TrashIcon } from 'vue-tabler-icons';
 
@@ -82,6 +82,10 @@ function lastSyncedTextClass(tone: LastSyncedTone): string {
     return 'text-error';
 }
 
+function wasQueued(result: JiraProjectSyncQueueResponse): boolean {
+    return typeof result.queued === 'boolean' ? result.queued : true;
+}
+
 function editItem(item: JiraProject) {
     formRef.value?.openEdit(item);
 }
@@ -119,7 +123,7 @@ async function syncItem(item: JiraProject) {
             syncSnackbar.value = true;
         } else if (result) {
             syncSnackbarColor.value = 'success';
-            syncSnackbarText.value = result.queued ? 'Sync queued.' : 'Sync was not queued.';
+            syncSnackbarText.value = wasQueued(result) ? 'Sync queued.' : 'Sync was not queued.';
             syncSnackbar.value = true;
             await store.fetchJiraProjects();
         }

@@ -117,6 +117,7 @@ Typical responsibilities:
 - **`computed`** for filtered rows (search), and maps from related ids to display labels when needed.
 - **`isBusy`**: combine loading/saving/deleting/store.loading for disabling actions.
 - Template: search row, form slot, **`v-table`** (or project-standard table) with loading and empty states; optional **scoped CSS** class for column widths.
+- **Paged tables**: if the backend returns a paged envelope, store the current `page`, `pageSize`, `totalCount`, and `totalPages` alongside the current `items`; bind `v-pagination` to the current page and use a compact visible window such as `:total-visible="7"` so the pager does not render every page number. If other screens need a full lookup list, expose a separate fetch-all helper or cache path rather than reusing the current page items.
 
 See [`JobTitleTable.vue`](../src/features/jack-henry/job-titles/components/JobTitleTable.vue).
 

@@ -30,6 +30,12 @@ const sidebarItems: menu[] = [
         to: '/staff-members'
     },
     {
+        title: 'Repositories',
+        icon: 'code-2-line-duotone',
+        BgColor: 'info',
+        to: '/repositories'
+    },
+    {
         title: 'Calendars',
         icon: 'calendar-line-duotone',
         BgColor: 'info',

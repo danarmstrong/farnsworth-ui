@@ -1,11 +1,15 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useJobTitleStore } from '@/features/jack-henry/job-titles/stores/jobTitleStore';
+import { JOB_TITLES_DEFAULT_PAGE_SIZE, useJobTitleStore } from '@/features/jack-henry/job-titles/stores/jobTitleStore';
 import JobTitleForm from '@/features/jack-henry/job-titles/components/JobTitleForm.vue';
 import { usePayGradeStore } from '@/features/jack-henry/pay-grades/stores/payGradeStore';
 import { useJobFamilyStore } from '@/features/jack-henry/job-families/stores/jobFamilyStore';
 import type { ExemptionStatus, JobTitle } from '@/features/jack-henry/job-titles/types/JobTitle';
 import { useConfirm } from '@/utils/helpers/useConfirm';
+import { PencilIcon, TrashIcon } from 'vue-tabler-icons';
+
+const PencilIconComponent = PencilIcon;
+const TrashIconComponent = TrashIcon;
 
 type JobTitleFormSubmitPayload = {
     id?: string;
@@ -21,9 +25,10 @@ const store = useJobTitleStore();
 const payGradeStore = usePayGradeStore();
 const jobFamilyStore = useJobFamilyStore();
 const confirm = useConfirm();
+const pageSizeOptions = [10, 25, 50];
 
 onMounted(() => {
-    store.fetchJobTitles();
+    void loadPage(1);
     if (!payGradeStore.payGrades.length) {
         void payGradeStore.fetchPayGrades();
     }
@@ -33,17 +38,35 @@ onMounted(() => {
 });
 
 const search = ref('');
+const page = ref(1);
+const pageSize = ref(JOB_TITLES_DEFAULT_PAGE_SIZE);
 const saving = ref(false);
 const deleting = ref(false);
 const jobTitleFormRef = ref<InstanceType<typeof JobTitleForm> | null>(null);
 const isBusy = computed(() => saving.value || deleting.value || store.loading);
+const hasPagination = computed(() => store.totalPages > 1);
 
 //Methods
 const filteredList = computed(() => {
     const normalizedSearch = search.value.toLowerCase();
-    return store.jobTitles.filter((jobTitle: JobTitle) => {
+    return store.pagedJobTitles.filter((jobTitle: JobTitle) => {
         return jobTitle.title.toLowerCase().includes(normalizedSearch) || jobTitle.longTitle.toLowerCase().includes(normalizedSearch);
     });
+});
+
+const pageSummary = computed(() => {
+    if (!store.totalCount) {
+        return 'No job titles found.';
+    }
+
+    if (search.value.trim()) {
+        const count = filteredList.value.length;
+        return count === 1 ? 'Showing 1 matching entry on this page' : `Showing ${count} matching entries on this page`;
+    }
+
+    const start = (page.value - 1) * pageSize.value + 1;
+    const end = Math.min(page.value * pageSize.value, store.totalCount);
+    return `Showing ${start} to ${end} of ${store.totalCount} entries`;
 });
 
 const payGradeLabelById = computed(() => {
@@ -65,6 +88,27 @@ function getJobFamilyLabel(jobFamilyId: string | null): string {
     return jobFamilyLabelById.value.get(jobFamilyId) || jobFamilyId;
 }
 
+async function loadPage(targetPage: number): Promise<void> {
+    page.value = Math.max(1, targetPage);
+    await store.fetchJobTitles({
+        page: page.value,
+        pageSize: pageSize.value
+    });
+}
+
+async function changePage(nextPage: number): Promise<void> {
+    if (nextPage === page.value) {
+        return;
+    }
+
+    await loadPage(nextPage);
+}
+
+async function changePageSize(nextPageSize: number): Promise<void> {
+    pageSize.value = nextPageSize;
+    await loadPage(1);
+}
+
 function editItem(item: JobTitle) {
     jobTitleFormRef.value?.openEdit(item);
 }
@@ -80,7 +124,11 @@ async function deleteItem(item: JobTitle) {
 
     deleting.value = true;
     try {
+        const shouldStepBack = page.value > 1 && page.value === store.totalPages && store.pagedJobTitles.length === 1;
         await store.deleteJobTitle(item.id);
+        if (!store.error) {
+            await loadPage(shouldStepBack ? page.value - 1 : page.value);
+        }
     } finally {
         deleting.value = false;
     }
@@ -114,6 +162,7 @@ async function save(payload: JobTitleFormSubmitPayload) {
         }
 
         if (!store.error) {
+            await loadPage(page.value);
             jobTitleFormRef.value?.close();
         }
     } finally {
@@ -123,6 +172,10 @@ async function save(payload: JobTitleFormSubmitPayload) {
 </script>
 
 <template>
+    <v-alert v-if="store.error" type="error" variant="tonal" class="mb-4" closable @click:close="clearStoreError">
+        {{ store.error }}
+    </v-alert>
+
     <v-row>
         <v-col cols="12" lg="4" md="6">
             <v-text-field density="compact" v-model="search" label="Search Job Titles" hide-details variant="outlined"></v-text-field>
@@ -140,9 +193,8 @@ async function save(payload: JobTitleFormSubmitPayload) {
     </v-row>
 
     <!-- The data table -->
-    <perfect-scrollbar class="no-scrollbar">
-        <div class="border-table">
-            <v-table class="mt-5 job-title-table">
+    <div class="border-table">
+        <v-table class="mt-5 job-title-table">
                 <thead>
                     <tr>
                         <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-code">Job Code</th>
@@ -154,7 +206,7 @@ async function save(payload: JobTitleFormSubmitPayload) {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-if="store.loading && !store.jobTitles.length">
+                    <tr v-if="store.loading && !store.pagedJobTitles.length">
                         <td colspan="6" class="text-subtitle-1 text-center py-6">Loading job titles...</td>
                     </tr>
                     <tr v-else-if="!filteredList.length">
@@ -171,14 +223,14 @@ async function save(payload: JobTitleFormSubmitPayload) {
                                 <v-tooltip text="Edit">
                                     <template v-slot:activator="{ props }">
                                         <v-btn icon flat :disabled="isBusy" @click="editItem(item)" v-bind="props">
-                                            <PencilIcon stroke-width="1.5" size="20" class="text-primary" />
+                                            <component :is="PencilIconComponent" stroke-width="1.5" size="20" class="text-primary" />
                                         </v-btn>
                                     </template>
                                 </v-tooltip>
                                 <v-tooltip text="Delete">
                                     <template v-slot:activator="{ props }">
                                         <v-btn icon flat :disabled="isBusy" @click="deleteItem(item)" v-bind="props">
-                                            <TrashIcon stroke-width="1.5" size="20" class="text-error" />
+                                            <component :is="TrashIconComponent" stroke-width="1.5" size="20" class="text-error" />
                                         </v-btn>
                                     </template>
                                 </v-tooltip>
@@ -186,9 +238,40 @@ async function save(payload: JobTitleFormSubmitPayload) {
                         </td>
                     </tr>
                 </tbody>
-            </v-table>
+        </v-table>
+    </div>
+
+    <v-divider class="my-4"></v-divider>
+
+    <div class="d-sm-flex justify-space-between align-center gap-4">
+        <div class="text-subtitle-1 text-grey100">{{ pageSummary }}</div>
+
+        <div class="d-flex align-center flex-wrap justify-end gap-3">
+            <v-select
+                :model-value="pageSize"
+                :items="pageSizeOptions"
+                label="Rows per page"
+                density="compact"
+                hide-details
+                variant="outlined"
+                class="job-title-page-size"
+                :disabled="isBusy"
+                @update:modelValue="changePageSize"
+            ></v-select>
+
+            <v-pagination
+                v-if="hasPagination"
+                :model-value="page"
+                :length="store.totalPages"
+                :total-visible="7"
+                rounded="circle"
+                density="compact"
+                class="text-subtitle-1 text-grey100"
+                :disabled="isBusy"
+                @update:modelValue="changePage"
+            ></v-pagination>
         </div>
-    </perfect-scrollbar>
+    </div>
 </template>
 
 <style lang="scss">
@@ -208,5 +291,9 @@ async function save(payload: JobTitleFormSubmitPayload) {
         white-space: normal;
         word-break: break-word;
     }
+}
+
+.job-title-page-size {
+    max-width: 160px;
 }
 </style>

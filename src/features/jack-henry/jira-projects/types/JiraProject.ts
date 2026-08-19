@@ -7,7 +7,7 @@ export interface JiraProject {
 }
 
 export interface JiraProjectSyncQueueResponse {
-    queued: boolean;
+    queued?: boolean;
 }
 
 export interface CreateJiraProjectDto {

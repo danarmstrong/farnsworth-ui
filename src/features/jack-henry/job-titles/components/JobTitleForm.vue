@@ -56,11 +56,11 @@ const jobFamilyOptions = computed<SelectOption<string | null>[]>(() => [
 const exemptionStatusOptions: SelectOption<ExemptionStatus>[] = [
     {
         label: 'Exempt',
-        value: 'exempt'
+        value: 'Exempt'
     },
     {
         label: 'Not Exempt',
-        value: 'notexempt'
+        value: 'NotExempt'
     }
 ];
 const item = ref<JobTitle>({
@@ -70,7 +70,7 @@ const item = ref<JobTitle>({
     title: '',
     longTitle: '',
     jobCode: '',
-    exemptionStatus: 'notexempt'
+    exemptionStatus: 'NotExempt'
 });
 
 const formTitle = computed(() => (mode.value === 'create' ? 'New Job Title' : 'Edit Job Title'));
@@ -102,7 +102,7 @@ function resetForm() {
         title: '',
         longTitle: '',
         jobCode: '',
-        exemptionStatus: 'notexempt'
+        exemptionStatus: 'NotExempt'
     };
     mode.value = 'create';
 }

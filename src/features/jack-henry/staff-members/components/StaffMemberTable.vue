@@ -7,6 +7,9 @@ import { useJobTitleStore } from '@/features/jack-henry/job-titles/stores/jobTit
 import { useCostCenterStore } from '@/features/jack-henry/cost-centers/stores/costCenterStore';
 import type { StaffMember } from '@/features/jack-henry/staff-members/types/StaffMember';
 import { useConfirm } from '@/utils/helpers/useConfirm';
+import { PencilIcon, TrashIcon } from 'vue-tabler-icons';
+
+const PerfectScrollbarTag = 'perfect-scrollbar';
 
 const store = useStaffMemberStore();
 const jobTitleStore = useJobTitleStore();
@@ -15,8 +18,8 @@ const confirm = useConfirm();
 
 onMounted(() => {
     void store.fetchStaffMembers();
-    if (!jobTitleStore.jobTitles.length) {
-        void jobTitleStore.fetchJobTitles();
+    if (!jobTitleStore.hasLoadedAllJobTitles) {
+        void jobTitleStore.fetchAllJobTitles();
     }
     if (!costCenterStore.costCenters.length) {
         void costCenterStore.fetchCostCenters();
@@ -51,20 +54,12 @@ const jobTitleLabelById = computed(() => {
     return new Map(jobTitleStore.jobTitles.map((jt) => [jt.id, jt.title]));
 });
 
-const costCenterLabelById = computed(() => {
-    return new Map(costCenterStore.costCenters.map((cc) => [cc.id, `${cc.departmentNumber} — ${cc.name}`]));
-});
-
 const staffNameById = computed(() => {
     return new Map(store.staffMembers.map((m) => [m.id, `${m.firstName} ${m.lastName}`.trim() || m.email]));
 });
 
 function getJobTitleLabel(jobTitleId: string): string {
     return jobTitleLabelById.value.get(jobTitleId) || jobTitleId;
-}
-
-function getCostCenterLabel(costCenterId: string): string {
-    return costCenterLabelById.value.get(costCenterId) || costCenterId;
 }
 
 function getManagerLabel(managerId: string | null): string {
@@ -102,6 +97,7 @@ function clearStoreError() {
 
 function toDto(payload: StaffMemberFormSubmitPayload) {
     const { id: _id, ...rest } = payload;
+    void _id;
     return rest;
 }
 
@@ -140,7 +136,7 @@ async function save(payload: StaffMemberFormSubmitPayload) {
         </v-col>
     </v-row>
 
-    <perfect-scrollbar class="no-scrollbar">
+    <component :is="PerfectScrollbarTag" class="no-scrollbar">
         <div class="border-table">
             <v-table class="mt-5 staff-member-table">
                 <thead>
@@ -204,7 +200,7 @@ async function save(payload: StaffMemberFormSubmitPayload) {
                 </tbody>
             </v-table>
         </div>
-    </perfect-scrollbar>
+    </component>
 </template>
 
 <style lang="scss">

@@ -124,8 +124,8 @@ const canSave = computed(() => {
 });
 
 onMounted(() => {
-    if (!jobTitleStore.jobTitles.length) {
-        void jobTitleStore.fetchJobTitles();
+    if (!jobTitleStore.hasLoadedAllJobTitles) {
+        void jobTitleStore.fetchAllJobTitles();
     }
     if (!costCenterStore.costCenters.length) {
         void costCenterStore.fetchCostCenters();

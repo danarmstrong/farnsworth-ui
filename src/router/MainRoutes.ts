@@ -19,6 +19,11 @@ const MainRoutes = {
             component: () => import('@/views/jack-henry/staff-members/StaffMembersView.vue')
         },
         {
+            name: 'Repositories',
+            path: '/repositories',
+            component: () => import('@/views/jack-henry/repositories/RepositoriesView.vue')
+        },
+        {
             name: 'Staff Member Detail',
             path: '/staff-members/:id',
             component: () => import('@/views/jack-henry/staff-members/StaffMemberDetailView.vue')
@@ -88,6 +93,11 @@ const MainRoutes = {
                         return true;
                     },
                     component: () => import('@/views/admin/CapProjectsView.vue')
+                },
+                {
+                    name: 'Configuration Teams',
+                    path: 'teams',
+                    component: () => import('@/views/admin/TeamsView.vue')
                 },
                 {
                     name: 'Jira Projects',
