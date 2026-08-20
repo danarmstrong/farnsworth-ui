@@ -105,6 +105,11 @@ const MainRoutes = {
                     component: () => import('@/views/admin/JiraProjectsView.vue')
                 },
                 {
+                    name: 'Jira Issue Details',
+                    path: 'jira-projects/:projectKey/issues/:issueId',
+                    component: () => import('@/views/admin/JiraIssueDetailsView.vue')
+                },
+                {
                     name: 'Jira Project Details',
                     path: 'jira-projects/:projectKey',
                     component: () => import('@/views/admin/JiraProjectDetailsView.vue')
@@ -145,6 +150,13 @@ const MainRoutes = {
             path: '/admin/jira-projects/:projectKey',
             redirect: (to: RouteLocationNormalized) => ({
                 path: `/configuration/jira-projects/${String(to.params.projectKey ?? '').trim()}`,
+                query: to.query
+            })
+        },
+        {
+            path: '/admin/jira-projects/:projectKey/issues/:issueId',
+            redirect: (to: RouteLocationNormalized) => ({
+                path: `/configuration/jira-projects/${String(to.params.projectKey ?? '').trim()}/issues/${String(to.params.issueId ?? '').trim()}`,
                 query: to.query
             })
         },

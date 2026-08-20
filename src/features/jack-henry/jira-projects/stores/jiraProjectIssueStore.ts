@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { isAxiosError } from 'axios';
 import axios from '@/utils/axios';
-import type { JiraIssuePageResponse } from '@/features/jack-henry/jira-projects/types/JiraIssue';
+import type { JiraIssue, JiraIssuePageResponse } from '@/features/jack-henry/jira-projects/types/JiraIssue';
 
 const jiraProjectIssuesPath = '/config/jira/projects';
 export const JIRA_PROJECT_ISSUES_DEFAULT_PAGE_SIZE = 10;
@@ -25,6 +25,9 @@ export const useJiraProjectIssueStore = defineStore('jiraProjectIssues', () => {
     const issues = ref<JiraIssuePageResponse['items']>([]);
     const loading = ref(false);
     const error = ref<string | null>(null);
+    const selectedIssue = ref<JiraIssue | null>(null);
+    const selectedIssueLoading = ref(false);
+    const selectedIssueError = ref<string | null>(null);
     const page = ref(1);
     const pageSize = ref(JIRA_PROJECT_ISSUES_DEFAULT_PAGE_SIZE);
     const totalCount = ref(0);
@@ -37,6 +40,16 @@ export const useJiraProjectIssueStore = defineStore('jiraProjectIssues', () => {
         pageSize.value = data.pageSize;
         totalCount.value = data.totalCount;
         totalPages.value = data.totalPages;
+    }
+
+    function upsertIssue(issue: JiraIssue): void {
+        const index = issues.value.findIndex((existingIssue) => existingIssue.id === issue.id);
+        if (index === -1) {
+            issues.value = [issue, ...issues.value];
+            return;
+        }
+
+        issues.value[index] = issue;
     }
 
     async function fetchProjectIssues(projectKey: string, options: FetchJiraProjectIssuesOptions = {}): Promise<JiraIssuePageResponse | null> {
@@ -72,8 +85,52 @@ export const useJiraProjectIssueStore = defineStore('jiraProjectIssues', () => {
         }
     }
 
+    async function getProjectIssue(projectKey: string, issueId: string): Promise<JiraIssue | null> {
+        selectedIssueError.value = null;
+
+        const normalizedKey = projectKey.trim();
+        const normalizedIssueId = issueId.trim();
+
+        if (!normalizedKey || !normalizedIssueId) {
+            selectedIssue.value = null;
+            return null;
+        }
+
+        if (selectedIssue.value?.id === normalizedIssueId && selectedIssue.value.projectKey === normalizedKey) {
+            return selectedIssue.value;
+        }
+
+        selectedIssue.value = null;
+        selectedIssueLoading.value = true;
+        try {
+            const { data } = await axios.get<JiraIssue>(
+                `${jiraProjectIssuesPath}/${encodeURIComponent(normalizedKey)}/issues/${encodeURIComponent(normalizedIssueId)}`
+            );
+
+            activeProjectKey.value = normalizedKey;
+            selectedIssue.value = data;
+            upsertIssue(data);
+            return data;
+        } catch (err) {
+            selectedIssue.value = null;
+            selectedIssueError.value = setErrorMessage(err, 'Failed to fetch Jira issue');
+            return null;
+        } finally {
+            selectedIssueLoading.value = false;
+        }
+    }
+
     function clearError(): void {
         error.value = null;
+    }
+
+    function clearSelectedIssueError(): void {
+        selectedIssueError.value = null;
+    }
+
+    function clearSelectedIssue(): void {
+        selectedIssue.value = null;
+        selectedIssueError.value = null;
     }
 
     function setErrorMessage(err: unknown, fallback: string): string {
@@ -88,13 +145,19 @@ export const useJiraProjectIssueStore = defineStore('jiraProjectIssues', () => {
         issues,
         loading,
         error,
+        selectedIssue,
+        selectedIssueLoading,
+        selectedIssueError,
         page,
         pageSize,
         totalCount,
         totalPages,
         activeProjectKey,
         fetchProjectIssues,
-        clearError
+        getProjectIssue,
+        clearError,
+        clearSelectedIssueError,
+        clearSelectedIssue
     };
 });
 

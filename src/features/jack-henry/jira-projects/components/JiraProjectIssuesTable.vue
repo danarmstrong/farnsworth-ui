@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
+import { RouterLink } from 'vue-router';
 import {
     JIRA_PROJECT_ISSUES_DEFAULT_PAGE_SIZE,
     useJiraProjectIssueStore
@@ -118,6 +119,19 @@ function issueAssignee(issue: JiraIssue): string {
 
 function issueReporter(issue: JiraIssue): string {
     return issue.reporterStaffMember?.displayName || issue.reporter || '—';
+}
+
+function staffMemberRoute(staffMember: JiraIssue['assigneeStaffMember'] | JiraIssue['reporterStaffMember']) {
+    if (!staffMember?.id) {
+        return null;
+    }
+
+    return {
+        name: 'Staff Member Detail',
+        params: {
+            id: staffMember.id
+        }
+    };
 }
 
 function issuePriority(issue: JiraIssue): string {
@@ -304,7 +318,14 @@ function clearStoreError(): void {
                     <td colspan="9" class="text-subtitle-1 text-center py-6">No Jira issues found.</td>
                 </tr>
                 <tr v-else v-for="issue in filteredIssues" :key="issueKey(issue)">
-                    <td class="text-subtitle-1 text-no-wrap col-key">{{ issueKey(issue) }}</td>
+                    <td class="text-subtitle-1 text-no-wrap col-key">
+                        <RouterLink
+                            :to="{ name: 'Jira Issue Details', params: { projectKey: props.projectKey, issueId: issue.id } }"
+                            class="text-primary text-decoration-none font-weight-medium"
+                        >
+                            {{ issueKey(issue) }}
+                        </RouterLink>
+                    </td>
                     <td class="text-subtitle-1 col-summary">{{ issueSummary(issue) }}</td>
                     <td class="text-subtitle-1 text-no-wrap col-type">{{ issueType(issue) }}</td>
                     <td class="text-subtitle-1 text-no-wrap col-status">
@@ -312,8 +333,26 @@ function clearStoreError(): void {
                             {{ issueStatus(issue) }}
                         </v-chip>
                     </td>
-                    <td class="text-subtitle-1 text-no-wrap col-assignee">{{ issueAssignee(issue) }}</td>
-                    <td class="text-subtitle-1 text-no-wrap col-reporter">{{ issueReporter(issue) }}</td>
+                    <td class="text-subtitle-1 text-no-wrap col-assignee">
+                        <RouterLink
+                            v-if="staffMemberRoute(issue.assigneeStaffMember)"
+                            :to="staffMemberRoute(issue.assigneeStaffMember)!"
+                            class="text-primary text-decoration-none font-weight-medium"
+                        >
+                            {{ issueAssignee(issue) }}
+                        </RouterLink>
+                        <template v-else>{{ issueAssignee(issue) }}</template>
+                    </td>
+                    <td class="text-subtitle-1 text-no-wrap col-reporter">
+                        <RouterLink
+                            v-if="staffMemberRoute(issue.reporterStaffMember)"
+                            :to="staffMemberRoute(issue.reporterStaffMember)!"
+                            class="text-primary text-decoration-none font-weight-medium"
+                        >
+                            {{ issueReporter(issue) }}
+                        </RouterLink>
+                        <template v-else>{{ issueReporter(issue) }}</template>
+                    </td>
                     <td class="text-subtitle-1 text-no-wrap col-priority">
                         <v-chip size="small" :color="priorityTone(issuePriority(issue))" variant="tonal">
                             {{ issuePriority(issue) }}

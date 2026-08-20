@@ -18,6 +18,17 @@ export interface JiraIssueStaffReference {
     displayName: string;
 }
 
+export type GithubPullRequestState = string | number;
+
+export interface JiraIssueGithubPullRequestReference {
+    id: string;
+    externalId: string;
+    number: number;
+    title: string;
+    state: GithubPullRequestState;
+    url: string;
+}
+
 export type JiraIssuePriority = string | number;
 
 export interface JiraIssue {
@@ -52,6 +63,7 @@ export interface JiraIssue {
     storyPoints?: number | null;
     notes: string[];
     githubPullRequestIds: string[];
+    githubPullRequests: JiraIssueGithubPullRequestReference[];
 }
 
 export type JiraIssuePageResponse = PagedResponse<JiraIssue>;
