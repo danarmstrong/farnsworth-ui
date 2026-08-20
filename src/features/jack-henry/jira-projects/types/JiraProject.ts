@@ -6,6 +6,16 @@ export interface JiraProject {
     lastSynced: string | null;
 }
 
+export interface PagedResponse<T> {
+    items: T[];
+    page: number;
+    pageSize: number;
+    totalCount: number;
+    totalPages: number;
+}
+
+export type JiraProjectPageResponse = PagedResponse<JiraProject>;
+
 export interface JiraProjectSyncQueueResponse {
     queued?: boolean;
 }

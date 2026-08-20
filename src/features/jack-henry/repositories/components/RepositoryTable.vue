@@ -9,6 +9,7 @@ import type {
     RepositoryFormSubmitPayload
 } from '@/features/jack-henry/repositories/types/GithubRepository';
 import { useConfirm } from '@/utils/helpers/useConfirm';
+import { formatUtcLocal, parseUtcDateMillis } from '@/utils/helpers/dateTime';
 import { DownloadIcon, RefreshIcon } from 'vue-tabler-icons';
 
 const MS_PER_HOUR = 1000 * 60 * 60;
@@ -49,18 +50,12 @@ function lastSyncedPresentation(lastSynced: string | null | undefined): {
     if (lastSynced === null || lastSynced === undefined || lastSynced === '') {
         return { text: 'NEVER', tone: 'never', chipColor: 'error' };
     }
-    const parsed = Date.parse(lastSynced);
-    if (Number.isNaN(parsed)) {
+    const parsed = parseUtcDateMillis(lastSynced);
+    if (!Number.isFinite(parsed)) {
         return { text: 'NEVER', tone: 'never', chipColor: 'error' };
     }
     const ageHours = Math.max(0, (Date.now() - parsed) / MS_PER_HOUR);
-    const text = new Date(lastSynced).toLocaleString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit'
-    });
+    const text = formatUtcLocal(lastSynced) || 'NEVER';
     if (ageHours < 24) {
         return { text, tone: 'success', chipColor: 'success' };
     }
@@ -422,6 +417,7 @@ async function save(payload: RepositoryFormSubmitPayload) {
     }
 }
 </style>
+
 
 
 

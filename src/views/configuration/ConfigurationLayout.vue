@@ -5,7 +5,7 @@ import { configurationSectionLinks } from '@/views/configuration/configurationNa
 const route = useRoute();
 
 function isExactPathActive(path: string): boolean {
-    return route.path === path;
+    return route.path === path || route.path.startsWith(`${path}/`);
 }
 </script>
 
@@ -28,12 +28,3 @@ function isExactPathActive(path: string): boolean {
     </v-row>
 </template>
 
-<style scoped>
-.configuration-layout {
-    min-height: calc(100vh - 180px);
-}
-
-.min-height-0 {
-    min-height: 0;
-}
-</style>

@@ -3,6 +3,7 @@ import axios from '@/utils/axios';
 import { isAxiosError } from 'axios';
 import { ref, computed } from 'vue';
 import { chatHub } from '@/features/chat/services/chatHub';
+import { parseUtcDateMillis } from '@/utils/helpers/dateTime';
 import type {
     ChatConversation,
     ChatConversationListItem,
@@ -132,7 +133,7 @@ export const useChatStore = defineStore('chat', () => {
         try {
             const { data } = await axios.get<ChatConversationListItem[]>(conversationsPath);
             chats.value = [...data].sort(
-                (a, b) => new Date(b.updatedAtUtc).getTime() - new Date(a.updatedAtUtc).getTime()
+                (a, b) => parseUtcDateMillis(b.updatedAtUtc) - parseUtcDateMillis(a.updatedAtUtc)
             );
         } catch (err) {
             error.value = setErrorMessage(err, 'Failed to fetch chats');

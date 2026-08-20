@@ -1,21 +1,30 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue';
-import { useJiraProjectStore } from '@/features/jack-henry/jira-projects/stores/jiraProjectStore';
+import { RouterLink } from 'vue-router';
+import {
+    JIRA_PROJECTS_DEFAULT_PAGE_SIZE,
+    useJiraProjectStore
+} from '@/features/jack-henry/jira-projects/stores/jiraProjectStore';
 import JiraProjectForm from '@/features/jack-henry/jira-projects/components/JiraProjectForm.vue';
 import type { JiraProject, JiraProjectFormSubmitPayload, JiraProjectSyncQueueResponse } from '@/features/jack-henry/jira-projects/types/JiraProject';
 import { useConfirm } from '@/utils/helpers/useConfirm';
+import { formatUtcLocal, parseUtcDateMillis } from '@/utils/helpers/dateTime';
 import { PencilIcon, RefreshIcon, TrashIcon } from 'vue-tabler-icons';
 
 const MS_PER_HOUR = 1000 * 60 * 60;
+const PerfectScrollbarTag = 'perfect-scrollbar';
 
 const store = useJiraProjectStore();
 const confirm = useConfirm();
+const pageSizeOptions = [10, 25, 50];
 
 onMounted(() => {
-    store.fetchJiraProjects();
+    void loadPage(1);
 });
 
 const search = ref('');
+const page = ref(1);
+const pageSize = ref(JIRA_PROJECTS_DEFAULT_PAGE_SIZE);
 const saving = ref(false);
 const deleting = ref(false);
 const syncingProjectId = ref<string | null>(null);
@@ -24,18 +33,34 @@ const syncSnackbarText = ref('');
 const syncSnackbarColor = ref<'success' | 'error'>('success');
 const formRef = ref<InstanceType<typeof JiraProjectForm> | null>(null);
 const isBusy = computed(() => saving.value || deleting.value || store.loading);
+const hasPagination = computed(() => store.totalPages > 1);
 
 const filteredList = computed(() => {
     const normalizedSearch = search.value.toLowerCase().trim();
     if (!normalizedSearch) {
-        return store.jiraProjects;
+        return store.pagedJiraProjects;
     }
-    return store.jiraProjects.filter((p: JiraProject) => {
+    return store.pagedJiraProjects.filter((p: JiraProject) => {
         return (
             p.name.toLowerCase().includes(normalizedSearch) ||
             p.description.toLowerCase().includes(normalizedSearch)
         );
     });
+});
+
+const pageSummary = computed(() => {
+    if (!store.totalCount) {
+        return 'No Jira projects found.';
+    }
+
+    if (search.value.trim()) {
+        const count = filteredList.value.length;
+        return count === 1 ? 'Showing 1 matching entry on this page' : `Showing ${count} matching entries on this page`;
+    }
+
+    const start = (page.value - 1) * pageSize.value + 1;
+    const end = Math.min(page.value * pageSize.value, store.totalCount);
+    return `Showing ${start} to ${end} of ${store.totalCount} entries`;
 });
 
 type LastSyncedTone = 'never' | 'success' | 'warning' | 'error';
@@ -48,18 +73,12 @@ function lastSyncedPresentation(lastSynced: string | null | undefined): {
     if (lastSynced === null || lastSynced === undefined || lastSynced === '') {
         return { text: 'NEVER', tone: 'never', chipColor: 'error' };
     }
-    const parsed = Date.parse(lastSynced);
-    if (Number.isNaN(parsed)) {
+    const parsed = parseUtcDateMillis(lastSynced);
+    if (!Number.isFinite(parsed)) {
         return { text: 'NEVER', tone: 'never', chipColor: 'error' };
     }
     const ageHours = Math.max(0, (Date.now() - parsed) / MS_PER_HOUR);
-    const text = new Date(lastSynced).toLocaleString(undefined, {
-        year: 'numeric',
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit'
-    });
+    const text = formatUtcLocal(lastSynced) || 'NEVER';
     if (ageHours < 24) {
         return { text, tone: 'success', chipColor: 'success' };
     }
@@ -90,6 +109,27 @@ function editItem(item: JiraProject) {
     formRef.value?.openEdit(item);
 }
 
+async function loadPage(targetPage: number): Promise<void> {
+    page.value = Math.max(1, targetPage);
+    await store.fetchJiraProjects({
+        page: page.value,
+        pageSize: pageSize.value
+    });
+}
+
+async function changePage(nextPage: number): Promise<void> {
+    if (nextPage === page.value) {
+        return;
+    }
+
+    await loadPage(nextPage);
+}
+
+async function changePageSize(nextPageSize: number): Promise<void> {
+    pageSize.value = nextPageSize;
+    await loadPage(1);
+}
+
 async function deleteItem(item: JiraProject) {
     if (isBusy.value || !item.id) {
         return;
@@ -102,7 +142,11 @@ async function deleteItem(item: JiraProject) {
 
     deleting.value = true;
     try {
+        const shouldStepBack = page.value > 1 && page.value === store.totalPages && store.pagedJiraProjects.length === 1;
         await store.deleteJiraProject(item.id);
+        if (!store.error) {
+            await loadPage(shouldStepBack ? page.value - 1 : page.value);
+        }
     } finally {
         deleting.value = false;
     }
@@ -125,7 +169,7 @@ async function syncItem(item: JiraProject) {
             syncSnackbarColor.value = 'success';
             syncSnackbarText.value = wasQueued(result) ? 'Sync queued.' : 'Sync was not queued.';
             syncSnackbar.value = true;
-            await store.fetchJiraProjects();
+            await loadPage(page.value);
         }
     } finally {
         syncingProjectId.value = null;
@@ -154,6 +198,7 @@ async function save(payload: JiraProjectFormSubmitPayload) {
         }
 
         if (!store.error) {
+            await loadPage(page.value);
             formRef.value?.close();
         }
     } finally {
@@ -185,7 +230,7 @@ async function save(payload: JiraProjectFormSubmitPayload) {
         </v-col>
     </v-row>
 
-    <perfect-scrollbar class="no-scrollbar">
+    <component :is="PerfectScrollbarTag" class="no-scrollbar">
         <div class="border-table">
             <v-table class="mt-5 jira-project-table">
                 <thead>
@@ -198,14 +243,23 @@ async function save(payload: JiraProjectFormSubmitPayload) {
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-if="store.loading && !store.jiraProjects.length">
+                    <tr v-if="store.loading && !store.pagedJiraProjects.length">
                         <td colspan="5" class="text-subtitle-1 text-center py-6">Loading Jira projects...</td>
                     </tr>
                     <tr v-else-if="!filteredList.length">
                         <td colspan="5" class="text-subtitle-1 text-center py-6">No Jira projects found.</td>
                     </tr>
                     <tr v-else v-for="item in filteredList" :key="item.id">
-                        <td class="text-subtitle-1 text-no-wrap col-name">{{ item.name }}</td>
+                        <td class="text-subtitle-1 text-no-wrap col-name">
+                            <RouterLink
+                                v-if="item.name"
+                                :to="{ name: 'Jira Project Details', params: { projectKey: item.name } }"
+                                class="text-primary text-decoration-none font-weight-medium"
+                            >
+                                {{ item.name }}
+                            </RouterLink>
+                            <template v-else>{{ item.name }}</template>
+                        </td>
                         <td class="text-subtitle-1 col-desc">{{ item.description }}</td>
                         <td class="text-subtitle-1 text-no-wrap col-flag">
                             <v-chip size="small" :color="item.isEnabled ? 'success' : 'default'" variant="tonal">
@@ -258,7 +312,39 @@ async function save(payload: JiraProjectFormSubmitPayload) {
                 </tbody>
             </v-table>
         </div>
-    </perfect-scrollbar>
+    </component>
+
+    <v-divider class="my-4"></v-divider>
+
+    <div class="d-sm-flex justify-space-between align-center gap-4">
+        <div class="text-subtitle-1 text-grey100">{{ pageSummary }}</div>
+
+        <div class="d-flex align-center flex-wrap justify-end gap-3">
+            <v-select
+                :model-value="pageSize"
+                :items="pageSizeOptions"
+                label="Rows per page"
+                density="compact"
+                hide-details
+                variant="outlined"
+                class="jira-project-page-size"
+                :disabled="isBusy"
+                @update:modelValue="changePageSize"
+            ></v-select>
+
+            <v-pagination
+                v-if="hasPagination"
+                :model-value="page"
+                :length="store.totalPages"
+                :total-visible="7"
+                rounded="circle"
+                density="compact"
+                class="text-subtitle-1 text-grey100"
+                :disabled="isBusy"
+                @update:modelValue="changePage"
+            ></v-pagination>
+        </div>
+    </div>
 
     <v-snackbar v-model="syncSnackbar" location="bottom right" :color="syncSnackbarColor" variant="flat" rounded="md">
         {{ syncSnackbarText }}
@@ -284,5 +370,9 @@ async function save(payload: JiraProjectFormSubmitPayload) {
         white-space: normal;
         word-break: break-word;
     }
+}
+
+.jira-project-page-size {
+    max-width: 160px;
 }
 </style>

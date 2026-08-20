@@ -105,6 +105,11 @@ const MainRoutes = {
                     component: () => import('@/views/admin/JiraProjectsView.vue')
                 },
                 {
+                    name: 'Jira Project Details',
+                    path: 'jira-projects/:projectKey',
+                    component: () => import('@/views/admin/JiraProjectDetailsView.vue')
+                },
+                {
                     name: 'Jira Board Watchers',
                     path: 'jira-board-watchers',
                     component: () => import('@/views/admin/JiraBoardWatchersView.vue')
@@ -136,6 +141,13 @@ const MainRoutes = {
             }
         },
         { path: '/admin/jira-projects', redirect: '/configuration/jira-projects' },
+        {
+            path: '/admin/jira-projects/:projectKey',
+            redirect: (to: RouteLocationNormalized) => ({
+                path: `/configuration/jira-projects/${String(to.params.projectKey ?? '').trim()}`,
+                query: to.query
+            })
+        },
         { path: '/admin/jira-board-watchers', redirect: '/configuration/jira-board-watchers' },
         // Legacy template routes
         {

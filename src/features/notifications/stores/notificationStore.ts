@@ -3,9 +3,10 @@ import { computed, ref } from 'vue';
 import type { NotificationDto } from '@/features/notifications/types/Notification';
 import { listNotifications, markNotificationRead } from '@/features/notifications/services/notificationApi';
 import { notificationHub } from '@/features/notifications/services/notificationHub';
+import { parseUtcDateMillis } from '@/utils/helpers/dateTime';
 
 function sortNewestFirst(list: NotificationDto[]): NotificationDto[] {
-    return [...list].sort((a, b) => Date.parse(b.createdAtUtc) - Date.parse(a.createdAtUtc));
+    return [...list].sort((a, b) => parseUtcDateMillis(b.createdAtUtc) - parseUtcDateMillis(a.createdAtUtc));
 }
 
 export const useNotificationStore = defineStore('notifications', () => {

@@ -3,6 +3,7 @@ import axios from '@/utils/axios';
 import type {
     CreateJiraProjectDto,
     JiraProject,
+    JiraProjectPageResponse,
     JiraProjectSyncQueueResponse,
     UpdateJiraProjectDto
 } from '@/features/jack-henry/jira-projects/types/JiraProject';
@@ -10,20 +11,93 @@ import { ref } from 'vue';
 import { isAxiosError } from 'axios';
 
 const jiraProjectsPath = '/config/jira/projects';
+export const JIRA_PROJECTS_DEFAULT_PAGE_SIZE = 10;
+
+type FetchJiraProjectsOptions = {
+    page?: number;
+    pageSize?: number;
+};
+
+function normalizePositiveInteger(value: number | undefined, fallback: number): number {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+        return fallback;
+    }
+
+    const normalized = Math.floor(value);
+    return normalized > 0 ? normalized : fallback;
+}
+
+function isJiraProjectPageResponse(data: unknown): data is JiraProjectPageResponse {
+    if (typeof data !== 'object' || data === null) {
+        return false;
+    }
+
+    const candidate = data as Partial<JiraProjectPageResponse>;
+    return (
+        Array.isArray(candidate.items) &&
+        typeof candidate.page === 'number' &&
+        typeof candidate.pageSize === 'number' &&
+        typeof candidate.totalCount === 'number' &&
+        typeof candidate.totalPages === 'number'
+    );
+}
 
 export const useJiraProjectStore = defineStore('jiraProjects', () => {
     const jiraProjects = ref<JiraProject[]>([]);
+    const pagedJiraProjects = ref<JiraProject[]>([]);
     const loading = ref(false);
     const error = ref<string | null>(null);
+    const page = ref(1);
+    const pageSize = ref(JIRA_PROJECTS_DEFAULT_PAGE_SIZE);
+    const totalCount = ref(0);
+    const totalPages = ref(0);
 
-    async function fetchJiraProjects(): Promise<void> {
+    function applyJiraProjectsPage(data: JiraProjectPageResponse): void {
+        pagedJiraProjects.value = data.items;
+        page.value = data.page;
+        pageSize.value = data.pageSize;
+        totalCount.value = data.totalCount;
+        totalPages.value = data.totalPages;
+
+        const byId = new Map(jiraProjects.value.map((project) => [project.id, project]));
+        for (const project of data.items) {
+            byId.set(project.id, project);
+        }
+        jiraProjects.value = [...byId.values()];
+    }
+
+    async function fetchJiraProjects(options: FetchJiraProjectsOptions = {}): Promise<JiraProjectPageResponse | null> {
         error.value = null;
         loading.value = true;
         try {
-            const { data } = await axios.get<JiraProject[]>(jiraProjectsPath);
-            jiraProjects.value = data;
+            const requestPage = normalizePositiveInteger(options.page, 1);
+            const requestPageSize = normalizePositiveInteger(options.pageSize, JIRA_PROJECTS_DEFAULT_PAGE_SIZE);
+            const { data } = await axios.get<JiraProjectPageResponse | JiraProject[]>(jiraProjectsPath, {
+                params: {
+                    page: requestPage,
+                    pageSize: requestPageSize
+                }
+            });
+
+            const normalized = Array.isArray(data)
+                ? {
+                      items: data,
+                      page: requestPage,
+                      pageSize: requestPageSize,
+                      totalCount: data.length,
+                      totalPages: data.length > 0 ? 1 : 0
+                  }
+                : data;
+
+            if (!isJiraProjectPageResponse(normalized)) {
+                throw new Error('Unexpected Jira projects response shape.');
+            }
+
+            applyJiraProjectsPage(normalized);
+            return normalized;
         } catch (err) {
             error.value = setErrorMessage(err, 'Failed to fetch Jira projects');
+            return null;
         } finally {
             loading.value = false;
         }
@@ -59,7 +133,7 @@ export const useJiraProjectStore = defineStore('jiraProjects', () => {
         loading.value = true;
         try {
             const { data } = await axios.post<JiraProject>(jiraProjectsPath, dto);
-            jiraProjects.value.push(data);
+            jiraProjects.value = [data, ...jiraProjects.value.filter((p) => p.id !== data.id)];
         } catch (err) {
             error.value = setErrorMessage(err, 'Failed to create Jira project');
         } finally {
@@ -78,6 +152,11 @@ export const useJiraProjectStore = defineStore('jiraProjects', () => {
             } else {
                 jiraProjects.value.push(data);
             }
+
+            const pagedIndex = pagedJiraProjects.value.findIndex((p) => p.id === id);
+            if (pagedIndex !== -1) {
+                pagedJiraProjects.value[pagedIndex] = data;
+            }
         } catch (err) {
             error.value = setErrorMessage(err, 'Failed to update Jira project');
         } finally {
@@ -91,6 +170,7 @@ export const useJiraProjectStore = defineStore('jiraProjects', () => {
         try {
             await axios.delete(`${jiraProjectsPath}/${id}`);
             jiraProjects.value = jiraProjects.value.filter((p) => p.id !== id);
+            pagedJiraProjects.value = pagedJiraProjects.value.filter((p) => p.id !== id);
         } catch (err) {
             error.value = setErrorMessage(err, 'Failed to delete Jira project');
         } finally {
@@ -122,8 +202,13 @@ export const useJiraProjectStore = defineStore('jiraProjects', () => {
 
     return {
         jiraProjects,
+        pagedJiraProjects,
         loading,
         error,
+        page,
+        pageSize,
+        totalCount,
+        totalPages,
         fetchJiraProjects,
         getJiraProject,
         createJiraProject,

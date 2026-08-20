@@ -7,6 +7,7 @@ import { Icon } from '@iconify/vue';
 import { useNotificationStore } from '@/features/notifications/stores/notificationStore';
 import { getNotificationHref } from '@/features/notifications/notificationCategoryRoutes';
 import type { NotificationDto } from '@/features/notifications/types/Notification';
+import { parseUtcDate } from '@/utils/helpers/dateTime';
 
 const router = useRouter();
 const notifications = useNotificationStore();
@@ -17,8 +18,13 @@ const menuOpen = ref(false);
 const visibleItems = computed(() => items.value.filter((i) => !i.isDismissed));
 
 function relativeTime(iso: string): string {
+    const parsed = parseUtcDate(iso);
+    if (!parsed) {
+        return '';
+    }
+
     try {
-        return formatDistanceToNow(new Date(iso), { addSuffix: true });
+        return formatDistanceToNow(parsed, { addSuffix: true });
     } catch {
         return '';
     }
