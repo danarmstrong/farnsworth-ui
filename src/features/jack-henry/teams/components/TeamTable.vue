@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { RouterLink } from 'vue-router';
 import { PencilIcon, TrashIcon } from 'vue-tabler-icons';
 import { useTeamStore } from '@/features/jack-henry/teams/stores/teamStore';
 import TeamForm from '@/features/jack-henry/teams/components/TeamForm.vue';
@@ -137,7 +138,16 @@ async function save(payload: TeamFormSubmitPayload) {
                         <td colspan="3" class="text-subtitle-1 text-center py-6">No teams found.</td>
                     </tr>
                     <tr v-else v-for="row in filteredList" :key="row.id">
-                        <td class="text-subtitle-1 col-name">{{ row.name }}</td>
+                        <td class="text-subtitle-1 col-name">
+                            <RouterLink
+                                v-if="row.id"
+                                :to="{ name: 'Configuration Team Members', params: { teamId: row.id } }"
+                                class="text-primary text-decoration-none font-weight-medium"
+                            >
+                                {{ row.name }}
+                            </RouterLink>
+                            <template v-else>{{ row.name }}</template>
+                        </td>
                         <td class="text-subtitle-1 col-staff">
                             <div v-if="!row.staffMemberIds.length" class="text-medium-emphasis">None</div>
                             <div v-else class="d-flex flex-wrap ga-1">
@@ -178,14 +188,15 @@ async function save(payload: TeamFormSubmitPayload) {
     }
 
     .col-name {
-        width: auto;
+        width: 32%;
+        min-width: 240px;
         white-space: normal;
         word-break: break-word;
         vertical-align: top;
     }
 
     .col-staff {
-        width: auto;
+        width: 68%;
         white-space: normal;
         word-break: break-word;
         vertical-align: top;
@@ -198,5 +209,7 @@ async function save(payload: TeamFormSubmitPayload) {
     }
 }
 </style>
+
+
 
 

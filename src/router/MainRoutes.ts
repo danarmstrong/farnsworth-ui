@@ -100,6 +100,11 @@ const MainRoutes = {
                     component: () => import('@/views/admin/TeamsView.vue')
                 },
                 {
+                    name: 'Configuration Team Members',
+                    path: 'teams/:teamId/members',
+                    component: () => import('@/views/admin/TeamMembersView.vue')
+                },
+                {
                     name: 'Jira Projects',
                     path: 'jira-projects',
                     component: () => import('@/views/admin/JiraProjectsView.vue')

@@ -32,10 +32,12 @@ interface Props {
     saving: boolean;
     submitDisabled?: boolean;
     error: string | null;
+    showActivator?: boolean;
 }
 
 const props = withDefaults(defineProps<Props>(), {
-    submitDisabled: false
+    submitDisabled: false,
+    showActivator: true
 });
 
 const emit = defineEmits<{
@@ -224,7 +226,7 @@ defineExpose({
 
 <template>
     <v-dialog v-model="dialog" max-width="880" scrollable>
-        <template v-slot:activator="{ props: activatorProps }">
+        <template v-if="props.showActivator" v-slot:activator="{ props: activatorProps }">
             <v-btn color="primary" v-bind="activatorProps" rounded="pill" class="ml-auto" @click="openCreate">
                 <v-icon class="mr-2">mdi-account-plus</v-icon>Add Staff Member
             </v-btn>

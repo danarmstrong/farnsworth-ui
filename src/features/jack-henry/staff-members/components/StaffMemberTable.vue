@@ -11,6 +11,22 @@ import { PencilIcon, TrashIcon } from 'vue-tabler-icons';
 
 const PerfectScrollbarTag = 'perfect-scrollbar';
 
+interface Props {
+    staffMemberIds?: string[];
+    showCreateButton?: boolean;
+    searchLabel?: string;
+    loadingText?: string;
+    emptyStateText?: string;
+}
+
+const props = withDefaults(defineProps<Props>(), {
+    staffMemberIds: undefined,
+    showCreateButton: true,
+    searchLabel: 'Search staff',
+    loadingText: 'Loading staff members...',
+    emptyStateText: 'No staff members found.'
+});
+
 const store = useStaffMemberStore();
 const jobTitleStore = useJobTitleStore();
 const costCenterStore = useCostCenterStore();
@@ -32,9 +48,21 @@ const deleting = ref(false);
 const staffMemberFormRef = ref<InstanceType<typeof StaffMemberForm> | null>(null);
 const isBusy = computed(() => saving.value || deleting.value || store.loading);
 
+const filteredStaffMemberIds = computed(() => {
+    if (!props.staffMemberIds) {
+        return null;
+    }
+
+    return new Set(props.staffMemberIds);
+});
+
 const filteredList = computed(() => {
-    const normalizedSearch = search.value.toLowerCase();
-    const filtered = store.staffMembers.filter((m: StaffMember) => {
+    const normalizedSearch = search.value.toLowerCase().trim();
+    const visibleStaffMembers = filteredStaffMemberIds.value
+        ? store.staffMembers.filter((member) => filteredStaffMemberIds.value?.has(member.id))
+        : store.staffMembers;
+
+    const filtered = visibleStaffMembers.filter((m: StaffMember) => {
         const hay = [m.firstName, m.lastName, m.email, m.employeeNumber ?? '', `${m.firstName} ${m.lastName}`, ...(m.aliases ?? [])]
             .join(' ')
             .toLowerCase();
@@ -121,15 +149,22 @@ async function save(payload: StaffMemberFormSubmitPayload) {
 
 <template>
     <v-row>
-        <v-col cols="12" lg="4" md="6">
-            <v-text-field density="compact" v-model="search" label="Search staff" hide-details variant="outlined"></v-text-field>
+        <v-col cols="12" :lg="props.showCreateButton ? 4 : 12" :md="props.showCreateButton ? 6 : 12">
+            <v-text-field density="compact" v-model="search" :label="props.searchLabel" hide-details variant="outlined"></v-text-field>
         </v-col>
-        <v-col cols="12" lg="8" md="6" class="text-right">
+        <v-col
+            cols="12"
+            lg="8"
+            md="6"
+            class="text-right"
+            :class="{ 'd-none': !props.showCreateButton }"
+        >
             <StaffMemberForm
                 ref="staffMemberFormRef"
                 :saving="saving"
                 :submit-disabled="isBusy"
                 :error="store.error"
+                :show-activator="props.showCreateButton"
                 @submit="save"
                 @cancel="clearStoreError"
             />
@@ -151,10 +186,10 @@ async function save(payload: StaffMemberFormSubmitPayload) {
                 </thead>
                 <tbody>
                     <tr v-if="store.loading && !store.staffMembers.length">
-                        <td colspan="6" class="text-subtitle-1 text-center py-6">Loading staff members...</td>
+                        <td colspan="6" class="text-subtitle-1 text-center py-6">{{ props.loadingText }}</td>
                     </tr>
                     <tr v-else-if="!filteredList.length">
-                        <td colspan="6" class="text-subtitle-1 text-center py-6">No staff members found.</td>
+                        <td colspan="6" class="text-subtitle-1 text-center py-6">{{ props.emptyStateText }}</td>
                     </tr>
                     <tr v-else v-for="item in filteredList" :key="item.id">
                         <td class="text-subtitle-1 text-no-wrap col-name">
