@@ -6,7 +6,8 @@ import type {
     JiraIssue,
     JiraIssueListItem,
     JiraIssuePageResponse,
-    JiraIssueStatusCategoryCounts
+    JiraIssueStatusCategoryCounts,
+    JiraIssueStatusCategoryFilter
 } from '@/features/jack-henry/jira-projects/types/JiraIssue';
 
 const jiraProjectIssuesPath = '/config/jira/projects';
@@ -15,6 +16,7 @@ export const JIRA_PROJECT_ISSUES_DEFAULT_PAGE_SIZE = 10;
 type FetchJiraProjectIssuesOptions = {
     page?: number;
     pageSize?: number;
+    statusCategory?: JiraIssueStatusCategoryFilter;
 };
 
 function normalizePositiveInteger(value: number | undefined, fallback: number): number {
@@ -93,10 +95,12 @@ export const useJiraProjectIssueStore = defineStore('jiraProjectIssues', () => {
         try {
             const requestPage = normalizePositiveInteger(options.page, 1);
             const requestPageSize = normalizePositiveInteger(options.pageSize, JIRA_PROJECT_ISSUES_DEFAULT_PAGE_SIZE);
+            const requestStatusCategory = options.statusCategory;
             const { data } = await axios.get<JiraIssuePageResponse>(`${jiraProjectIssuesPath}/${encodeURIComponent(normalizedKey)}/issues`, {
                 params: {
                     page: requestPage,
-                    pageSize: requestPageSize
+                    pageSize: requestPageSize,
+                    ...(requestStatusCategory ? { statusCategory: requestStatusCategory } : {})
                 }
             });
 

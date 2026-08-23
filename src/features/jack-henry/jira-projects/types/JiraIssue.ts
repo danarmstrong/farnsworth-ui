@@ -44,6 +44,8 @@ export interface JiraIssueStatusCategoryCounts {
     Uncategorized: number;
 }
 
+export type JiraIssueStatusCategoryFilter = 'ToDo' | 'InProgress' | 'Done' | 'Uncategorized';
+
 export type GithubPullRequestState = string | number;
 
 export interface JiraIssueGithubPullRequestReference {

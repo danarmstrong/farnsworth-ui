@@ -5,7 +5,12 @@ import {
     JIRA_PROJECT_ISSUES_DEFAULT_PAGE_SIZE,
     useJiraProjectIssueStore
 } from '@/features/jack-henry/jira-projects/stores/jiraProjectIssueStore';
-import type { JiraIssueListItem, JiraIssueReviewMetadata, JiraIssueUserIdentity } from '@/features/jack-henry/jira-projects/types/JiraIssue';
+import type {
+    JiraIssueListItem,
+    JiraIssueReviewMetadata,
+    JiraIssueStatusCategoryFilter,
+    JiraIssueUserIdentity
+} from '@/features/jack-henry/jira-projects/types/JiraIssue';
 import { formatUtcLocal } from '@/utils/helpers/dateTime';
 
 const DEFAULT_IDENTITY = {
@@ -28,7 +33,8 @@ const page = ref(1);
 const pageSize = ref(JIRA_PROJECT_ISSUES_DEFAULT_PAGE_SIZE);
 const pageSizeOptions = [10, 25, 50];
 const search = ref('');
-const statusFilter = ref<'all' | 'open' | 'in-progress' | 'done' | 'other'>('all');
+type JiraIssueStatusFilter = 'open-default' | JiraIssueStatusCategoryFilter;
+const statusFilter = ref<JiraIssueStatusFilter>('open-default');
 
 const hasPagination = computed(() => store.totalPages > 1);
 const isBusy = computed(() => store.loading);
@@ -37,7 +43,7 @@ watch(
     () => props.projectKey,
     (projectKey) => {
         search.value = '';
-        statusFilter.value = 'all';
+        statusFilter.value = 'open-default';
         page.value = 1;
         pageSize.value = JIRA_PROJECT_ISSUES_DEFAULT_PAGE_SIZE;
         void loadPage(projectKey, 1);
@@ -45,11 +51,18 @@ watch(
     { immediate: true }
 );
 
-const totalTicketCount = computed(() => store.totalCount);
 const statusCategoryCounts = computed(() => store.statusCategoryCounts);
 
+const projectIssueCount = computed(() => {
+    const counts = statusCategoryCounts.value;
+    return counts.ToDo + counts.InProgress + counts.Done + counts.Uncategorized;
+});
+
+const scopedIssueCount = computed(() => store.totalCount);
+
 const openTicketCount = computed(() => {
-    return statusCategoryCounts.value.ToDo;
+    const counts = statusCategoryCounts.value;
+    return counts.ToDo + counts.InProgress + counts.Uncategorized;
 });
 
 const inProgressTicketCount = computed(() => {
@@ -64,22 +77,25 @@ const uncategorizedTicketCount = computed(() => {
     return statusCategoryCounts.value.Uncategorized;
 });
 
+const activeFilterLabel = computed(() => {
+    switch (statusFilter.value) {
+        case 'ToDo':
+            return 'To Do issues';
+        case 'InProgress':
+            return 'In Progress issues';
+        case 'Done':
+            return 'Done issues';
+        case 'Uncategorized':
+            return 'Uncategorized issues';
+        default:
+            return 'open issues';
+    }
+});
+
 const filteredIssues = computed(() => {
     const normalizedSearch = search.value.trim().toLowerCase();
 
     return store.issues.filter((issue) => {
-        const status = issueStatus(issue);
-        const statusMatches =
-            statusFilter.value === 'all' ||
-            (statusFilter.value === 'open' && isOpenStatus(status)) ||
-            (statusFilter.value === 'in-progress' && isInProgressStatus(status)) ||
-            (statusFilter.value === 'done' && isDoneStatus(status)) ||
-            (statusFilter.value === 'other' && !isOpenStatus(status) && !isInProgressStatus(status) && !isDoneStatus(status));
-
-        if (!statusMatches) {
-            return false;
-        }
-
         if (!normalizedSearch) {
             return true;
         }
@@ -111,15 +127,28 @@ const pageSummary = computed(() => {
         return 'No Jira issues found.';
     }
 
-    if (search.value.trim() || statusFilter.value !== 'all') {
+    if (search.value.trim()) {
         const count = filteredIssues.value.length;
         return count === 1 ? 'Showing 1 matching issue on this page' : `Showing ${count} matching issues on this page`;
     }
 
     const start = (page.value - 1) * pageSize.value + 1;
     const end = Math.min(page.value * pageSize.value, store.totalCount);
-    return `Showing ${start} to ${end} of ${store.totalCount} issues`;
+    return `Showing ${start} to ${end} of ${store.totalCount} ${activeFilterLabel.value}`;
 });
+
+function statusCategoryForFilter(filter: JiraIssueStatusFilter): JiraIssueStatusCategoryFilter | undefined {
+    return filter === 'open-default' ? undefined : filter;
+}
+
+async function applyStatusFilter(nextFilter: JiraIssueStatusFilter): Promise<void> {
+    if (statusFilter.value === nextFilter) {
+        return;
+    }
+
+    statusFilter.value = nextFilter;
+    await loadPage(props.projectKey, 1);
+}
 
 function issueKey(issue: JiraIssueListItem): string {
     return issue.key || issue.id || '—';
@@ -277,7 +306,8 @@ async function loadPage(projectKey: string, targetPage: number): Promise<void> {
     page.value = Math.max(1, targetPage);
     await store.fetchProjectIssues(projectKey, {
         page: page.value,
-        pageSize: pageSize.value
+        pageSize: pageSize.value,
+        statusCategory: statusCategoryForFilter(statusFilter.value)
     });
 }
 
@@ -310,36 +340,40 @@ function clearStoreError(): void {
 
     <v-row class="d-flex flex-nowrap mb-2 overflow-x-auto">
         <v-col cols="10" md="3" sm="6">
-            <div class="bg-lightprimary pa-5 text-center cursor-pointer rounded-md" @click="statusFilter = 'all'">
-                <h2 class="text-primary text-24">{{ totalTicketCount }}</h2>
-                <h6 class="text-primary text-h6">Total Issues</h6>
+            <div class="bg-lightprimary pa-5 text-center cursor-pointer rounded-md" @click="applyStatusFilter('open-default')">
+                <h2 class="text-primary text-24">{{ openTicketCount }}</h2>
+                <h6 class="text-primary text-h6">Open Issues</h6>
             </div>
         </v-col>
         <v-col cols="10" md="3" sm="6">
-            <div class="bg-lighterror pa-5 text-center cursor-pointer rounded-md" @click="statusFilter = 'open'">
-                <h2 class="text-error text-24">{{ openTicketCount }}</h2>
-                <h6 class="text-error text-h6">Open Issues</h6>
+            <div class="bg-lighterror pa-5 text-center cursor-pointer rounded-md" @click="applyStatusFilter('ToDo')">
+                <h2 class="text-error text-24">{{ statusCategoryCounts.ToDo }}</h2>
+                <h6 class="text-error text-h6">To Do</h6>
             </div>
         </v-col>
         <v-col cols="10" md="3" sm="6">
-            <div class="bg-lightwarning pa-5 text-center cursor-pointer rounded-md" @click="statusFilter = 'in-progress'">
+            <div class="bg-lightwarning pa-5 text-center cursor-pointer rounded-md" @click="applyStatusFilter('InProgress')">
                 <h2 class="text-warning text-24">{{ inProgressTicketCount }}</h2>
                 <h6 class="text-warning text-h6">In Progress</h6>
             </div>
         </v-col>
         <v-col cols="10" md="3" sm="6">
-            <div class="bg-lightsuccess pa-5 text-center cursor-pointer rounded-md" @click="statusFilter = 'done'">
+            <div class="bg-lightsuccess pa-5 text-center cursor-pointer rounded-md" @click="applyStatusFilter('Done')">
                 <h2 class="text-success text-24">{{ doneTicketCount }}</h2>
                 <h6 class="text-success text-h6">Done Issues</h6>
             </div>
         </v-col>
         <v-col cols="10" md="3" sm="6">
-            <div class="bg-lightsecondary pa-5 text-center cursor-pointer rounded-md" @click="statusFilter = 'other'">
+            <div class="bg-lightsecondary pa-5 text-center cursor-pointer rounded-md" @click="applyStatusFilter('Uncategorized')">
                 <h2 class="text-secondary text-24">{{ uncategorizedTicketCount }}</h2>
                 <h6 class="text-secondary text-h6">Uncategorized</h6>
             </div>
         </v-col>
     </v-row>
+
+    <p class="text-body-2 text-medium-emphasis mb-4">
+        Viewing {{ scopedIssueCount }} {{ activeFilterLabel }} from {{ projectIssueCount }} total project issues.
+    </p>
 
     <div class="d-sm-flex justify-space-between align-center my-5 gap-3">
         <v-btn color="primary" class="rounded-pill" :loading="isBusy" :disabled="isBusy" @click="refreshIssues">Refresh Issues</v-btn>

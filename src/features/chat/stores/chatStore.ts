@@ -16,7 +16,8 @@ import type {
 
 const conversationsPath = '/chat/conversations';
 const modelsPath = '/chat/models';
-const activeModelStorageKey = 'chat.activeModel';
+const legacyActiveModelStorageKey = 'chat.activeModel';
+const newChatDefaultModelStorageKey = 'chat.newChatDefaultModel';
 
 // Sentinel id used while a brand-new conversation hasn't been resolved by the
 // hub yet. Swapped to the real id when `ConversationResolved` arrives.
@@ -59,7 +60,10 @@ export const useChatStore = defineStore('chat', () => {
     const messagesLoadingByChat = ref<Record<string, boolean>>({});
     const models = ref<ChatModel[]>([]);
     const activeChatId = ref<string | null>(null);
-    const activeModel = ref<string | null>(localStorage.getItem(activeModelStorageKey));
+    const modelByChatId = ref<Record<string, string | null>>({});
+    const newChatDefaultModel = ref<string | null>(
+        localStorage.getItem(newChatDefaultModelStorageKey) ?? localStorage.getItem(legacyActiveModelStorageKey)
+    );
     const isStreaming = ref(false);
     const streamingChatId = ref<string | null>(null);
     const connectionState = ref<ConnectionState>(chatHub.getConnectionState());
@@ -76,7 +80,7 @@ export const useChatStore = defineStore('chat', () => {
             return {
                 id: PENDING_CHAT_ID,
                 name: 'New chat',
-                model: activeModel.value ?? '',
+                model: getModelForChat(PENDING_CHAT_ID) ?? '',
                 messageCount: pendingMessages.length,
                 createdAtUtc: now,
                 updatedAtUtc: now
@@ -91,6 +95,8 @@ export const useChatStore = defineStore('chat', () => {
         }
         return messagesByChat.value[activeChatId.value] ?? [];
     });
+
+    const activeModel = computed<string | null>(() => getModelForChat(activeChatId.value));
 
     function setErrorMessage(err: unknown, fallback: string): string {
         if (isAxiosError(err)) {
@@ -109,13 +115,66 @@ export const useChatStore = defineStore('chat', () => {
         error.value = null;
     }
 
-    function setActiveModel(model: string | null): void {
-        activeModel.value = model;
+    function setNewChatDefaultModel(model: string | null): void {
         if (model) {
-            localStorage.setItem(activeModelStorageKey, model);
+            localStorage.setItem(newChatDefaultModelStorageKey, model);
         } else {
-            localStorage.removeItem(activeModelStorageKey);
+            localStorage.removeItem(newChatDefaultModelStorageKey);
         }
+        localStorage.removeItem(legacyActiveModelStorageKey);
+        newChatDefaultModel.value = model;
+    }
+
+    function getFallbackModel(): string | null {
+        return models.value[0]?.name ?? null;
+    }
+
+    function normalizeModelChoice(model: string | null): string | null {
+        if (!model) {
+            return getFallbackModel();
+        }
+        if (models.value.some((entry) => entry.name === model)) {
+            return model;
+        }
+        return getFallbackModel();
+    }
+
+    function getModelForChat(chatId: string | null): string | null {
+        if (!chatId) {
+            return normalizeModelChoice(newChatDefaultModel.value);
+        }
+
+        const explicitModel = modelByChatId.value[chatId];
+        if (explicitModel !== undefined) {
+            return normalizeModelChoice(explicitModel);
+        }
+
+        if (chatId === PENDING_CHAT_ID) {
+            return normalizeModelChoice(newChatDefaultModel.value);
+        }
+
+        const summary = chats.value.find((chat) => chat.id === chatId);
+        return normalizeModelChoice(summary?.model ?? null);
+    }
+
+    function setModelForChat(chatId: string | null, model: string | null): void {
+        const normalized = normalizeModelChoice(model);
+        const targetChatId = chatId ?? PENDING_CHAT_ID;
+        modelByChatId.value[targetChatId] = normalized;
+
+        // Remember the most recent selection as the default for future new chats.
+        setNewChatDefaultModel(normalized);
+
+        if (targetChatId !== PENDING_CHAT_ID) {
+            const summary = chats.value.find((chat) => chat.id === targetChatId);
+            if (summary) {
+                summary.model = normalized ?? '';
+            }
+        }
+    }
+
+    function setActiveModel(model: string | null): void {
+        setModelForChat(activeChatId.value ?? PENDING_CHAT_ID, model);
     }
 
     function moveChatToTop(chatId: string): void {
@@ -146,10 +205,18 @@ export const useChatStore = defineStore('chat', () => {
         try {
             const { data } = await axios.get<ChatModel[]>(modelsPath);
             models.value = data;
-            if (!activeModel.value && data.length) {
-                setActiveModel(data[0].name);
-            } else if (activeModel.value && !data.some((model) => model.name === activeModel.value)) {
-                setActiveModel(data[0]?.name ?? null);
+
+            const normalizedDefault = normalizeModelChoice(newChatDefaultModel.value);
+            setNewChatDefaultModel(normalizedDefault);
+
+            Object.keys(modelByChatId.value).forEach((chatId) => {
+                modelByChatId.value[chatId] = normalizeModelChoice(modelByChatId.value[chatId] ?? null);
+            });
+
+            if (activeChatId.value === PENDING_CHAT_ID) {
+                modelByChatId.value[PENDING_CHAT_ID] = normalizeModelChoice(
+                    modelByChatId.value[PENDING_CHAT_ID] ?? newChatDefaultModel.value
+                );
             }
         } catch (err) {
             error.value = setErrorMessage(err, 'Failed to fetch models');
@@ -172,12 +239,13 @@ export const useChatStore = defineStore('chat', () => {
             const summary: ChatConversationListItem = {
                 id: data.id,
                 name: data.name,
-                model: data.model,
+                model: normalizeModelChoice(data.model) ?? '',
                 messageCount: data.messages?.length ?? 0,
                 createdAtUtc: data.createdAtUtc,
                 updatedAtUtc: data.updatedAtUtc,
                 contextSummary: data.contextSummary ?? null
             };
+            modelByChatId.value[chatId] = summary.model;
             if (index === -1) {
                 chats.value.unshift(summary);
             } else {
@@ -200,6 +268,7 @@ export const useChatStore = defineStore('chat', () => {
             return;
         }
         messagesByChat.value[PENDING_CHAT_ID] = [];
+        modelByChatId.value[PENDING_CHAT_ID] = normalizeModelChoice(newChatDefaultModel.value);
         activeChatId.value = PENDING_CHAT_ID;
     }
 
@@ -236,6 +305,7 @@ export const useChatStore = defineStore('chat', () => {
             chats.value = chats.value.filter((chat) => chat.id !== id);
             delete messagesByChat.value[id];
             delete conversationDetailLoaded.value[id];
+            delete modelByChatId.value[id];
             if (activeChatId.value === id) {
                 activeChatId.value = chats.value[0]?.id ?? null;
                 if (activeChatId.value) {
@@ -317,20 +387,26 @@ export const useChatStore = defineStore('chat', () => {
         const existing = chats.value.find((chat) => chat.id === payload.conversationId);
         if (existing) {
             existing.name = payload.conversationName;
-            existing.model = payload.model;
+            existing.model = normalizeModelChoice(payload.model) ?? '';
             existing.messageCount = messageCount;
             existing.updatedAtUtc = nowIso;
         } else {
+            const normalizedModel = normalizeModelChoice(payload.model) ?? '';
             chats.value.unshift({
                 id: payload.conversationId,
                 name: payload.conversationName,
-                model: payload.model,
+                model: normalizedModel,
                 messageCount,
                 createdAtUtc: nowIso,
                 updatedAtUtc: nowIso,
                 contextSummary: null
             });
             conversationDetailLoaded.value[payload.conversationId] = true;
+        }
+
+        modelByChatId.value[payload.conversationId] = normalizeModelChoice(payload.model);
+        if (wasPending) {
+            delete modelByChatId.value[PENDING_CHAT_ID];
         }
         moveChatToTop(payload.conversationId);
     }
@@ -345,6 +421,12 @@ export const useChatStore = defineStore('chat', () => {
         }
 
         const targetId = activeChatId.value!;
+        const targetModel = getModelForChat(targetId);
+        if (!targetModel) {
+            error.value = 'No model available. Add or pull a model to continue.';
+            return;
+        }
+
         const isNew = targetId === PENDING_CHAT_ID;
         const list = messagesByChat.value[targetId] ?? (messagesByChat.value[targetId] = []);
         const nowIso = new Date().toISOString();
@@ -367,7 +449,7 @@ export const useChatStore = defineStore('chat', () => {
         try {
             await chatHub.sendMessage({
                 conversationId: isNew ? null : targetId,
-                model: activeModel.value,
+                model: targetModel,
                 userPrompt: trimmed
             });
         } catch (err) {
@@ -400,6 +482,7 @@ export const useChatStore = defineStore('chat', () => {
         chats,
         messagesByChat,
         models,
+        modelByChatId,
         activeChatId,
         activeModel,
         isStreaming,
@@ -411,6 +494,8 @@ export const useChatStore = defineStore('chat', () => {
         activeChat,
         activeMessages,
         clearError,
+        getModelForChat,
+        setModelForChat,
         setActiveModel,
         fetchChats,
         fetchModels,
