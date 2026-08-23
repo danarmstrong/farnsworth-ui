@@ -7,9 +7,30 @@ import type {
     GithubPullRequestState,
     JiraIssue,
     JiraIssueGithubPullRequestReference,
-    JiraIssueStaffReference
+    JiraIssueReviewMetadata,
+    JiraIssueStaffReference,
+    JiraIssueUserIdentity
 } from '@/features/jack-henry/jira-projects/types/JiraIssue';
 import { formatUtcLocal } from '@/utils/helpers/dateTime';
+
+const DEFAULT_JIRA_IDENTITY: JiraIssueUserIdentity = {
+    assigneeAccountId: null,
+    assigneeDisplayName: null,
+    reporterAccountId: null,
+    reporterDisplayName: null,
+    creatorAccountId: null,
+    creatorDisplayName: null
+};
+
+const DEFAULT_REVIEW_METADATA: JiraIssueReviewMetadata = {
+    isReviewed: false,
+    score: null,
+    reason: null,
+    reviewedAtUtc: null,
+    lastAttemptedAtUtc: null,
+    model: null,
+    lastError: null
+};
 
 const route = useRoute();
 const store = useJiraProjectIssueStore();
@@ -107,6 +128,52 @@ function formatDate(value: string | null | undefined): string {
     }
 
     return formatUtcLocal(value) || value;
+}
+
+function displayValue(value: string | null | undefined, empty = '—'): string {
+    return value?.trim() || empty;
+}
+
+function reviewScore(value: JiraIssue): string {
+    const metadata = issueReviewMetadata(value);
+
+    if (metadata.score === null || metadata.score === undefined) {
+        return '—';
+    }
+
+    return String(metadata.score);
+}
+
+function reviewedLabel(value: JiraIssue): string {
+    return issueReviewMetadata(value).isReviewed ? 'Yes' : 'No';
+}
+
+function hasPullRequestIds(value: JiraIssue): boolean {
+    return value.githubPullRequestIds.length > 0;
+}
+
+function issueIdentity(value: JiraIssue): JiraIssueUserIdentity {
+    return value.jiraIdentity || DEFAULT_JIRA_IDENTITY;
+}
+
+function issueReviewMetadata(value: JiraIssue): JiraIssueReviewMetadata {
+    return value.reviewMetadata || DEFAULT_REVIEW_METADATA;
+}
+
+function hasText(value: string | null | undefined): boolean {
+    return Boolean(value?.trim());
+}
+
+function hasAssignee(value: JiraIssue): boolean {
+    return hasText(value.assigneeStaffMember?.displayName) || hasText(value.assignee);
+}
+
+function hasReporter(value: JiraIssue): boolean {
+    return hasText(value.reporterStaffMember?.displayName) || hasText(value.reporter);
+}
+
+function hasCreator(value: JiraIssue): boolean {
+    return hasText(value.creatorStaffMember?.displayName) || hasText(value.creator);
 }
 
 function displayStaff(staff: JiraIssueStaffReference | null | undefined, fallback: string | null | undefined, empty = '—'): string {
@@ -378,8 +445,20 @@ function githubPullRequestKey(pullRequest: JiraIssueGithubPullRequestReference):
                                                 </dd>
                                             </div>
                                             <div>
+                                                <dt>Status Name</dt>
+                                                <dd>{{ displayValue(issue.jiraStatusName) }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Status Category</dt>
+                                                <dd>{{ displayValue(issue.jiraStatusCategoryName) }}</dd>
+                                            </div>
+                                            <div>
                                                 <dt>Type</dt>
                                                 <dd>{{ issueType(issue) }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Type Name</dt>
+                                                <dd>{{ displayValue(issue.jiraIssueTypeName) }}</dd>
                                             </div>
                                             <div>
                                                 <dt>Priority</dt>
@@ -419,6 +498,10 @@ function githubPullRequestKey(pullRequest: JiraIssueGithubPullRequestReference):
                                                     <template v-else>{{ displayStaff(issue.assigneeStaffMember, issue.assignee, 'Unassigned') }}</template>
                                                 </dd>
                                             </div>
+                                            <div v-if="!hasAssignee(issue)">
+                                                <dt>Assignee Identity</dt>
+                                                <dd>{{ displayValue(issueIdentity(issue).assigneeDisplayName || issueIdentity(issue).assigneeAccountId, 'Unassigned') }}</dd>
+                                            </div>
                                             <div>
                                                 <dt>Reporter</dt>
                                                 <dd>
@@ -432,6 +515,10 @@ function githubPullRequestKey(pullRequest: JiraIssueGithubPullRequestReference):
                                                     <template v-else>{{ displayStaff(issue.reporterStaffMember, issue.reporter) }}</template>
                                                 </dd>
                                             </div>
+                                            <div v-if="!hasReporter(issue)">
+                                                <dt>Reporter Identity</dt>
+                                                <dd>{{ displayValue(issueIdentity(issue).reporterDisplayName || issueIdentity(issue).reporterAccountId) }}</dd>
+                                            </div>
                                             <div>
                                                 <dt>Creator</dt>
                                                 <dd>
@@ -444,6 +531,10 @@ function githubPullRequestKey(pullRequest: JiraIssueGithubPullRequestReference):
                                                     </RouterLink>
                                                     <template v-else>{{ displayStaff(issue.creatorStaffMember, issue.creator) }}</template>
                                                 </dd>
+                                            </div>
+                                            <div v-if="!hasCreator(issue)">
+                                                <dt>Creator Identity</dt>
+                                                <dd>{{ displayValue(issueIdentity(issue).creatorDisplayName || issueIdentity(issue).creatorAccountId) }}</dd>
                                             </div>
                                             <div>
                                                 <dt>Created</dt>
@@ -474,6 +565,10 @@ function githubPullRequestKey(pullRequest: JiraIssueGithubPullRequestReference):
                                                 <dd>{{ issue.projectKey }}</dd>
                                             </div>
                                             <div>
+                                                <dt>Issue Key</dt>
+                                                <dd>{{ issue.key }}</dd>
+                                            </div>
+                                            <div>
                                                 <dt>Status ID</dt>
                                                 <dd>{{ issue.jiraStatusId }}</dd>
                                             </div>
@@ -490,14 +585,133 @@ function githubPullRequestKey(pullRequest: JiraIssueGithubPullRequestReference):
                                                 <dd>{{ issue.jiraSprintId || '—' }}</dd>
                                             </div>
                                             <div>
+                                                <dt>Parent ID</dt>
+                                                <dd>{{ issue.parentId || '—' }}</dd>
+                                            </div>
+                                            <div>
                                                 <dt>Parent External ID</dt>
                                                 <dd>{{ issue.parentExternalId || '—' }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Parent Key</dt>
+                                                <dd>{{ issue.parentKey || '—' }}</dd>
                                             </div>
                                             <div>
                                                 <dt>Last Sync Run</dt>
                                                 <dd>{{ issue.lastProjectSyncRunId || '—' }}</dd>
                                             </div>
                                         </dl>
+                                    </v-card-text>
+                                </v-card>
+
+                                <v-card variant="outlined" class="mt-4">
+                                    <v-card-text class="pa-0">
+                                        <v-expansion-panels variant="accordion">
+                                            <v-expansion-panel>
+                                                <v-expansion-panel-title>
+                                                    Raw Source Fields
+                                                </v-expansion-panel-title>
+                                                <v-expansion-panel-text>
+                                                    <dl class="jira-issue-detail-list jira-issue-detail-list--compact">
+                                                        <div>
+                                                            <dt>Assignee Raw</dt>
+                                                            <dd>{{ issue.assignee || '—' }}</dd>
+                                                        </div>
+                                                        <div>
+                                                            <dt>Reporter Raw</dt>
+                                                            <dd>{{ issue.reporter || '—' }}</dd>
+                                                        </div>
+                                                        <div>
+                                                            <dt>Creator Raw</dt>
+                                                            <dd>{{ issue.creator || '—' }}</dd>
+                                                        </div>
+                                                    </dl>
+                                                </v-expansion-panel-text>
+                                            </v-expansion-panel>
+                                        </v-expansion-panels>
+                                    </v-card-text>
+                                </v-card>
+
+                                <v-card variant="outlined" class="mt-4">
+                                    <v-card-text>
+                                        <h2 class="text-h6 font-weight-semibold mb-4">Jira Identity</h2>
+                                        <dl class="jira-issue-detail-list jira-issue-detail-list--compact">
+                                            <div>
+                                                <dt>Assignee Account ID</dt>
+                                                <dd>{{ displayValue(issueIdentity(issue).assigneeAccountId) }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Assignee Display Name</dt>
+                                                <dd>{{ displayValue(issueIdentity(issue).assigneeDisplayName, 'Unassigned') }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Reporter Account ID</dt>
+                                                <dd>{{ displayValue(issueIdentity(issue).reporterAccountId) }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Reporter Display Name</dt>
+                                                <dd>{{ displayValue(issueIdentity(issue).reporterDisplayName) }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Creator Account ID</dt>
+                                                <dd>{{ displayValue(issueIdentity(issue).creatorAccountId) }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Creator Display Name</dt>
+                                                <dd>{{ displayValue(issueIdentity(issue).creatorDisplayName) }}</dd>
+                                            </div>
+                                        </dl>
+                                    </v-card-text>
+                                </v-card>
+
+                                <v-card variant="outlined" class="mt-4">
+                                    <v-card-text>
+                                        <h2 class="text-h6 font-weight-semibold mb-4">Review Metadata</h2>
+                                        <dl class="jira-issue-detail-list jira-issue-detail-list--compact">
+                                            <div>
+                                                <dt>Reviewed</dt>
+                                                <dd>{{ reviewedLabel(issue) }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Score</dt>
+                                                <dd>{{ reviewScore(issue) }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Reason</dt>
+                                                <dd>{{ displayValue(issueReviewMetadata(issue).reason) }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Reviewed At</dt>
+                                                <dd>{{ formatDate(issueReviewMetadata(issue).reviewedAtUtc) }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Last Attempted At</dt>
+                                                <dd>{{ formatDate(issueReviewMetadata(issue).lastAttemptedAtUtc) }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Model</dt>
+                                                <dd>{{ displayValue(issueReviewMetadata(issue).model) }}</dd>
+                                            </div>
+                                            <div>
+                                                <dt>Last Error</dt>
+                                                <dd>{{ displayValue(issueReviewMetadata(issue).lastError) }}</dd>
+                                            </div>
+                                        </dl>
+                                    </v-card-text>
+                                </v-card>
+
+                                <v-card variant="outlined" class="mt-4">
+                                    <v-card-text>
+                                        <h2 class="text-h6 font-weight-semibold mb-4">GitHub Pull Request IDs</h2>
+                                        <v-list v-if="hasPullRequestIds(issue)" lines="one" class="py-0">
+                                            <v-list-item
+                                                v-for="pullRequestId in issue.githubPullRequestIds"
+                                                :key="`${issue.id}-pr-id-${pullRequestId}`"
+                                            >
+                                                <v-list-item-title class="text-body-2">{{ pullRequestId }}</v-list-item-title>
+                                            </v-list-item>
+                                        </v-list>
+                                        <p v-else class="text-body-2 text-medium-emphasis mb-0">No linked pull request IDs.</p>
                                     </v-card-text>
                                 </v-card>
                             </v-col>
@@ -561,5 +775,10 @@ function githubPullRequestKey(pullRequest: JiraIssueGithubPullRequestReference):
     gap: 0.9rem;
 }
 </style>
+
+
+
+
+
 
 

@@ -36,6 +36,13 @@ const sidebarItems: menu[] = [
         to: '/repositories'
     },
     {
+        title: 'Teams',
+        icon: 'users-group-rounded-line-duotone',
+        BgColor: 'success',
+        to: '/configuration/teams',
+        children: []
+    },
+    {
         title: 'Calendars',
         icon: 'calendar-line-duotone',
         BgColor: 'info',

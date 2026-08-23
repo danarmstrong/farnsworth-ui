@@ -24,14 +24,14 @@ const aliasChips = computed(() => (props.member.aliases ?? []).map((a) => a.trim
                 <v-row class="mt-1 justify-space-between">
                     <v-col cols="12" md="12" sm="12" class="pt-0">
                         <div class="d-sm-flex align-center justify-sm-start justify-center">
-                            <div class="text-sm-left text-center">
+                            <!-- <div class="text-sm-left text-center">
                                 <v-avatar size="100" class="userImage position-relative overflow-visible">
                                     <img :src="UserImage" width="100" :alt="displayName" class="rounded-circle" />
                                     <v-avatar size="26" class="bg-primary position-absolute plus">
                                         <PlusIcon size="16" stroke-width="2" />
                                     </v-avatar>
                                 </v-avatar>
-                            </div>
+                            </div> -->
                             <div class="ml-sm-4 text-sm-left text-center">
                                 <h5 class="text-h3 font-weight-semibold mb-1 my-sm-0 my-2">
                                     {{ displayName }}

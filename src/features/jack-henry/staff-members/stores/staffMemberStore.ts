@@ -10,7 +10,13 @@ function normalizeStaffMember(m: StaffMember): StaffMember {
     return {
         ...m,
         aliases: Array.isArray(m.aliases) ? m.aliases : [],
-        birthDate: m.birthDate ?? null
+        birthDate: m.birthDate ?? null,
+        assignedIssues: Array.isArray(m.assignedIssues) ? m.assignedIssues : [],
+        createdIssues: Array.isArray(m.createdIssues) ? m.createdIssues : [],
+        reporterIssues: Array.isArray(m.reporterIssues) ? m.reporterIssues : [],
+        authoredPullRequests: Array.isArray(m.authoredPullRequests) ? m.authoredPullRequests : [],
+        reviewCompletedPullRequests: Array.isArray(m.reviewCompletedPullRequests) ? m.reviewCompletedPullRequests : [],
+        reviewRequestedPullRequests: Array.isArray(m.reviewRequestedPullRequests) ? m.reviewRequestedPullRequests : []
     };
 }
 
@@ -35,18 +41,15 @@ export const useStaffMemberStore = defineStore('staffMembers', () => {
     async function getStaffMember(id: string): Promise<StaffMember | null> {
         error.value = null;
 
-        const existing = staffMembers.value.find((m) => m.id === id);
-        if (existing) {
-            return normalizeStaffMember(existing);
-        }
-
         loading.value = true;
         try {
             const { data } = await axios.get<StaffMember>(`${staffMembersPath}/${id}`);
             const normalized = normalizeStaffMember(data);
-            const exists = staffMembers.value.some((m) => m.id === normalized.id);
-            if (!exists) {
+            const index = staffMembers.value.findIndex((m) => m.id === normalized.id);
+            if (index === -1) {
                 staffMembers.value.push(normalized);
+            } else {
+                staffMembers.value[index] = normalized;
             }
             return normalized;
         } catch (err) {

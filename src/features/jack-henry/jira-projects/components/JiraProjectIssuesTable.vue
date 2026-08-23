@@ -8,6 +8,25 @@ import {
 import type { JiraIssue } from '@/features/jack-henry/jira-projects/types/JiraIssue';
 import { formatUtcLocal } from '@/utils/helpers/dateTime';
 
+const DEFAULT_IDENTITY = {
+    assigneeAccountId: null,
+    assigneeDisplayName: null,
+    reporterAccountId: null,
+    reporterDisplayName: null,
+    creatorAccountId: null,
+    creatorDisplayName: null
+};
+
+const DEFAULT_REVIEW_METADATA = {
+    isReviewed: false,
+    score: null,
+    reason: null,
+    reviewedAtUtc: null,
+    lastAttemptedAtUtc: null,
+    model: null,
+    lastError: null
+};
+
 interface Props {
     projectKey: string;
 }
@@ -74,10 +93,16 @@ const filteredIssues = computed(() => {
             issueKey(issue),
             issueSummary(issue),
             status,
+            issueStatusCategory(issue),
             issueAssignee(issue),
             issueReporter(issue),
             issuePriority(issue),
-            issueType(issue)
+            issueType(issue),
+            issueReviewed(issue),
+            issueReviewScore(issue),
+            issueIdentity(issue).assigneeDisplayName || '',
+            issueIdentity(issue).reporterDisplayName || '',
+            issueIdentity(issue).creatorDisplayName || ''
         ]
             .join(' ')
             .toLowerCase();
@@ -113,6 +138,10 @@ function issueStatus(issue: JiraIssue): string {
     return issue.status?.name || issue.jiraStatusName || 'Unknown';
 }
 
+function issueStatusCategory(issue: JiraIssue): string {
+    return issue.jiraStatusCategoryName || '—';
+}
+
 function issueAssignee(issue: JiraIssue): string {
     return issue.assigneeStaffMember?.displayName || issue.assignee || 'Unassigned';
 }
@@ -140,6 +169,31 @@ function issuePriority(issue: JiraIssue): string {
     }
 
     return String(issue.priority);
+}
+
+function issueIdentity(issue: JiraIssue) {
+    return issue.jiraIdentity || DEFAULT_IDENTITY;
+}
+
+function issueReviewMetadata(issue: JiraIssue) {
+    return issue.reviewMetadata || DEFAULT_REVIEW_METADATA;
+}
+
+function issueReviewed(issue: JiraIssue): string {
+    return issueReviewMetadata(issue).isReviewed ? 'Reviewed' : 'Not reviewed';
+}
+
+function issueReviewedTone(issue: JiraIssue): 'success' | 'default' {
+    return issueReviewMetadata(issue).isReviewed ? 'success' : 'default';
+}
+
+function issueReviewScore(issue: JiraIssue): string {
+    const score = issueReviewMetadata(issue).score;
+    if (score === null || score === undefined) {
+        return '—';
+    }
+
+    return String(score);
 }
 
 function normalizedPriority(priority: string): string {
@@ -303,19 +357,22 @@ function clearStoreError(): void {
                     <th class="text-subtitle-1 font-weight-semibold col-summary">Summary</th>
                     <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-type">Type</th>
                     <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-status">Status</th>
+                    <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-status-category">Status Category</th>
                     <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-assignee">Assignee</th>
                     <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-reporter">Reporter</th>
                     <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-priority">Priority</th>
+                    <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-reviewed">Reviewed</th>
+                    <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-review-score">Review Score</th>
                     <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-created">Created</th>
                     <th class="text-subtitle-1 font-weight-semibold text-no-wrap col-updated">Updated</th>
                 </tr>
             </thead>
             <tbody>
                 <tr v-if="store.loading && !store.issues.length">
-                    <td colspan="9" class="text-subtitle-1 text-center py-6">Loading Jira issues...</td>
+                    <td colspan="12" class="text-subtitle-1 text-center py-6">Loading Jira issues...</td>
                 </tr>
                 <tr v-else-if="!filteredIssues.length">
-                    <td colspan="9" class="text-subtitle-1 text-center py-6">No Jira issues found.</td>
+                    <td colspan="12" class="text-subtitle-1 text-center py-6">No Jira issues found.</td>
                 </tr>
                 <tr v-else v-for="issue in filteredIssues" :key="issueKey(issue)">
                     <td class="text-subtitle-1 text-no-wrap col-key">
@@ -333,6 +390,7 @@ function clearStoreError(): void {
                             {{ issueStatus(issue) }}
                         </v-chip>
                     </td>
+                    <td class="text-subtitle-1 text-no-wrap col-status-category">{{ issueStatusCategory(issue) }}</td>
                     <td class="text-subtitle-1 text-no-wrap col-assignee">
                         <RouterLink
                             v-if="staffMemberRoute(issue.assigneeStaffMember)"
@@ -357,6 +415,14 @@ function clearStoreError(): void {
                         <v-chip size="small" :color="priorityTone(issuePriority(issue))" variant="tonal">
                             {{ issuePriority(issue) }}
                         </v-chip>
+                    </td>
+                    <td class="text-subtitle-1 text-no-wrap col-reviewed">
+                        <v-chip size="small" :color="issueReviewedTone(issue)" variant="tonal">
+                            {{ issueReviewed(issue) }}
+                        </v-chip>
+                    </td>
+                    <td class="text-subtitle-1 text-no-wrap col-review-score">
+                        {{ issueReviewScore(issue) }}
                     </td>
                     <td class="text-subtitle-1 text-no-wrap col-created">
                         {{ issueCreated(issue) ? formatDate(issueCreated(issue)) : '—' }}
@@ -411,9 +477,12 @@ function clearStoreError(): void {
     .col-key,
     .col-type,
     .col-status,
+    .col-status-category,
     .col-assignee,
     .col-reporter,
     .col-priority,
+    .col-reviewed,
+    .col-review-score,
     .col-created,
     .col-updated {
         width: 1%;

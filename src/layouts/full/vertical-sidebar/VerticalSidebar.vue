@@ -3,6 +3,7 @@ import { computed, onMounted } from 'vue';
 import { useUiStore } from '@/stores/ui';
 import sidebarItems from './sidebarItems';
 import { useCapProjectStore } from '@/features/jack-henry/cap-projects/stores/capProjectStore';
+import { useTeamStore } from '@/features/jack-henry/teams/stores/teamStore';
 
 import NavGroup from './NavGroup/index.vue';
 import NavItem from './NavItem/index.vue';
@@ -12,9 +13,13 @@ import Logo from '../logo/Logo.vue';
 
 const ui = useUiStore();
 const capProjectStore = useCapProjectStore();
+const teamStore = useTeamStore();
 
 onMounted(() => {
     void capProjectStore.fetchCapProjects();
+    if (!teamStore.teams.length) {
+        void teamStore.fetchTeams();
+    }
 });
 
 const navItems = computed(() => {
@@ -29,16 +34,31 @@ const navItems = computed(() => {
             to: `/cap-reports/${project.id}`
         }));
 
+    const teamChildren = [...teamStore.teams]
+        .filter((team) => Boolean(team.id))
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+        .map((team) => ({
+            title: team.name.trim() || 'Untitled Team',
+            to: `/teams/${team.id}`
+        }));
+
     return sidebarItems.map((item) => {
-        if (item.title !== 'CAP Reports') {
-            return item;
+        if (item.title === 'CAP Reports') {
+            return {
+                ...item,
+                to: '/cap-reports',
+                children: capReportChildren
+            };
         }
 
-        return {
-            ...item,
-            to: '/cap-reports',
-            children: capReportChildren
-        };
+        if (item.title === 'Teams') {
+            return {
+                ...item,
+                children: teamChildren
+            };
+        }
+
+        return item;
     });
 });
 </script>
@@ -66,11 +86,11 @@ const navItems = computed(() => {
                 <!---Menu Loop -->
                 <template v-for="item in navItems" :key="item.title || item.header">
                     <!---Item Sub Header -->
-                    <NavGroup :item="item" v-if="item.header" :key="item.header" />
+                    <NavGroup :item="item" v-if="item.header" :key="`header-${item.header}`" />
                     <!---If Has Child -->
-                    <NavCollapse class="leftPadding" :item="item" :level="0" :key="item.title" v-else-if="item.children" />
+                    <NavCollapse class="leftPadding" :item="item" :level="0" :key="`collapse-${item.title}`" v-else-if="item.children" />
                     <!---Single Item-->
-                    <NavItem :item="item" :key="item.title" v-else class="leftPadding" />
+                    <NavItem :item="item" :key="`item-${item.title}`" v-else class="leftPadding" />
                     <!---End Single Item-->
                 </template>
                 <!-- <Moreoption/> -->

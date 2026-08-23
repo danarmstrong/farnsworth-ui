@@ -1,5 +1,21 @@
-export interface StaffMember {
+import type { GithubPullRequestState } from '@/features/jack-henry/repositories/types/GithubPullRequest';
+
+export interface StaffMemberJiraIssueSlim {
     id: string;
+    key: string;
+    summary: string;
+}
+
+export interface StaffMemberGithubPullRequestSlim {
+    id: string;
+    externalId: string;
+    number: number;
+    title: string;
+    state: GithubPullRequestState;
+    url: string;
+}
+
+export interface StaffMemberWriteModel {
     jobTitleId: string;
     costCenterId: string;
     managerId: string | null;
@@ -20,5 +36,15 @@ export interface StaffMember {
     salary: number | null;
 }
 
-export type CreateStaffMemberDto = Omit<StaffMember, 'id'>;
-export type UpdateStaffMemberDto = CreateStaffMemberDto;
+export interface StaffMember extends StaffMemberWriteModel {
+    id: string;
+    assignedIssues: StaffMemberJiraIssueSlim[];
+    createdIssues: StaffMemberJiraIssueSlim[];
+    reporterIssues: StaffMemberJiraIssueSlim[];
+    authoredPullRequests: StaffMemberGithubPullRequestSlim[];
+    reviewCompletedPullRequests: StaffMemberGithubPullRequestSlim[];
+    reviewRequestedPullRequests: StaffMemberGithubPullRequestSlim[];
+}
+
+export type CreateStaffMemberDto = StaffMemberWriteModel;
+export type UpdateStaffMemberDto = StaffMemberWriteModel;

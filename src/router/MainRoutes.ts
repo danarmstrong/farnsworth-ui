@@ -24,9 +24,24 @@ const MainRoutes = {
             component: () => import('@/views/jack-henry/repositories/RepositoriesView.vue')
         },
         {
+            name: 'Repository Detail',
+            path: '/repositories/:id',
+            component: () => import('@/views/jack-henry/repositories/RepositoryDetailsView.vue')
+        },
+        {
+            name: 'Repository Pull Request Detail',
+            path: '/repositories/:id/pull-requests/:pullRequestId',
+            component: () => import('@/views/jack-henry/repositories/PullRequestDetailsView.vue')
+        },
+        {
             name: 'Staff Member Detail',
             path: '/staff-members/:id',
             component: () => import('@/views/jack-henry/staff-members/StaffMemberDetailView.vue')
+        },
+        {
+            name: 'Team Detail',
+            path: '/teams/:teamId',
+            component: () => import('@/views/jack-henry/teams/TeamDetailView.vue')
         },
         {
             name: 'Team Calendar',
@@ -102,7 +117,10 @@ const MainRoutes = {
                 {
                     name: 'Configuration Team Members',
                     path: 'teams/:teamId/members',
-                    component: () => import('@/views/admin/TeamMembersView.vue')
+                    redirect: (to: RouteLocationNormalized) => ({
+                        path: `/teams/${String(to.params.teamId ?? '').trim()}`,
+                        query: to.query
+                    })
                 },
                 {
                     name: 'Jira Projects',
@@ -123,6 +141,11 @@ const MainRoutes = {
                     name: 'Jira Board Watchers',
                     path: 'jira-board-watchers',
                     component: () => import('@/views/admin/JiraBoardWatchersView.vue')
+                },
+                {
+                    name: 'Advanced',
+                    path: 'advanced',
+                    component: () => import('@/views/admin/AdvancedView.vue')
                 }
             ]
         },
@@ -166,6 +189,7 @@ const MainRoutes = {
             })
         },
         { path: '/admin/jira-board-watchers', redirect: '/configuration/jira-board-watchers' },
+        { path: '/admin/advanced', redirect: '/configuration/advanced' },
         // Legacy template routes
         {
             name: 'dashboard',

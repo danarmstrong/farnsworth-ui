@@ -141,7 +141,7 @@ async function save(payload: TeamFormSubmitPayload) {
                         <td class="text-subtitle-1 col-name">
                             <RouterLink
                                 v-if="row.id"
-                                :to="{ name: 'Configuration Team Members', params: { teamId: row.id } }"
+                                :to="{ name: 'Team Detail', params: { teamId: row.id } }"
                                 class="text-primary text-decoration-none font-weight-medium"
                             >
                                 {{ row.name }}
@@ -209,6 +209,7 @@ async function save(payload: TeamFormSubmitPayload) {
     }
 }
 </style>
+
 
 
 

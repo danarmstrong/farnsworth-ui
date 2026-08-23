@@ -65,7 +65,13 @@ function emptyStaffMember(): StaffMember {
         birthDate: '',
         startDate: '',
         endDate: '',
-        salary: null
+        salary: null,
+        assignedIssues: [],
+        createdIssues: [],
+        reporterIssues: [],
+        authoredPullRequests: [],
+        reviewCompletedPullRequests: [],
+        reviewRequestedPullRequests: []
     };
 }
 
@@ -169,7 +175,13 @@ function openEdit(member: StaffMember) {
         slackUserId: member.slackUserId ?? '',
         teamsUserId: member.teamsUserId ?? '',
         birthDate: member.birthDate ?? '',
-        endDate: member.endDate ?? ''
+        endDate: member.endDate ?? '',
+        assignedIssues: [...(member.assignedIssues ?? [])],
+        createdIssues: [...(member.createdIssues ?? [])],
+        reporterIssues: [...(member.reporterIssues ?? [])],
+        authoredPullRequests: [...(member.authoredPullRequests ?? [])],
+        reviewCompletedPullRequests: [...(member.reviewCompletedPullRequests ?? [])],
+        reviewRequestedPullRequests: [...(member.reviewRequestedPullRequests ?? [])]
     };
     salaryInput.value = member.salary != null ? String(member.salary) : '';
     dialog.value = true;

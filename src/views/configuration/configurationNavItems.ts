@@ -16,5 +16,6 @@ export const configurationSectionLinks: ConfigurationNavLink[] = [
     { title: 'CAP Projects', to: `${CONFIGURATION_BASE}/cap-projects` },
     { title: 'Teams', to: `${CONFIGURATION_BASE}/teams` },
     { title: 'Jira Projects', to: `${CONFIGURATION_BASE}/jira-projects` },
-    { title: 'Jira Board Watchers', to: `${CONFIGURATION_BASE}/jira-board-watchers` }
+    { title: 'Jira Board Watchers', to: `${CONFIGURATION_BASE}/jira-board-watchers` },
+    { title: 'Advanced', to: `${CONFIGURATION_BASE}/advanced` }
 ];

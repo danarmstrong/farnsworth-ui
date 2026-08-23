@@ -4,6 +4,7 @@ import StaffMemberIntroCard from '@/features/jack-henry/staff-members/components
 import StaffMemberOrgCard from '@/features/jack-henry/staff-members/components/staff-profile/StaffMemberOrgCard.vue';
 import StaffMemberSummaryCards from '@/features/jack-henry/staff-members/components/staff-profile/StaffMemberSummaryCards.vue';
 import StaffMemberEmploymentCard from '@/features/jack-henry/staff-members/components/staff-profile/StaffMemberEmploymentCard.vue';
+import StaffMemberEngineeringActivityCard from '@/features/jack-henry/staff-members/components/staff-profile/StaffMemberEngineeringActivityCard.vue';
 import type { StaffMember } from '@/features/jack-henry/staff-members/types/StaffMember';
 
 defineProps<{
@@ -29,6 +30,7 @@ defineProps<{
             </v-col>
             <v-col cols="12" lg="8" md="8">
                 <StaffMemberSummaryCards :member="member" />
+                <StaffMemberEngineeringActivityCard :member="member" />
                 <StaffMemberEmploymentCard :member="member" />
             </v-col>
         </v-row>

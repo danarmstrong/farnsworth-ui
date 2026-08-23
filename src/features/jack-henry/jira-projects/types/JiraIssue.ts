@@ -18,6 +18,25 @@ export interface JiraIssueStaffReference {
     displayName: string;
 }
 
+export interface JiraIssueUserIdentity {
+    assigneeAccountId?: string | null;
+    assigneeDisplayName?: string | null;
+    reporterAccountId?: string | null;
+    reporterDisplayName?: string | null;
+    creatorAccountId?: string | null;
+    creatorDisplayName?: string | null;
+}
+
+export interface JiraIssueReviewMetadata {
+    isReviewed: boolean;
+    score?: number | null;
+    reason?: string | null;
+    reviewedAtUtc?: string | null;
+    lastAttemptedAtUtc?: string | null;
+    model?: string | null;
+    lastError?: string | null;
+}
+
 export type GithubPullRequestState = string | number;
 
 export interface JiraIssueGithubPullRequestReference {
@@ -57,10 +76,13 @@ export interface JiraIssue {
     jiraLink: string;
     summary: string;
     description: string;
+    jiraStatusCategoryName?: string | null;
     createdAtUtc?: string | null;
     updatedAtUtc?: string | null;
     priority: JiraIssuePriority;
     storyPoints?: number | null;
+    jiraIdentity: JiraIssueUserIdentity;
+    reviewMetadata: JiraIssueReviewMetadata;
     notes: string[];
     githubPullRequestIds: string[];
     githubPullRequests: JiraIssueGithubPullRequestReference[];

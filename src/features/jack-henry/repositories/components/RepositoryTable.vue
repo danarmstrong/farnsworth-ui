@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
+import { RouterLink } from 'vue-router';
 import RepositoryForm from '@/features/jack-henry/repositories/components/RepositoryForm.vue';
 import { useGithubRepoStore } from '@/features/jack-henry/repositories/stores/githubRepoStore';
 import type {
@@ -284,11 +285,24 @@ async function save(payload: RepositoryFormSubmitPayload) {
             </v-btn>
         </v-col>
         <v-col cols="12" lg="4" class="d-flex justify-end align-center flex-wrap ga-2">
-            <v-btn color="secondary" rounded="pill" :loading="syncingAll" :disabled="isBusy || syncingRepoId !== null || downloadingRepoId !== null" @click="syncAll">
+            <v-btn
+                color="secondary"
+                rounded="pill"
+                :loading="syncingAll"
+                :disabled="isBusy || syncingRepoId !== null || downloadingRepoId !== null"
+                @click="syncAll"
+            >
                 <v-icon class="mr-2">mdi-sync</v-icon>
                 Sync All
             </v-btn>
-            <RepositoryForm ref="formRef" :saving="saving" :submit-disabled="isBusy" :error="store.error" @submit="save" @cancel="clearStoreError" />
+            <RepositoryForm
+                ref="formRef"
+                :saving="saving"
+                :submit-disabled="isBusy"
+                :error="store.error"
+                @submit="save"
+                @cancel="clearStoreError"
+            />
         </v-col>
     </v-row>
 
@@ -313,7 +327,16 @@ async function save(payload: RepositoryFormSubmitPayload) {
                         <td colspan="6" class="text-subtitle-1 text-center py-6">No repositories found.</td>
                     </tr>
                     <tr v-else v-for="item in filteredList" :key="item.id">
-                        <td class="text-subtitle-1 text-no-wrap col-name">{{ item.name }}</td>
+                        <td class="text-subtitle-1 text-no-wrap col-name">
+                            <RouterLink
+                                v-if="item.id"
+                                :to="{ name: 'Repository Detail', params: { id: item.id } }"
+                                class="text-primary text-decoration-none font-weight-medium"
+                            >
+                                {{ item.name }}
+                            </RouterLink>
+                            <template v-else>{{ item.name }}</template>
+                        </td>
                         <td class="text-subtitle-1 col-url">
                             <a :href="item.url" target="_blank" rel="noopener noreferrer" class="text-primary">
                                 {{ item.url }}
@@ -417,20 +440,3 @@ async function save(payload: RepositoryFormSubmitPayload) {
     }
 }
 </style>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
