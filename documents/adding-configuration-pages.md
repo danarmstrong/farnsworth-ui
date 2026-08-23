@@ -58,7 +58,7 @@ Assume the vertical slice (types, store, table, form) and a thin view [`src/view
 | Item | Convention |
 |------|----------------|
 | Feature folder | `src/features/jack-henry/<domain-kebab>/` |
-| Thin page | `src/views/admin/<Feature>View.vue` — `v-card`, title, one table (or composed panels); keep it thin |
+| Thin page | `src/views/admin/<Feature>View.vue` — use [`JackHenryPageCard.vue`](../src/components/shared/JackHenryPageCard.vue) with title + one table (or composed panels); keep it thin |
 | Route child `path` | kebab-case segment; must match the last segment of `to` in `configurationSectionLinks` |
 | `configurationSectionLinks[].to` | Must equal `'/configuration/'` + same segment as the route child |
 

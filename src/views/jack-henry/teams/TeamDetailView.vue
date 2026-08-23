@@ -2,6 +2,7 @@
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
+import JackHenryPageCard from '@/components/shared/JackHenryPageCard.vue';
 import TeamMembersTable from '@/features/jack-henry/teams/components/TeamMembersTable.vue';
 import { useTeamStore } from '@/features/jack-henry/teams/stores/teamStore';
 import type { TeamDto } from '@/features/jack-henry/teams/types/Team';
@@ -86,17 +87,19 @@ watch(
 
     <div v-else-if="teamStore.loading && !team" class="text-subtitle-1 py-8 text-center">Loading team...</div>
 
-    <v-card v-else-if="team" elevation="10">
-        <v-card-text>
+    <JackHenryPageCard v-else-if="team" title="Team Members">
+        <template #header>
             <div class="d-flex flex-wrap align-center justify-space-between gap-4 mb-4">
                 <div>
                     <h5 class="text-h5 font-weight-semibold mb-1">Team Members</h5>
                     <p class="text-body-1 text-medium-emphasis mb-0">{{ pageSubtitle }}</p>
                 </div>
+                <v-btn variant="outlined" color="primary" :to="{ name: 'Configuration Teams' }">Back to teams</v-btn>
             </div>
+        </template>
 
-            <TeamMembersTable :staff-member-ids="team.staffMemberIds" />
-        </v-card-text>
-    </v-card>
+        <TeamMembersTable :staff-member-ids="team.staffMemberIds" />
+    </JackHenryPageCard>
 </template>
+
 

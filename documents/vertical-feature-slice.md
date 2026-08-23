@@ -125,7 +125,7 @@ See [`JobTitleTable.vue`](../src/features/jack-henry/job-titles/components/JobTi
 
 ## 5. Admin view (`src/views/admin/<Feature>View.vue`)
 
-Keep the page **thin**: a `v-card`, page title, and a single table component—same pattern as [`JobTitlesView.vue`](../src/views/admin/JobTitlesView.vue).
+Keep the page **thin**: use [`JackHenryPageCard.vue`](../src/components/shared/JackHenryPageCard.vue) with the page title and a single table component—same pattern as [`JobTitlesView.vue`](../src/views/admin/JobTitlesView.vue).
 
 ---
 

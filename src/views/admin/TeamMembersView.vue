@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRoute } from 'vue-router';
+import JackHenryPageCard from '@/components/shared/JackHenryPageCard.vue';
 import TeamMembersTable from '@/features/jack-henry/teams/components/TeamMembersTable.vue';
 import { useTeamStore } from '@/features/jack-henry/teams/stores/teamStore';
 import type { TeamDto } from '@/features/jack-henry/teams/types/Team';
 
 const route = useRoute();
-const router = useRouter();
 const teamStore = useTeamStore();
 
 const team = ref<TeamDto | null>(null);
@@ -45,10 +45,6 @@ async function loadTeam(id: string) {
     }
 }
 
-function goBackToTeams() {
-    void router.push('/configuration/teams');
-}
-
 watch(
     teamId,
     (id) => {
@@ -59,35 +55,32 @@ watch(
 </script>
 
 <template>
-    <v-card elevation="10">
-        <v-card-text>
-            <template v-if="team">
-                <div class="d-flex flex-wrap align-center justify-space-between gap-4 mb-4">
-                    <div>
-                        <h5 class="text-h5 font-weight-semibold mb-1">Team Members</h5>
-                        <p class="text-body-1 text-medium-emphasis mb-0">{{ pageSubtitle }}</p>
-                    </div>
-                    <a href="#" class="text-primary text-body-2 text-decoration-none" @click.prevent="goBackToTeams">
-                        Back to teams
-                    </a>
+    <JackHenryPageCard title="Team Members">
+        <template #header v-if="team">
+            <div class="d-flex flex-wrap align-center justify-space-between gap-4 mb-4">
+                <div>
+                    <h5 class="text-h5 font-weight-semibold mb-1">Team Members</h5>
+                    <p class="text-body-1 text-medium-emphasis mb-0">{{ pageSubtitle }}</p>
                 </div>
+                <v-btn variant="outlined" color="primary" :to="{ name: 'Configuration Teams' }">Back to teams</v-btn>
+            </div>
+        </template>
 
-                <TeamMembersTable :staff-member-ids="team.staffMemberIds" />
-            </template>
+        <template v-if="team">
+            <TeamMembersTable :staff-member-ids="team.staffMemberIds" />
+        </template>
 
-            <template v-else-if="teamStore.loading">
-                <h5 class="text-h5 font-weight-semibold mb-2">Team Members</h5>
-                <p class="text-body-1 text-medium-emphasis mb-0">Loading team...</p>
-            </template>
+        <template v-else-if="teamStore.loading">
+            <h5 class="text-h5 font-weight-semibold mb-2">Team Members</h5>
+            <p class="text-body-1 text-medium-emphasis mb-0">Loading team...</p>
+        </template>
 
-            <template v-else>
-                <h5 class="text-h5 font-weight-semibold mb-2">Team Members</h5>
-                <p class="text-body-1 text-error mb-0">
-                    {{ teamStore.error || (loadError ? 'Team could not be loaded.' : 'Choose a team to view its members.') }}
-                </p>
-            </template>
-        </v-card-text>
-    </v-card>
+        <template v-else>
+            <h5 class="text-h5 font-weight-semibold mb-2">Team Members</h5>
+            <p class="text-body-1 text-error mb-0">
+                {{ teamStore.error || (loadError ? 'Team could not be loaded.' : 'Choose a team to view its members.') }}
+            </p>
+        </template>
+    </JackHenryPageCard>
 </template>
-
 
