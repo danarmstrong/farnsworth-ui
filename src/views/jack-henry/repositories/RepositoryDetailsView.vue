@@ -1,17 +1,31 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
 import RepositoryPullRequestTable from '@/features/jack-henry/repositories/components/RepositoryPullRequestTable.vue';
+import RepositoryDependabotAlertTable from '@/features/jack-henry/repositories/components/RepositoryDependabotAlertTable.vue';
+import RepositoryCodeScanningAlertTable from '@/features/jack-henry/repositories/components/RepositoryCodeScanningAlertTable.vue';
 import { useGithubRepoStore } from '@/features/jack-henry/repositories/stores/githubRepoStore';
 import type { GithubRepository } from '@/features/jack-henry/repositories/types/GithubRepository';
 import { formatUtcLocal } from '@/utils/helpers/dateTime';
 
 const route = useRoute();
+const router = useRouter();
 const store = useGithubRepoStore();
+
+type RepositoryDetailsTab = 'pull-requests' | 'dependabot-alerts' | 'code-scanning-alerts';
+
+const TAB_LABELS: Record<RepositoryDetailsTab, string> = {
+    'pull-requests': 'Pull Requests',
+    'dependabot-alerts': 'Dependabot Alerts',
+    'code-scanning-alerts': 'Code Scanning Alerts'
+};
+const DEFAULT_TAB: RepositoryDetailsTab = 'pull-requests';
+const TAB_ORDER: RepositoryDetailsTab[] = ['pull-requests', 'dependabot-alerts', 'code-scanning-alerts'];
 
 const repository = ref<GithubRepository | null>(null);
 const loadError = ref(false);
+const activeTab = ref<RepositoryDetailsTab>(DEFAULT_TAB);
 
 const repositoryId = computed(() => {
     const raw = route.params.id;
@@ -30,6 +44,30 @@ const breadcrumbs = computed(() => [
     { text: 'Repositories', disabled: false, to: '/repositories' },
     { text: pageTitle.value, disabled: true, href: '#' }
 ]);
+
+watch(
+    () => route.query.tab,
+    (rawTab) => {
+        const normalizedTab = typeof rawTab === 'string' ? rawTab.trim() : Array.isArray(rawTab) ? String(rawTab[0] ?? '').trim() : '';
+
+        if (normalizedTab === 'pull-requests' || normalizedTab === 'dependabot-alerts' || normalizedTab === 'code-scanning-alerts') {
+            activeTab.value = normalizedTab;
+            return;
+        }
+
+        activeTab.value = DEFAULT_TAB;
+        void router.replace({ query: { ...route.query, tab: DEFAULT_TAB } });
+    },
+    { immediate: true }
+);
+
+watch(activeTab, (nextTab) => {
+    if (route.query.tab === nextTab) {
+        return;
+    }
+
+    void router.replace({ query: { ...route.query, tab: nextTab } });
+});
 
 watch(
     repositoryId,
@@ -136,10 +174,23 @@ function formatDate(value: string | null): string {
 
         <v-card elevation="10">
             <v-card-text>
-                <div class="d-flex flex-wrap align-center justify-space-between ga-2 mb-4">
-                    <h2 class="text-h5 font-weight-semibold mb-0">Pull Requests</h2>
-                </div>
-                <RepositoryPullRequestTable :repository-id="repository.id" />
+                <v-tabs v-model="activeTab" color="primary" bg-color="transparent" class="mb-2" grow>
+                    <v-tab v-for="tab in TAB_ORDER" :key="tab" :value="tab">
+                        {{ TAB_LABELS[tab] }}
+                    </v-tab>
+                </v-tabs>
+
+                <v-window v-model="activeTab">
+                    <v-window-item value="pull-requests">
+                        <RepositoryPullRequestTable :repository-id="repository.id" />
+                    </v-window-item>
+                    <v-window-item value="dependabot-alerts">
+                        <RepositoryDependabotAlertTable :repository-id="repository.id" />
+                    </v-window-item>
+                    <v-window-item value="code-scanning-alerts">
+                        <RepositoryCodeScanningAlertTable :repository-id="repository.id" />
+                    </v-window-item>
+                </v-window>
             </v-card-text>
         </v-card>
     </template>
@@ -154,3 +205,4 @@ function formatDate(value: string | null): string {
     word-break: break-word;
 }
 </style>
+

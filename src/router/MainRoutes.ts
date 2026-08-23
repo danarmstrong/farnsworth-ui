@@ -34,6 +34,16 @@ const MainRoutes = {
             component: () => import('@/views/jack-henry/repositories/PullRequestDetailsView.vue')
         },
         {
+            name: 'Repository Dependabot Alert Detail',
+            path: '/repositories/:id/dependabot-alerts/:alertId',
+            component: () => import('@/views/jack-henry/repositories/DependabotAlertDetailsView.vue')
+        },
+        {
+            name: 'Repository Code Scanning Alert Detail',
+            path: '/repositories/:id/code-scanning-alerts/:alertId',
+            component: () => import('@/views/jack-henry/repositories/CodeScanningAlertDetailsView.vue')
+        },
+        {
             name: 'Staff Member Detail',
             path: '/staff-members/:id',
             component: () => import('@/views/jack-henry/staff-members/StaffMemberDetailView.vue')

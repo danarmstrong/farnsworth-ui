@@ -10,8 +10,24 @@ export interface GithubRepository {
     lastPulled: string | null;
 }
 
-export type CreateGithubRepositoryDto = Omit<GithubRepository, 'id' | 'lastSynced' | 'lastPulled' | 'isCloned'>;
-export type UpdateGithubRepositoryDto = Omit<GithubRepository, 'id' | 'lastSynced' | 'lastPulled' | 'isCloned'>;
+export interface GithubRepoCreateRequest {
+    name: string;
+    url: string;
+    isPersonal: boolean;
+    isWatched: boolean;
+    useSsh: boolean;
+}
+
+export interface GithubRepoUpsertRequest {
+    name: string;
+    url: string;
+    isPersonal: boolean;
+    isWatched: boolean;
+    useSsh: boolean;
+}
+
+export type CreateGithubRepositoryDto = GithubRepoCreateRequest;
+export type UpdateGithubRepositoryDto = GithubRepoUpsertRequest;
 
 export interface GithubRepoQueryFilters {
     isWatched?: boolean;
@@ -27,13 +43,11 @@ export interface RepositoryFormSubmitPayload {
     useSsh: boolean;
 }
 
-export interface GithubRepoSyncQueueResponse {
-    queued?: boolean;
+export interface GitRepositoryJobQueueResponse {
+    jobId: string;
+    operation: string;
+    status: string;
+    message: string;
 }
 
-
-
-
-
-
-
+export type GithubRepoSyncQueueResponse = GitRepositoryJobQueueResponse | GitRepositoryJobQueueResponse[];

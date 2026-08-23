@@ -2,8 +2,10 @@
 import { computed, ref, watch } from 'vue';
 import { RouterLink } from 'vue-router';
 import { GITHUB_REPO_PULL_REQUESTS_DEFAULT_PAGE_SIZE, useGithubRepoStore } from '@/features/jack-henry/repositories/stores/githubRepoStore';
-import type { GithubPullRequest, GithubPullRequestState } from '@/features/jack-henry/repositories/types/GithubPullRequest';
+import type { GithubPullRequest } from '@/features/jack-henry/repositories/types/GithubPullRequest';
 import { formatUtcLocal } from '@/utils/helpers/dateTime';
+import { pullRequestStateLabel, pullRequestStateTone } from '@/features/jack-henry/repositories/utils/repositoryStatusPresentation';
+import RepositoryStatusChip from '@/features/jack-henry/repositories/components/RepositoryStatusChip.vue';
 
 interface Props {
     repositoryId: string;
@@ -45,7 +47,7 @@ const filteredPullRequests = computed(() => {
             pullRequest.author ?? '',
             pullRequest.repositoryOwner,
             pullRequest.repositoryName,
-            stateLabel(pullRequest.state)
+            pullRequestStateLabel(pullRequest.state)
         ]
             .join(' ')
             .toLowerCase();
@@ -77,56 +79,6 @@ function normalizePositiveInteger(value: number | string | null | undefined, fal
 
     const floored = Math.floor(normalized);
     return floored > 0 ? floored : fallback;
-}
-
-function stateLabel(state: GithubPullRequestState): string {
-    if (typeof state === 'number') {
-        if (state === 0) {
-            return 'Open';
-        }
-        if (state === 1) {
-            return 'Closed';
-        }
-        if (state === 2) {
-            return 'Merged';
-        }
-    }
-
-    const normalized = String(state ?? '').trim();
-    if (!normalized) {
-        return 'Unknown';
-    }
-
-    return normalized.replace(/([a-z])([A-Z])/g, '$1 $2');
-}
-
-function stateTone(state: GithubPullRequestState): 'success' | 'warning' | 'info' | 'default' {
-    if (typeof state === 'number') {
-        if (state === 0) {
-            return 'info';
-        }
-        if (state === 1) {
-            return 'warning';
-        }
-        if (state === 2) {
-            return 'success';
-        }
-    }
-
-    const normalized = String(state ?? '')
-        .trim()
-        .toLowerCase();
-    if (normalized.includes('open')) {
-        return 'info';
-    }
-    if (normalized.includes('closed')) {
-        return 'warning';
-    }
-    if (normalized.includes('merged')) {
-        return 'success';
-    }
-
-    return 'default';
 }
 
 function pullRequestKey(pullRequest: GithubPullRequest): string {
@@ -258,9 +210,7 @@ function clearStoreError(): void {
                         <template v-else>{{ pullRequest.title || '-' }}</template>
                     </td>
                     <td class="text-subtitle-1 text-no-wrap col-state">
-                        <v-chip size="small" :color="stateTone(pullRequest.state)" variant="tonal">
-                            {{ stateLabel(pullRequest.state) }}
-                        </v-chip>
+                        <RepositoryStatusChip :label="pullRequestStateLabel(pullRequest.state)" :tone="pullRequestStateTone(pullRequest.state)" />
                     </td>
                     <td class="text-subtitle-1 text-no-wrap col-author">{{ pullRequest.author || '-' }}</td>
                     <td class="text-subtitle-1 text-no-wrap col-reviewers">{{ reviewerSummary(pullRequest) }}</td>

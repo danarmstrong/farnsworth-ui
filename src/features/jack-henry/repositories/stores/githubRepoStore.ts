@@ -8,13 +8,30 @@ import type {
     UpdateGithubRepositoryDto
 } from '@/features/jack-henry/repositories/types/GithubRepository';
 import type { GithubPullRequest, GithubPullRequestPageResponse } from '@/features/jack-henry/repositories/types/GithubPullRequest';
+import type { GithubDependabotAlert, GithubDependabotAlertPageResponse } from '@/features/jack-henry/repositories/types/GithubDependabotAlert';
+import type {
+    GithubCodeScanningAlert,
+    GithubCodeScanningAlertPageResponse
+} from '@/features/jack-henry/repositories/types/GithubCodeScanningAlert';
 import { ref } from 'vue';
 import { isAxiosError } from 'axios';
 
 const githubReposPath = '/github-repos';
 export const GITHUB_REPO_PULL_REQUESTS_DEFAULT_PAGE_SIZE = 50;
+export const GITHUB_REPO_DEPENDABOT_ALERTS_DEFAULT_PAGE_SIZE = 50;
+export const GITHUB_REPO_CODE_SCANNING_ALERTS_DEFAULT_PAGE_SIZE = 50;
 
 type FetchRepositoryPullRequestsOptions = {
+    page?: number;
+    pageSize?: number;
+};
+
+type FetchRepositoryDependabotAlertsOptions = {
+    page?: number;
+    pageSize?: number;
+};
+
+type FetchRepositoryCodeScanningAlertsOptions = {
     page?: number;
     pageSize?: number;
 };
@@ -59,6 +76,28 @@ export const useGithubRepoStore = defineStore('githubRepos', () => {
     const selectedPullRequest = ref<GithubPullRequest | null>(null);
     const selectedPullRequestLoading = ref(false);
     const selectedPullRequestError = ref<string | null>(null);
+    const dependabotAlerts = ref<GithubDependabotAlert[]>([]);
+    const dependabotAlertsLoading = ref(false);
+    const dependabotAlertsError = ref<string | null>(null);
+    const dependabotAlertsPage = ref(1);
+    const dependabotAlertsPageSize = ref(GITHUB_REPO_DEPENDABOT_ALERTS_DEFAULT_PAGE_SIZE);
+    const dependabotAlertsTotalCount = ref(0);
+    const dependabotAlertsTotalPages = ref(0);
+    const activeDependabotAlertsRepositoryId = ref('');
+    const selectedDependabotAlert = ref<GithubDependabotAlert | null>(null);
+    const selectedDependabotAlertLoading = ref(false);
+    const selectedDependabotAlertError = ref<string | null>(null);
+    const codeScanningAlerts = ref<GithubCodeScanningAlert[]>([]);
+    const codeScanningAlertsLoading = ref(false);
+    const codeScanningAlertsError = ref<string | null>(null);
+    const codeScanningAlertsPage = ref(1);
+    const codeScanningAlertsPageSize = ref(GITHUB_REPO_CODE_SCANNING_ALERTS_DEFAULT_PAGE_SIZE);
+    const codeScanningAlertsTotalCount = ref(0);
+    const codeScanningAlertsTotalPages = ref(0);
+    const activeCodeScanningAlertsRepositoryId = ref('');
+    const selectedCodeScanningAlert = ref<GithubCodeScanningAlert | null>(null);
+    const selectedCodeScanningAlertLoading = ref(false);
+    const selectedCodeScanningAlertError = ref<string | null>(null);
 
     function applyPullRequestPage(data: GithubPullRequestPageResponse): void {
         pullRequests.value = data.items;
@@ -66,6 +105,22 @@ export const useGithubRepoStore = defineStore('githubRepos', () => {
         pullRequestsPageSize.value = data.pageSize;
         pullRequestsTotalCount.value = data.totalCount;
         pullRequestsTotalPages.value = data.totalPages;
+    }
+
+    function applyDependabotAlertPage(data: GithubDependabotAlertPageResponse): void {
+        dependabotAlerts.value = data.items;
+        dependabotAlertsPage.value = data.page;
+        dependabotAlertsPageSize.value = data.pageSize;
+        dependabotAlertsTotalCount.value = data.totalCount;
+        dependabotAlertsTotalPages.value = data.totalPages;
+    }
+
+    function applyCodeScanningAlertPage(data: GithubCodeScanningAlertPageResponse): void {
+        codeScanningAlerts.value = data.items;
+        codeScanningAlertsPage.value = data.page;
+        codeScanningAlertsPageSize.value = data.pageSize;
+        codeScanningAlertsTotalCount.value = data.totalCount;
+        codeScanningAlertsTotalPages.value = data.totalPages;
     }
 
     async function fetchGithubRepos(filters?: GithubRepoQueryFilters): Promise<void> {
@@ -238,6 +293,162 @@ export const useGithubRepoStore = defineStore('githubRepos', () => {
         }
     }
 
+    async function fetchRepositoryDependabotAlerts(
+        repositoryId: string,
+        options: FetchRepositoryDependabotAlertsOptions = {}
+    ): Promise<GithubDependabotAlertPageResponse | null> {
+        dependabotAlertsError.value = null;
+
+        const normalizedRepositoryId = repositoryId.trim();
+        if (!normalizedRepositoryId) {
+            activeDependabotAlertsRepositoryId.value = '';
+            dependabotAlerts.value = [];
+            dependabotAlertsPage.value = 1;
+            dependabotAlertsPageSize.value = GITHUB_REPO_DEPENDABOT_ALERTS_DEFAULT_PAGE_SIZE;
+            dependabotAlertsTotalCount.value = 0;
+            dependabotAlertsTotalPages.value = 0;
+            return null;
+        }
+
+        dependabotAlertsLoading.value = true;
+        try {
+            const requestPage = normalizePositiveInteger(options.page, 1);
+            const requestPageSize = normalizePositiveInteger(options.pageSize, GITHUB_REPO_DEPENDABOT_ALERTS_DEFAULT_PAGE_SIZE);
+            const { data } = await axios.get<GithubDependabotAlertPageResponse>(
+                `${githubReposPath}/${encodeURIComponent(normalizedRepositoryId)}/dependabot-alerts`,
+                {
+                    params: {
+                        page: requestPage,
+                        pageSize: requestPageSize
+                    }
+                }
+            );
+
+            activeDependabotAlertsRepositoryId.value = normalizedRepositoryId;
+            applyDependabotAlertPage(data);
+            return data;
+        } catch (err) {
+            dependabotAlertsError.value = setErrorMessage(err, 'Failed to fetch repository dependabot alerts');
+            return null;
+        } finally {
+            dependabotAlertsLoading.value = false;
+        }
+    }
+
+    async function getRepositoryDependabotAlert(repositoryId: string, alertId: string): Promise<GithubDependabotAlert | null> {
+        selectedDependabotAlertError.value = null;
+
+        const normalizedRepositoryId = repositoryId.trim();
+        const normalizedAlertId = alertId.trim();
+
+        if (!normalizedRepositoryId || !normalizedAlertId) {
+            selectedDependabotAlert.value = null;
+            return null;
+        }
+
+        const existingFromPage = dependabotAlerts.value.find((alert) => alert.id === normalizedAlertId);
+        if (existingFromPage) {
+            selectedDependabotAlert.value = existingFromPage;
+            return existingFromPage;
+        }
+
+        selectedDependabotAlert.value = null;
+        selectedDependabotAlertLoading.value = true;
+
+        try {
+            const { data } = await axios.get<GithubDependabotAlert>(
+                `${githubReposPath}/${encodeURIComponent(normalizedRepositoryId)}/dependabot-alerts/${encodeURIComponent(normalizedAlertId)}`
+            );
+
+            selectedDependabotAlert.value = data;
+            return data;
+        } catch (err) {
+            selectedDependabotAlertError.value = setErrorMessage(err, 'Failed to fetch dependabot alert');
+            selectedDependabotAlert.value = null;
+            return null;
+        } finally {
+            selectedDependabotAlertLoading.value = false;
+        }
+    }
+
+    async function fetchRepositoryCodeScanningAlerts(
+        repositoryId: string,
+        options: FetchRepositoryCodeScanningAlertsOptions = {}
+    ): Promise<GithubCodeScanningAlertPageResponse | null> {
+        codeScanningAlertsError.value = null;
+
+        const normalizedRepositoryId = repositoryId.trim();
+        if (!normalizedRepositoryId) {
+            activeCodeScanningAlertsRepositoryId.value = '';
+            codeScanningAlerts.value = [];
+            codeScanningAlertsPage.value = 1;
+            codeScanningAlertsPageSize.value = GITHUB_REPO_CODE_SCANNING_ALERTS_DEFAULT_PAGE_SIZE;
+            codeScanningAlertsTotalCount.value = 0;
+            codeScanningAlertsTotalPages.value = 0;
+            return null;
+        }
+
+        codeScanningAlertsLoading.value = true;
+        try {
+            const requestPage = normalizePositiveInteger(options.page, 1);
+            const requestPageSize = normalizePositiveInteger(options.pageSize, GITHUB_REPO_CODE_SCANNING_ALERTS_DEFAULT_PAGE_SIZE);
+            const { data } = await axios.get<GithubCodeScanningAlertPageResponse>(
+                `${githubReposPath}/${encodeURIComponent(normalizedRepositoryId)}/code-scanning-alerts`,
+                {
+                    params: {
+                        page: requestPage,
+                        pageSize: requestPageSize
+                    }
+                }
+            );
+
+            activeCodeScanningAlertsRepositoryId.value = normalizedRepositoryId;
+            applyCodeScanningAlertPage(data);
+            return data;
+        } catch (err) {
+            codeScanningAlertsError.value = setErrorMessage(err, 'Failed to fetch repository code scanning alerts');
+            return null;
+        } finally {
+            codeScanningAlertsLoading.value = false;
+        }
+    }
+
+    async function getRepositoryCodeScanningAlert(repositoryId: string, alertId: string): Promise<GithubCodeScanningAlert | null> {
+        selectedCodeScanningAlertError.value = null;
+
+        const normalizedRepositoryId = repositoryId.trim();
+        const normalizedAlertId = alertId.trim();
+
+        if (!normalizedRepositoryId || !normalizedAlertId) {
+            selectedCodeScanningAlert.value = null;
+            return null;
+        }
+
+        const existingFromPage = codeScanningAlerts.value.find((alert) => alert.id === normalizedAlertId);
+        if (existingFromPage) {
+            selectedCodeScanningAlert.value = existingFromPage;
+            return existingFromPage;
+        }
+
+        selectedCodeScanningAlert.value = null;
+        selectedCodeScanningAlertLoading.value = true;
+
+        try {
+            const { data } = await axios.get<GithubCodeScanningAlert>(
+                `${githubReposPath}/${encodeURIComponent(normalizedRepositoryId)}/code-scanning-alerts/${encodeURIComponent(normalizedAlertId)}`
+            );
+
+            selectedCodeScanningAlert.value = data;
+            return data;
+        } catch (err) {
+            selectedCodeScanningAlertError.value = setErrorMessage(err, 'Failed to fetch code scanning alert');
+            selectedCodeScanningAlert.value = null;
+            return null;
+        } finally {
+            selectedCodeScanningAlertLoading.value = false;
+        }
+    }
+
     async function getRepositoryPullRequest(repositoryId: string, pullRequestId: string): Promise<GithubPullRequest | null> {
         selectedPullRequestError.value = null;
 
@@ -291,6 +502,32 @@ export const useGithubRepoStore = defineStore('githubRepos', () => {
         selectedPullRequestError.value = null;
     }
 
+    function clearDependabotAlertsError(): void {
+        dependabotAlertsError.value = null;
+    }
+
+    function clearSelectedDependabotAlertError(): void {
+        selectedDependabotAlertError.value = null;
+    }
+
+    function clearSelectedDependabotAlert(): void {
+        selectedDependabotAlert.value = null;
+        selectedDependabotAlertError.value = null;
+    }
+
+    function clearCodeScanningAlertsError(): void {
+        codeScanningAlertsError.value = null;
+    }
+
+    function clearSelectedCodeScanningAlertError(): void {
+        selectedCodeScanningAlertError.value = null;
+    }
+
+    function clearSelectedCodeScanningAlert(): void {
+        selectedCodeScanningAlert.value = null;
+        selectedCodeScanningAlertError.value = null;
+    }
+
     function setErrorMessage(err: unknown, fallback: string): string {
         if (isAxiosError(err)) {
             return err.response?.data?.message || err.message || fallback;
@@ -313,6 +550,28 @@ export const useGithubRepoStore = defineStore('githubRepos', () => {
         selectedPullRequest,
         selectedPullRequestLoading,
         selectedPullRequestError,
+        dependabotAlerts,
+        dependabotAlertsLoading,
+        dependabotAlertsError,
+        dependabotAlertsPage,
+        dependabotAlertsPageSize,
+        dependabotAlertsTotalCount,
+        dependabotAlertsTotalPages,
+        activeDependabotAlertsRepositoryId,
+        selectedDependabotAlert,
+        selectedDependabotAlertLoading,
+        selectedDependabotAlertError,
+        codeScanningAlerts,
+        codeScanningAlertsLoading,
+        codeScanningAlertsError,
+        codeScanningAlertsPage,
+        codeScanningAlertsPageSize,
+        codeScanningAlertsTotalCount,
+        codeScanningAlertsTotalPages,
+        activeCodeScanningAlertsRepositoryId,
+        selectedCodeScanningAlert,
+        selectedCodeScanningAlertLoading,
+        selectedCodeScanningAlertError,
         fetchGithubRepos,
         getGithubRepo,
         createGithubRepo,
@@ -324,10 +583,21 @@ export const useGithubRepoStore = defineStore('githubRepos', () => {
         queueSyncAllGithubRepos,
         fetchRepositoryPullRequests,
         getRepositoryPullRequest,
+        fetchRepositoryDependabotAlerts,
+        getRepositoryDependabotAlert,
+        fetchRepositoryCodeScanningAlerts,
+        getRepositoryCodeScanningAlert,
         clearError,
         clearPullRequestsError,
         clearSelectedPullRequestError,
-        clearSelectedPullRequest
+        clearSelectedPullRequest,
+        clearDependabotAlertsError,
+        clearSelectedDependabotAlertError,
+        clearSelectedDependabotAlert,
+        clearCodeScanningAlertsError,
+        clearSelectedCodeScanningAlertError,
+        clearSelectedCodeScanningAlert
     };
 });
+
 

@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router';
 import RepositoryForm from '@/features/jack-henry/repositories/components/RepositoryForm.vue';
 import { useGithubRepoStore } from '@/features/jack-henry/repositories/stores/githubRepoStore';
 import type {
+    GitRepositoryJobQueueResponse,
     GithubRepoQueryFilters,
     GithubRepository,
     GithubRepoSyncQueueResponse,
@@ -79,8 +80,29 @@ function lastSyncedTextClass(tone: LastSyncedTone): string {
     return 'text-error';
 }
 
-function wasQueued(result: GithubRepoSyncQueueResponse): boolean {
-    return typeof result.queued === 'boolean' ? result.queued : true;
+function toQueueResults(result: GithubRepoSyncQueueResponse): GitRepositoryJobQueueResponse[] {
+    return Array.isArray(result) ? result : [result];
+}
+
+function queueMessage(result: GithubRepoSyncQueueResponse, fallback: string): string {
+    const items = toQueueResults(result);
+    if (!items.length) {
+        return fallback;
+    }
+
+    if (items.length === 1) {
+        const [single] = items;
+        return single.message?.trim() || `${single.operation} queued (${single.status}).`;
+    }
+
+    const acceptedCount = items.filter((item) => item.status.trim().toLowerCase().includes('accept')).length;
+    const conflictCount = items.filter((item) => item.status.trim().toLowerCase().includes('conflict')).length;
+    const otherCount = items.length - acceptedCount - conflictCount;
+    return `${items.length} jobs returned (${acceptedCount} accepted, ${conflictCount} conflicts, ${otherCount} other).`;
+}
+
+function queueHasNonAcceptedStatus(result: GithubRepoSyncQueueResponse): boolean {
+    return toQueueResults(result).some((item) => !item.status.trim().toLowerCase().includes('accept'));
 }
 
 onMounted(() => {
@@ -160,8 +182,8 @@ async function syncItem(item: GithubRepository) {
             syncSnackbarText.value = store.error;
             syncSnackbar.value = true;
         } else if (result) {
-            syncSnackbarColor.value = 'success';
-            syncSnackbarText.value = wasQueued(result) ? 'Sync queued.' : 'Sync was not queued.';
+            syncSnackbarColor.value = queueHasNonAcceptedStatus(result) ? 'error' : 'success';
+            syncSnackbarText.value = queueMessage(result, 'Sync request completed.');
             syncSnackbar.value = true;
             await reloadList();
         }
@@ -190,14 +212,8 @@ async function downloadItem(item: GithubRepository) {
             syncSnackbarText.value = store.error;
             syncSnackbar.value = true;
         } else if (result) {
-            syncSnackbarColor.value = 'success';
-            syncSnackbarText.value = wasQueued(result)
-                ? isClone
-                    ? 'Clone queued.'
-                    : 'Pull queued.'
-                : isClone
-                  ? 'Clone was not queued.'
-                  : 'Pull was not queued.';
+            syncSnackbarColor.value = queueHasNonAcceptedStatus(result) ? 'error' : 'success';
+            syncSnackbarText.value = queueMessage(result, isClone ? 'Clone request completed.' : 'Pull request completed.');
             syncSnackbar.value = true;
             await reloadList();
         }
@@ -220,8 +236,8 @@ async function syncAll() {
             syncSnackbarText.value = store.error;
             syncSnackbar.value = true;
         } else if (result) {
-            syncSnackbarColor.value = 'success';
-            syncSnackbarText.value = wasQueued(result) ? 'All repository syncs queued.' : 'Repository syncs were not queued.';
+            syncSnackbarColor.value = queueHasNonAcceptedStatus(result) ? 'error' : 'success';
+            syncSnackbarText.value = queueMessage(result, 'Repository sync request completed.');
             syncSnackbar.value = true;
             await reloadList();
         }
@@ -440,3 +456,4 @@ async function save(payload: RepositoryFormSubmitPayload) {
     }
 }
 </style>
+

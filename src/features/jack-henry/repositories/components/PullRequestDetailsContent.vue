@@ -6,11 +6,12 @@ import { useGithubRepoStore } from '@/features/jack-henry/repositories/stores/gi
 import type {
     GithubPullRequest,
     GithubPullRequestJiraIssueSlimReference,
-    GithubPullRequestStaffMemberSlimReference,
-    GithubPullRequestState
+    GithubPullRequestStaffMemberSlimReference
 } from '@/features/jack-henry/repositories/types/GithubPullRequest';
 import type { GithubRepository } from '@/features/jack-henry/repositories/types/GithubRepository';
 import { formatUtcLocal } from '@/utils/helpers/dateTime';
+import { pullRequestStateLabel, pullRequestStateTone } from '@/features/jack-henry/repositories/utils/repositoryStatusPresentation';
+import RepositoryStatusChip from '@/features/jack-henry/repositories/components/RepositoryStatusChip.vue';
 
 interface PullRequestReviewerDisplay {
     key: string;
@@ -83,61 +84,6 @@ watch(
 onBeforeUnmount(() => {
     store.clearSelectedPullRequest();
 });
-
-function stateLabel(state: GithubPullRequestState): string {
-    if (typeof state === 'number') {
-        if (state === 0) {
-            return 'Open';
-        }
-
-        if (state === 1) {
-            return 'Closed';
-        }
-
-        if (state === 2) {
-            return 'Merged';
-        }
-    }
-
-    const normalized = String(state ?? '').trim();
-    if (!normalized) {
-        return 'Unknown';
-    }
-
-    return normalized.replace(/([a-z])([A-Z])/g, '$1 $2');
-}
-
-function stateTone(state: GithubPullRequestState): 'success' | 'warning' | 'info' | 'default' {
-    if (typeof state === 'number') {
-        if (state === 0) {
-            return 'info';
-        }
-
-        if (state === 1) {
-            return 'warning';
-        }
-
-        if (state === 2) {
-            return 'success';
-        }
-    }
-
-    const normalized = String(state ?? '').trim().toLowerCase();
-
-    if (normalized.includes('open')) {
-        return 'info';
-    }
-
-    if (normalized.includes('closed')) {
-        return 'warning';
-    }
-
-    if (normalized.includes('merged')) {
-        return 'success';
-    }
-
-    return 'default';
-}
 
 function formatDate(value: string | null | undefined): string {
     if (!value) {
@@ -308,10 +254,8 @@ function jiraIssueRoute(issue: GithubPullRequestJiraIssueSlimReference) {
                         <div class="d-flex flex-column flex-lg-row justify-space-between align-start gap-4 mb-5">
                             <div class="pr-header-copy">
                                 <div class="d-flex flex-wrap align-center gap-2 mb-3">
-                                    <v-chip size="small" color="primary" variant="tonal">#{{ pullRequest.number }}</v-chip>
-                                    <v-chip size="small" :color="stateTone(pullRequest.state)" variant="tonal">
-                                        {{ stateLabel(pullRequest.state) }}
-                                    </v-chip>
+                                    <RepositoryStatusChip :label="`#${pullRequest.number}`" color="primary" />
+                                    <RepositoryStatusChip :label="pullRequestStateLabel(pullRequest.state)" :tone="pullRequestStateTone(pullRequest.state)" />
                                 </div>
 
                                 <h1 class="text-h4 font-weight-bold mb-2 pr-title">{{ pullRequest.title || 'Untitled pull request' }}</h1>
@@ -321,7 +265,11 @@ function jiraIssueRoute(issue: GithubPullRequestJiraIssueSlimReference) {
                             </div>
 
                             <div class="d-flex flex-wrap gap-3 justify-start justify-lg-end">
-                                <v-btn :to="{ name: 'Repository Detail', params: { id: repositoryId } }" variant="outlined" color="primary">
+                                <v-btn
+                                    :to="{ name: 'Repository Detail', params: { id: repositoryId }, query: { tab: 'pull-requests' } }"
+                                    variant="outlined"
+                                    color="primary"
+                                >
                                     Back to pull requests
                                 </v-btn>
                                 <v-btn :href="pullRequest.url" target="_blank" rel="noopener noreferrer" color="primary">Open on GitHub</v-btn>
@@ -380,9 +328,10 @@ function jiraIssueRoute(issue: GithubPullRequestJiraIssueSlimReference) {
                                             <div>
                                                 <dt>Status</dt>
                                                 <dd>
-                                                    <v-chip size="small" :color="stateTone(pullRequest.state)" variant="tonal">
-                                                        {{ stateLabel(pullRequest.state) }}
-                                                    </v-chip>
+                                                    <RepositoryStatusChip
+                                                        :label="pullRequestStateLabel(pullRequest.state)"
+                                                        :tone="pullRequestStateTone(pullRequest.state)"
+                                                    />
                                                 </dd>
                                             </div>
                                             <div>
@@ -574,9 +523,5 @@ function jiraIssueRoute(issue: GithubPullRequestJiraIssueSlimReference) {
     line-height: 1.5;
 }
 </style>
-
-
-
-
 
 
