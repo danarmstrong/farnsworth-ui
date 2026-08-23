@@ -37,6 +37,13 @@ export interface JiraIssueReviewMetadata {
     lastError?: string | null;
 }
 
+export interface JiraIssueStatusCategoryCounts {
+    ToDo: number;
+    InProgress: number;
+    Done: number;
+    Uncategorized: number;
+}
+
 export type GithubPullRequestState = string | number;
 
 export interface JiraIssueGithubPullRequestReference {
@@ -50,19 +57,14 @@ export interface JiraIssueGithubPullRequestReference {
 
 export type JiraIssuePriority = string | number;
 
-export interface JiraIssue {
+export interface JiraIssueListItem {
     id: string;
-    parentId?: string | null;
-    parentExternalId?: string | null;
-    parentKey?: string | null;
-    jiraBoardId?: string | null;
     jiraStatusId: string;
     jiraStatusName: string;
     status?: JiraIssueStatusReference | null;
     jiraIssueTypeId: string;
     jiraIssueTypeName: string;
     type?: JiraIssueTypeReference | null;
-    jiraSprintId?: string | null;
     assignee?: string | null;
     assigneeStaffMember?: JiraIssueStaffReference | null;
     reporter?: string | null;
@@ -71,21 +73,35 @@ export interface JiraIssue {
     creatorStaffMember?: JiraIssueStaffReference | null;
     externalId: string;
     projectKey: string;
-    lastProjectSyncRunId?: string | null;
     key: string;
     jiraLink: string;
     summary: string;
     description: string;
+    priority: JiraIssuePriority;
+    notes: string[];
+    githubPullRequestIds: string[];
+    // Optional fields are emitted by older list payloads and by detail endpoints.
     jiraStatusCategoryName?: string | null;
     createdAtUtc?: string | null;
     updatedAtUtc?: string | null;
-    priority: JiraIssuePriority;
+    jiraIdentity?: JiraIssueUserIdentity | null;
+    reviewMetadata?: JiraIssueReviewMetadata | null;
+    githubPullRequests?: JiraIssueGithubPullRequestReference[];
+}
+
+export interface JiraIssue extends JiraIssueListItem {
+    parentId?: string | null;
+    parentExternalId?: string | null;
+    parentKey?: string | null;
+    jiraBoardId?: string | null;
+    jiraSprintId?: string | null;
+    lastProjectSyncRunId?: string | null;
     storyPoints?: number | null;
     jiraIdentity: JiraIssueUserIdentity;
     reviewMetadata: JiraIssueReviewMetadata;
-    notes: string[];
-    githubPullRequestIds: string[];
     githubPullRequests: JiraIssueGithubPullRequestReference[];
 }
 
-export type JiraIssuePageResponse = PagedResponse<JiraIssue>;
+export interface JiraIssuePageResponse extends PagedResponse<JiraIssueListItem> {
+    statusCategoryCounts?: Partial<JiraIssueStatusCategoryCounts>;
+}

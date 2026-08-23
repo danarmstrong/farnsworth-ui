@@ -5,7 +5,7 @@ import {
     JIRA_PROJECT_ISSUES_DEFAULT_PAGE_SIZE,
     useJiraProjectIssueStore
 } from '@/features/jack-henry/jira-projects/stores/jiraProjectIssueStore';
-import type { JiraIssue } from '@/features/jack-henry/jira-projects/types/JiraIssue';
+import type { JiraIssueListItem, JiraIssueReviewMetadata, JiraIssueUserIdentity } from '@/features/jack-henry/jira-projects/types/JiraIssue';
 import { formatUtcLocal } from '@/utils/helpers/dateTime';
 
 const DEFAULT_IDENTITY = {
@@ -15,16 +15,6 @@ const DEFAULT_IDENTITY = {
     reporterDisplayName: null,
     creatorAccountId: null,
     creatorDisplayName: null
-};
-
-const DEFAULT_REVIEW_METADATA = {
-    isReviewed: false,
-    score: null,
-    reason: null,
-    reviewedAtUtc: null,
-    lastAttemptedAtUtc: null,
-    model: null,
-    lastError: null
 };
 
 interface Props {
@@ -56,17 +46,22 @@ watch(
 );
 
 const totalTicketCount = computed(() => store.totalCount);
+const statusCategoryCounts = computed(() => store.statusCategoryCounts);
 
 const openTicketCount = computed(() => {
-    return store.issues.filter((issue) => isOpenStatus(issueStatus(issue))).length;
+    return statusCategoryCounts.value.ToDo;
 });
 
 const inProgressTicketCount = computed(() => {
-    return store.issues.filter((issue) => isInProgressStatus(issueStatus(issue))).length;
+    return statusCategoryCounts.value.InProgress;
 });
 
 const doneTicketCount = computed(() => {
-    return store.issues.filter((issue) => isDoneStatus(issueStatus(issue))).length;
+    return statusCategoryCounts.value.Done;
+});
+
+const uncategorizedTicketCount = computed(() => {
+    return statusCategoryCounts.value.Uncategorized;
 });
 
 const filteredIssues = computed(() => {
@@ -126,31 +121,31 @@ const pageSummary = computed(() => {
     return `Showing ${start} to ${end} of ${store.totalCount} issues`;
 });
 
-function issueKey(issue: JiraIssue): string {
+function issueKey(issue: JiraIssueListItem): string {
     return issue.key || issue.id || '—';
 }
 
-function issueSummary(issue: JiraIssue): string {
+function issueSummary(issue: JiraIssueListItem): string {
     return issue.summary || '—';
 }
 
-function issueStatus(issue: JiraIssue): string {
+function issueStatus(issue: JiraIssueListItem): string {
     return issue.status?.name || issue.jiraStatusName || 'Unknown';
 }
 
-function issueStatusCategory(issue: JiraIssue): string {
+function issueStatusCategory(issue: JiraIssueListItem): string {
     return issue.jiraStatusCategoryName || '—';
 }
 
-function issueAssignee(issue: JiraIssue): string {
+function issueAssignee(issue: JiraIssueListItem): string {
     return issue.assigneeStaffMember?.displayName || issue.assignee || 'Unassigned';
 }
 
-function issueReporter(issue: JiraIssue): string {
+function issueReporter(issue: JiraIssueListItem): string {
     return issue.reporterStaffMember?.displayName || issue.reporter || '—';
 }
 
-function staffMemberRoute(staffMember: JiraIssue['assigneeStaffMember'] | JiraIssue['reporterStaffMember']) {
+function staffMemberRoute(staffMember: JiraIssueListItem['assigneeStaffMember'] | JiraIssueListItem['reporterStaffMember']) {
     if (!staffMember?.id) {
         return null;
     }
@@ -163,7 +158,7 @@ function staffMemberRoute(staffMember: JiraIssue['assigneeStaffMember'] | JiraIs
     };
 }
 
-function issuePriority(issue: JiraIssue): string {
+function issuePriority(issue: JiraIssueListItem): string {
     if (issue.priority === null || issue.priority === undefined) {
         return '—';
     }
@@ -171,24 +166,29 @@ function issuePriority(issue: JiraIssue): string {
     return String(issue.priority);
 }
 
-function issueIdentity(issue: JiraIssue) {
+function issueIdentity(issue: JiraIssueListItem): JiraIssueUserIdentity {
     return issue.jiraIdentity || DEFAULT_IDENTITY;
 }
 
-function issueReviewMetadata(issue: JiraIssue) {
-    return issue.reviewMetadata || DEFAULT_REVIEW_METADATA;
+function issueReviewMetadata(issue: JiraIssueListItem): JiraIssueReviewMetadata | null {
+    return issue.reviewMetadata || null;
 }
 
-function issueReviewed(issue: JiraIssue): string {
-    return issueReviewMetadata(issue).isReviewed ? 'Reviewed' : 'Not reviewed';
+function issueReviewed(issue: JiraIssueListItem): string {
+    const metadata = issueReviewMetadata(issue);
+    if (!metadata) {
+        return '—';
+    }
+
+    return metadata.isReviewed ? 'Reviewed' : 'Not reviewed';
 }
 
-function issueReviewedTone(issue: JiraIssue): 'success' | 'default' {
-    return issueReviewMetadata(issue).isReviewed ? 'success' : 'default';
+function issueReviewedTone(issue: JiraIssueListItem): 'success' | 'default' {
+    return issueReviewMetadata(issue)?.isReviewed ? 'success' : 'default';
 }
 
-function issueReviewScore(issue: JiraIssue): string {
-    const score = issueReviewMetadata(issue).score;
+function issueReviewScore(issue: JiraIssueListItem): string {
+    const score = issueReviewMetadata(issue)?.score;
     if (score === null || score === undefined) {
         return '—';
     }
@@ -222,15 +222,15 @@ function priorityTone(priority: string): 'error' | 'warning' | 'info' | 'success
     return 'default';
 }
 
-function issueType(issue: JiraIssue): string {
+function issueType(issue: JiraIssueListItem): string {
     return issue.type?.name || issue.jiraIssueTypeName || '—';
 }
 
-function issueCreated(issue: JiraIssue): string {
+function issueCreated(issue: JiraIssueListItem): string {
     return issue.createdAtUtc || '';
 }
 
-function issueUpdated(issue: JiraIssue): string {
+function issueUpdated(issue: JiraIssueListItem): string {
     return issue.updatedAtUtc || issue.createdAtUtc || '';
 }
 
@@ -331,6 +331,12 @@ function clearStoreError(): void {
             <div class="bg-lightsuccess pa-5 text-center cursor-pointer rounded-md" @click="statusFilter = 'done'">
                 <h2 class="text-success text-24">{{ doneTicketCount }}</h2>
                 <h6 class="text-success text-h6">Done Issues</h6>
+            </div>
+        </v-col>
+        <v-col cols="10" md="3" sm="6">
+            <div class="bg-lightsecondary pa-5 text-center cursor-pointer rounded-md" @click="statusFilter = 'other'">
+                <h2 class="text-secondary text-24">{{ uncategorizedTicketCount }}</h2>
+                <h6 class="text-secondary text-h6">Uncategorized</h6>
             </div>
         </v-col>
     </v-row>

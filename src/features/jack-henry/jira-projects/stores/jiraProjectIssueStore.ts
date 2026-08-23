@@ -2,7 +2,12 @@ import { defineStore } from 'pinia';
 import { ref } from 'vue';
 import { isAxiosError } from 'axios';
 import axios from '@/utils/axios';
-import type { JiraIssue, JiraIssuePageResponse } from '@/features/jack-henry/jira-projects/types/JiraIssue';
+import type {
+    JiraIssue,
+    JiraIssueListItem,
+    JiraIssuePageResponse,
+    JiraIssueStatusCategoryCounts
+} from '@/features/jack-henry/jira-projects/types/JiraIssue';
 
 const jiraProjectIssuesPath = '/config/jira/projects';
 export const JIRA_PROJECT_ISSUES_DEFAULT_PAGE_SIZE = 10;
@@ -21,8 +26,26 @@ function normalizePositiveInteger(value: number | undefined, fallback: number): 
     return normalized > 0 ? normalized : fallback;
 }
 
+const DEFAULT_STATUS_CATEGORY_COUNTS: JiraIssueStatusCategoryCounts = {
+    ToDo: 0,
+    InProgress: 0,
+    Done: 0,
+    Uncategorized: 0
+};
+
+function normalizeStatusCategoryCounts(
+    counts: JiraIssuePageResponse['statusCategoryCounts']
+): JiraIssueStatusCategoryCounts {
+    return {
+        ToDo: Number(counts?.ToDo ?? 0),
+        InProgress: Number(counts?.InProgress ?? 0),
+        Done: Number(counts?.Done ?? 0),
+        Uncategorized: Number(counts?.Uncategorized ?? 0)
+    };
+}
+
 export const useJiraProjectIssueStore = defineStore('jiraProjectIssues', () => {
-    const issues = ref<JiraIssuePageResponse['items']>([]);
+    const issues = ref<JiraIssueListItem[]>([]);
     const loading = ref(false);
     const error = ref<string | null>(null);
     const selectedIssue = ref<JiraIssue | null>(null);
@@ -32,6 +55,7 @@ export const useJiraProjectIssueStore = defineStore('jiraProjectIssues', () => {
     const pageSize = ref(JIRA_PROJECT_ISSUES_DEFAULT_PAGE_SIZE);
     const totalCount = ref(0);
     const totalPages = ref(0);
+    const statusCategoryCounts = ref<JiraIssueStatusCategoryCounts>({ ...DEFAULT_STATUS_CATEGORY_COUNTS });
     const activeProjectKey = ref<string>('');
 
     function applyPage(data: JiraIssuePageResponse): void {
@@ -40,6 +64,7 @@ export const useJiraProjectIssueStore = defineStore('jiraProjectIssues', () => {
         pageSize.value = data.pageSize;
         totalCount.value = data.totalCount;
         totalPages.value = data.totalPages;
+        statusCategoryCounts.value = normalizeStatusCategoryCounts(data.statusCategoryCounts);
     }
 
     function upsertIssue(issue: JiraIssue): void {
@@ -60,6 +85,7 @@ export const useJiraProjectIssueStore = defineStore('jiraProjectIssues', () => {
             issues.value = [];
             totalCount.value = 0;
             totalPages.value = 0;
+            statusCategoryCounts.value = { ...DEFAULT_STATUS_CATEGORY_COUNTS };
             return null;
         }
 
@@ -152,6 +178,7 @@ export const useJiraProjectIssueStore = defineStore('jiraProjectIssues', () => {
         pageSize,
         totalCount,
         totalPages,
+        statusCategoryCounts,
         activeProjectKey,
         fetchProjectIssues,
         getProjectIssue,
