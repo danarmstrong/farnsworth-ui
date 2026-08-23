@@ -1,12 +1,10 @@
 <script setup lang="ts">
+import JackHenryPageCard from '@/components/shared/JackHenryPageCard.vue';
 import JobTitleTable from '@/features/jack-henry/job-titles/components/JobTitleTable.vue';
 </script>
 
 <template>
-    <v-card elevation="10">
-        <v-card-text>
-            <h5 class="text-h5 font-weight-semibold mb-7">Job Titles</h5>
-            <JobTitleTable />
-        </v-card-text>
-    </v-card>
+    <JackHenryPageCard title="Job Titles">
+        <JobTitleTable />
+    </JackHenryPageCard>
 </template>
