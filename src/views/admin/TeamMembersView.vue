@@ -5,12 +5,18 @@ import JackHenryPageCard from '@/components/shared/JackHenryPageCard.vue';
 import TeamMembersTable from '@/features/jack-henry/teams/components/TeamMembersTable.vue';
 import { useTeamStore } from '@/features/jack-henry/teams/stores/teamStore';
 import type { TeamDto } from '@/features/jack-henry/teams/types/Team';
+import type { TeamMemberDto } from '@/features/jack-henry/teams/types/TeamMember';
 
 const route = useRoute();
 const teamStore = useTeamStore();
 
 const team = ref<TeamDto | null>(null);
 const loadError = ref(false);
+const staffMemberIds = ref<string[]>([]);
+
+function toActiveStaffMemberIds(teamMembers: TeamMemberDto[]): string[] {
+    return [...new Set(teamMembers.filter((member) => member.isActive).map((member) => member.staffMember?.id).filter((id): id is string => Boolean(id)))];
+}
 
 const teamId = computed(() => {
     const raw = route.params.teamId;
@@ -22,7 +28,7 @@ const pageSubtitle = computed(() => {
         return 'Choose a team from the configuration page to view its members.';
     }
 
-    const memberCount = team.value.staffMemberIds.length;
+    const memberCount = team.value.activeMemberCount;
     const noun = memberCount === 1 ? 'member' : 'members';
     return `Team: ${team.value.name} • ${memberCount} ${noun}`;
 });
@@ -30,6 +36,7 @@ const pageSubtitle = computed(() => {
 async function loadTeam(id: string) {
     loadError.value = false;
     team.value = null;
+    staffMemberIds.value = [];
     teamStore.clearError();
 
     if (!id) {
@@ -40,6 +47,12 @@ async function loadTeam(id: string) {
     const result = await teamStore.getTeam(id);
     if (result) {
         team.value = result;
+        const teamMembers = await teamStore.getTeamMembers(id);
+        if (!teamMembers) {
+            loadError.value = true;
+            return;
+        }
+        staffMemberIds.value = toActiveStaffMemberIds(teamMembers);
     } else {
         loadError.value = true;
     }
@@ -67,7 +80,7 @@ watch(
         </template>
 
         <template v-if="team">
-            <TeamMembersTable :staff-member-ids="team.staffMemberIds" />
+            <TeamMembersTable :staff-member-ids="staffMemberIds" />
         </template>
 
         <template v-else-if="teamStore.loading">
@@ -83,4 +96,6 @@ watch(
         </template>
     </JackHenryPageCard>
 </template>
+
+
 

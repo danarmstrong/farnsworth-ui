@@ -24,6 +24,8 @@ const item = ref<JiraProject>({
     name: '',
     description: '',
     isEnabled: true,
+    isScrumProject: false,
+    isScrumProjectVerified: false,
     lastSynced: null
 });
 
@@ -39,6 +41,8 @@ function resetForm() {
         name: '',
         description: '',
         isEnabled: true,
+        isScrumProject: false,
+        isScrumProjectVerified: false,
         lastSynced: null
     };
     mode.value = 'create';

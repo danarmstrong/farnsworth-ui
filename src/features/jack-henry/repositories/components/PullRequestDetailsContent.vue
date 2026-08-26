@@ -51,11 +51,11 @@ const pageTitle = computed(() => {
 });
 
 const breadcrumbs = computed(() => [
-    { text: 'Repositories', disabled: false, to: '/repositories' },
+    { text: 'Repositories', disabled: false, to: '/configuration/repositories' },
     {
         text: repository.value?.name || 'Repository',
         disabled: false,
-        to: repositoryId.value ? `/repositories/${encodeURIComponent(repositoryId.value)}` : '/repositories'
+        to: repositoryId.value ? `/repositories/${encodeURIComponent(repositoryId.value)}` : '/configuration/repositories'
     },
     { text: pageTitle.value, disabled: true, href: '#' }
 ]);
@@ -210,17 +210,16 @@ function jiraIssueKey(issue: GithubPullRequestJiraIssueSlimReference): string {
 }
 
 function jiraIssueRoute(issue: GithubPullRequestJiraIssueSlimReference) {
-    const [projectKey] = issue.key.split('-');
-    const normalizedProjectKey = projectKey?.trim() || '';
+    const normalizedProjectId = issue.jiraProjectId?.trim() || '';
 
-    if (!normalizedProjectKey || !issue.id) {
+    if (!normalizedProjectId || !issue.id) {
         return null;
     }
 
     return {
         name: 'Jira Issue Details',
         params: {
-            projectKey: normalizedProjectKey,
+            projectId: normalizedProjectId,
             issueId: issue.id
         }
     };

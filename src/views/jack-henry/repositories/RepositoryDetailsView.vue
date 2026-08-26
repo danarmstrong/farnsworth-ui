@@ -41,7 +41,7 @@ const pageTitle = computed(() => {
 });
 
 const breadcrumbs = computed(() => [
-    { text: 'Repositories', disabled: false, to: '/repositories' },
+    { text: 'Repositories', disabled: false, to: '/configuration/repositories' },
     { text: pageTitle.value, disabled: true, href: '#' }
 ]);
 

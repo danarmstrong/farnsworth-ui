@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { computed, onMounted } from 'vue';
 import { useUiStore } from '@/stores/ui';
-import sidebarItems from './sidebarItems';
+import sidebarItems, { type menu } from './sidebarItems';
 import { useCapProjectStore } from '@/features/jack-henry/cap-projects/stores/capProjectStore';
+import { useJiraProjectStore } from '@/features/jack-henry/jira-projects/stores/jiraProjectStore';
 import { useTeamStore } from '@/features/jack-henry/teams/stores/teamStore';
 
 import NavGroup from './NavGroup/index.vue';
@@ -13,10 +14,12 @@ import Logo from '../logo/Logo.vue';
 
 const ui = useUiStore();
 const capProjectStore = useCapProjectStore();
+const jiraProjectStore = useJiraProjectStore();
 const teamStore = useTeamStore();
 
 onMounted(() => {
     void capProjectStore.fetchCapProjects();
+    void jiraProjectStore.fetchAllJiraProjects();
     if (!teamStore.teams.length) {
         void teamStore.fetchTeams();
     }
@@ -42,7 +45,16 @@ const navItems = computed(() => {
             to: `/teams/${team.id}`
         }));
 
-    return sidebarItems.map((item) => {
+    const jiraChildren = [...jiraProjectStore.jiraProjects]
+        .filter((project) => project.isEnabled && Boolean(project.id))
+        .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }))
+        .map((project) => ({
+            title: project.name.trim() || 'Untitled Jira Project',
+            to: `/jira-projects/${project.id}`
+        }));
+
+    return sidebarItems
+        .map((item): menu | null => {
         if (item.title === 'CAP Reports') {
             return {
                 ...item,
@@ -58,8 +70,20 @@ const navItems = computed(() => {
             };
         }
 
+        if (item.title === 'Jira') {
+            if (!jiraChildren.length) {
+                return null;
+            }
+
+            return {
+                ...item,
+                children: jiraChildren
+            };
+        }
+
         return item;
-    });
+    })
+        .filter((item): item is menu => item !== null);
 });
 </script>
 

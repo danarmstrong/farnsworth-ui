@@ -5,14 +5,16 @@ import { PencilIcon, TrashIcon } from 'vue-tabler-icons';
 import { useTeamStore } from '@/features/jack-henry/teams/stores/teamStore';
 import TeamForm from '@/features/jack-henry/teams/components/TeamForm.vue';
 import { useStaffMemberStore } from '@/features/jack-henry/staff-members/stores/staffMemberStore';
-import type { StaffMember } from '@/features/jack-henry/staff-members/types/StaffMember';
 import type { TeamDto } from '@/features/jack-henry/teams/types/Team';
 import { useConfirm } from '@/utils/helpers/useConfirm';
+import type { TeamMemberDto } from '@/features/jack-henry/teams/types/TeamMember';
 
 type TeamFormSubmitPayload = {
     id?: string;
     name: string;
     staffMemberIds: string[];
+    githubRepoIds: string[];
+    jiraProjectIds: string[];
 };
 
 const store = useTeamStore();
@@ -33,10 +35,6 @@ const teamFormRef = ref<InstanceType<typeof TeamForm> | null>(null);
 
 const isBusy = computed(() => saving.value || deleting.value || store.loading || staffMemberStore.loading);
 
-const staffLabelById = computed(() => {
-    return new Map(staffMemberStore.staffMembers.map((m) => [m.id, formatStaffMember(m)]));
-});
-
 const filteredList = computed(() => {
     const normalizedSearch = search.value.toLowerCase().trim();
     return store.teams.filter((team: TeamDto) => {
@@ -48,20 +46,25 @@ const filteredList = computed(() => {
             return true;
         }
 
-        return team.staffMemberIds.some((id) => getStaffLabel(id).toLowerCase().includes(normalizedSearch));
+        return String(team.activeMemberCount).includes(normalizedSearch);
     });
 });
 
-function formatStaffMember(m: StaffMember): string {
-    return [m.firstName, m.lastName].filter(Boolean).join(' ') + (m.employeeNumber ? ` (${m.employeeNumber})` : '');
+function toActiveStaffMemberIds(teamMembers: TeamMemberDto[]): string[] {
+    return [...new Set(teamMembers.filter((member) => member.isActive).map((member) => member.staffMember?.id).filter((id): id is string => Boolean(id)))];
 }
 
-function getStaffLabel(staffMemberId: string): string {
-    return staffLabelById.value.get(staffMemberId) || staffMemberId;
-}
+async function editItem(item: TeamDto) {
+    if (isBusy.value || !item.id) {
+        return;
+    }
 
-function editItem(item: TeamDto) {
-    teamFormRef.value?.openEdit(item);
+    const teamMembers = await store.getTeamMembers(item.id);
+    if (store.error) {
+        return;
+    }
+
+    teamFormRef.value?.openEdit(item, teamMembers ? toActiveStaffMemberIds(teamMembers) : []);
 }
 
 async function deleteItem(item: TeamDto) {
@@ -92,12 +95,16 @@ async function save(payload: TeamFormSubmitPayload) {
         if (payload.id) {
             await store.updateTeam(payload.id, {
                 name: payload.name,
-                staffMemberIds: payload.staffMemberIds.length ? payload.staffMemberIds : undefined
+                staffMemberIds: payload.staffMemberIds.length ? payload.staffMemberIds : undefined,
+                githubRepoIds: payload.githubRepoIds.length ? payload.githubRepoIds : undefined,
+                jiraProjectIds: payload.jiraProjectIds.length ? payload.jiraProjectIds : undefined
             });
         } else {
             await store.createTeam({
                 name: payload.name,
-                staffMemberIds: payload.staffMemberIds.length ? payload.staffMemberIds : undefined
+                staffMemberIds: payload.staffMemberIds.length ? payload.staffMemberIds : undefined,
+                githubRepoIds: payload.githubRepoIds.length ? payload.githubRepoIds : undefined,
+                jiraProjectIds: payload.jiraProjectIds.length ? payload.jiraProjectIds : undefined
             });
         }
 
@@ -126,7 +133,7 @@ async function save(payload: TeamFormSubmitPayload) {
                 <thead>
                     <tr>
                         <th class="text-subtitle-1 font-weight-semibold col-name">Name</th>
-                        <th class="text-subtitle-1 font-weight-semibold col-staff">Staff members</th>
+                        <th class="text-subtitle-1 font-weight-semibold col-staff">Members</th>
                         <th class="text-subtitle-1 font-weight-semibold text-no-wrap text-right col-actions">Actions</th>
                     </tr>
                 </thead>
@@ -149,12 +156,8 @@ async function save(payload: TeamFormSubmitPayload) {
                             <template v-else>{{ row.name }}</template>
                         </td>
                         <td class="text-subtitle-1 col-staff">
-                            <div v-if="!row.staffMemberIds.length" class="text-medium-emphasis">None</div>
-                            <div v-else class="d-flex flex-wrap ga-1">
-                                <v-chip v-for="sid in row.staffMemberIds" :key="sid" size="small" variant="tonal" color="primary">
-                                    {{ getStaffLabel(sid) }}
-                                </v-chip>
-                            </div>
+                            <div class="text-caption text-medium-emphasis mb-1">{{ row.activeMemberCount }} active</div>
+                            <div class="text-medium-emphasis">{{ row.teamMembers.length }} total assignments</div>
                         </td>
                         <td class="text-right text-no-wrap col-actions">
                             <div class="d-flex align-center justify-end">
@@ -209,6 +212,8 @@ async function save(payload: TeamFormSubmitPayload) {
     }
 }
 </style>
+
+
 
 
 

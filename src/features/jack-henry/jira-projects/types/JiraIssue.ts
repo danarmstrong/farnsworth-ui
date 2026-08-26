@@ -61,12 +61,18 @@ export type JiraIssuePriority = string | number;
 
 export interface JiraIssueListItem {
     id: string;
+    parentId?: string | null;
+    parentExternalId?: string | null;
+    parentKey?: string | null;
+    jiraBoardId?: string | null;
+    jiraBoardIds: string[];
     jiraStatusId: string;
     jiraStatusName: string;
     status?: JiraIssueStatusReference | null;
     jiraIssueTypeId: string;
     jiraIssueTypeName: string;
     type?: JiraIssueTypeReference | null;
+    jiraSprintIds: string[];
     assignee?: string | null;
     assigneeStaffMember?: JiraIssueStaffReference | null;
     reporter?: string | null;
@@ -79,6 +85,7 @@ export interface JiraIssueListItem {
     jiraLink: string;
     summary: string;
     description: string;
+    labels?: string[];
     priority: JiraIssuePriority;
     notes: string[];
     githubPullRequestIds: string[];
@@ -92,13 +99,10 @@ export interface JiraIssueListItem {
 }
 
 export interface JiraIssue extends JiraIssueListItem {
-    parentId?: string | null;
-    parentExternalId?: string | null;
-    parentKey?: string | null;
-    jiraBoardId?: string | null;
     jiraSprintId?: string | null;
     lastProjectSyncRunId?: string | null;
     storyPoints?: number | null;
+    labels: string[];
     jiraIdentity: JiraIssueUserIdentity;
     reviewMetadata: JiraIssueReviewMetadata;
     githubPullRequests: JiraIssueGithubPullRequestReference[];

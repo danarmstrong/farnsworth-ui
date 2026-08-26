@@ -2,7 +2,14 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue';
 import { RouterLink, useRoute } from 'vue-router';
 import BaseBreadcrumb from '@/components/shared/BaseBreadcrumb.vue';
+import { useJiraProjectStore } from '@/features/jack-henry/jira-projects/stores/jiraProjectStore';
 import { useJiraProjectIssueStore } from '@/features/jack-henry/jira-projects/stores/jiraProjectIssueStore';
+import type {
+    JiraProjectBoard,
+    JiraProjectBoardListResponse,
+    JiraProjectSprint,
+    JiraProjectSprintListResponse
+} from '@/features/jack-henry/jira-projects/types/JiraProject';
 import type {
     GithubPullRequestState,
     JiraIssue,
@@ -33,11 +40,18 @@ const DEFAULT_REVIEW_METADATA: JiraIssueReviewMetadata = {
 };
 
 const route = useRoute();
+const projectStore = useJiraProjectStore();
 const store = useJiraProjectIssueStore();
 const loadError = ref(false);
+const boardList = ref<JiraProjectBoardListResponse | null>(null);
+const boardListLoading = ref(false);
+const boardListError = ref<string | null>(null);
+const sprintList = ref<JiraProjectSprintListResponse | null>(null);
+const sprintListLoading = ref(false);
+const sprintListError = ref<string | null>(null);
 
-const projectKey = computed(() => {
-    const raw = route.params.projectKey;
+const projectId = computed(() => {
+    const raw = route.params.projectId;
     return typeof raw === 'string' ? raw.trim() : Array.isArray(raw) ? String(raw[0] ?? '').trim() : '';
 });
 
@@ -60,43 +74,156 @@ const pageTitle = computed(() => {
     return 'Jira Issue';
 });
 
+const breadcrumbProjectLabel = computed(() => {
+    if (issue.value?.projectKey?.trim()) {
+        return issue.value.projectKey.trim();
+    }
+
+    return projectId.value || 'Project';
+});
+
 const breadcrumbs = computed(() => [
     { text: 'Jira Projects', disabled: false, to: '/configuration/jira-projects' },
     {
-        text: projectKey.value || 'Project',
+        text: breadcrumbProjectLabel.value,
         disabled: false,
-        to: projectKey.value ? `/configuration/jira-projects/${encodeURIComponent(projectKey.value)}` : '/configuration/jira-projects'
+        to: projectId.value ? `/jira-projects/${encodeURIComponent(projectId.value)}` : '/configuration/jira-projects'
     },
     { text: pageTitle.value, disabled: true, href: '#' }
 ]);
 
 const parentRoute = computed(() => {
-    if (!issue.value?.parentId || !issue.value.projectKey) {
+    if (!issue.value?.parentId || !projectId.value) {
         return null;
     }
 
     return {
         name: 'Jira Issue Details',
         params: {
-            projectKey: issue.value.projectKey,
+            projectId: projectId.value,
             issueId: issue.value.parentId
         }
     };
 });
 
+const boardById = computed(() => new Map((boardList.value?.items || []).map((board) => [board.id, board])));
+const sprintById = computed(() => new Map((sprintList.value?.items || []).map((sprint) => [sprint.id, sprint])));
+
+function uniqueNormalizedIds(ids: Array<string | null | undefined>): string[] {
+    const normalizedIds = ids
+        .map((id) => id?.trim() || '')
+        .filter(Boolean);
+
+    return [...new Set(normalizedIds)];
+}
+
+const linkedBoardIds = computed(() => {
+    if (!issue.value) {
+        return [];
+    }
+
+    return uniqueNormalizedIds([...(issue.value.jiraBoardIds || []), issue.value.jiraBoardId]);
+});
+
+const linkedSprintIds = computed(() => {
+    if (!issue.value) {
+        return [];
+    }
+
+    return uniqueNormalizedIds([...(issue.value.jiraSprintIds || []), issue.value.jiraSprintId]);
+});
+
+type IssueLinkedBoard = {
+    id: string;
+    board: JiraProjectBoard | null;
+    label: string;
+};
+
+type IssueLinkedSprint = {
+    id: string;
+    sprint: JiraProjectSprint | null;
+    label: string;
+};
+
+const linkedBoards = computed<IssueLinkedBoard[]>(() => {
+    return linkedBoardIds.value.map((id) => {
+        const board = boardById.value.get(id) || null;
+        return {
+            id,
+            board,
+            label: board?.name?.trim() || id
+        };
+    });
+});
+
+const linkedSprints = computed<IssueLinkedSprint[]>(() => {
+    return linkedSprintIds.value.map((id) => {
+        const sprint = sprintById.value.get(id) || null;
+        return {
+            id,
+            sprint,
+            label: sprint?.name?.trim() || id
+        };
+    });
+});
+
+async function loadBoards(nextProjectId: string): Promise<void> {
+    boardListError.value = null;
+    boardListLoading.value = true;
+
+    try {
+        const result = await projectStore.getJiraProjectBoards(nextProjectId);
+        if (!result) {
+            boardList.value = null;
+            boardListError.value = projectStore.error || 'Unable to load Jira boards for this project.';
+            return;
+        }
+
+        boardList.value = result;
+    } finally {
+        boardListLoading.value = false;
+    }
+}
+
+async function loadSprints(nextProjectId: string): Promise<void> {
+    sprintListError.value = null;
+    sprintListLoading.value = true;
+
+    try {
+        const result = await projectStore.getJiraProjectSprints(nextProjectId);
+        if (!result) {
+            sprintList.value = null;
+            sprintListError.value = projectStore.error || 'Unable to load Jira sprints for this project.';
+            return;
+        }
+
+        sprintList.value = result;
+    } finally {
+        sprintListLoading.value = false;
+    }
+}
+
 watch(
-    [projectKey, issueId],
-    async ([nextProjectKey, nextIssueId]) => {
+    [projectId, issueId],
+    async ([nextProjectId, nextIssueId]) => {
         loadError.value = false;
         store.clearSelectedIssueError();
 
-        if (!nextProjectKey || !nextIssueId) {
+        if (!nextProjectId || !nextIssueId) {
             store.clearSelectedIssue();
+            boardList.value = null;
+            boardListError.value = null;
+            sprintList.value = null;
+            sprintListError.value = null;
             loadError.value = true;
             return;
         }
 
-        const result = await store.getProjectIssue(nextProjectKey, nextIssueId);
+        const [result] = await Promise.all([
+            store.getProjectIssue(nextProjectId, nextIssueId),
+            loadBoards(nextProjectId),
+            loadSprints(nextProjectId)
+        ]);
         loadError.value = !result;
     },
     { immediate: true }
@@ -284,6 +411,14 @@ function issueDescription(value: JiraIssue): string {
     return value.description?.trim() ? value.description : 'No description provided.';
 }
 
+function issueLabels(value: JiraIssue): string[] {
+    return (value.labels || []).filter((label) => Boolean(label?.trim()));
+}
+
+function hasLabels(value: JiraIssue): boolean {
+    return issueLabels(value).length > 0;
+}
+
 function hasNotes(value: JiraIssue): boolean {
     return value.notes.length > 0;
 }
@@ -317,6 +452,9 @@ function githubPullRequestKey(pullRequest: JiraIssueGithubPullRequestReference):
     <div v-else-if="store.selectedIssueLoading && !issue" class="text-subtitle-1 py-8 text-center">Loading Jira issue…</div>
 
     <template v-else-if="issue">
+        <v-alert v-if="boardListError" type="warning" variant="tonal" class="mb-4">{{ boardListError }}</v-alert>
+        <v-alert v-if="sprintListError" type="warning" variant="tonal" class="mb-4">{{ sprintListError }}</v-alert>
+
         <v-row>
             <v-col cols="12">
                 <v-card elevation="10" class="mb-6">
@@ -332,6 +470,12 @@ function githubPullRequestKey(pullRequest: JiraIssueGithubPullRequestReference):
                                         {{ issuePriority(issue) }}
                                     </v-chip>
                                     <v-chip size="small" variant="outlined">{{ issueType(issue) }}</v-chip>
+                                    <v-chip size="small" variant="outlined">
+                                        {{ linkedBoards.length }} board{{ linkedBoards.length === 1 ? '' : 's' }}
+                                    </v-chip>
+                                    <v-chip size="small" variant="outlined">
+                                        {{ linkedSprints.length }} sprint{{ linkedSprints.length === 1 ? '' : 's' }}
+                                    </v-chip>
                                 </div>
                                 <h1 class="text-h4 font-weight-bold mb-2 jira-issue-summary">{{ issue.summary }}</h1>
                                 <p class="text-body-1 text-medium-emphasis mb-0">
@@ -341,7 +485,7 @@ function githubPullRequestKey(pullRequest: JiraIssueGithubPullRequestReference):
 
                             <div class="d-flex flex-wrap gap-3 justify-start justify-lg-end">
                                 <v-btn
-                                    :to="{ name: 'Jira Project Details', params: { projectKey: issue.projectKey } }"
+                                    :to="{ name: 'Jira Project Details', params: { projectId } }"
                                     variant="outlined"
                                     color="primary"
                                 >
@@ -365,6 +509,26 @@ function githubPullRequestKey(pullRequest: JiraIssueGithubPullRequestReference):
                                 <section class="mb-6">
                                     <h2 class="text-h6 font-weight-semibold mb-3">Description</h2>
                                     <div class="jira-issue-description">{{ issueDescription(issue) }}</div>
+                                </section>
+
+                                <section class="mb-6">
+                                    <div class="d-flex align-center justify-space-between mb-3 gap-3 flex-wrap">
+                                        <h2 class="text-h6 font-weight-semibold mb-0">Labels</h2>
+                                        <span class="text-caption text-medium-emphasis">{{ issueLabels(issue).length }} total</span>
+                                    </div>
+                                    <v-card variant="outlined">
+                                        <v-card-text v-if="hasLabels(issue)" class="d-flex flex-wrap gap-2">
+                                            <v-chip
+                                                v-for="(label, index) in issueLabels(issue)"
+                                                :key="`${issue.id}-label-${label}-${index}`"
+                                                size="small"
+                                                variant="tonal"
+                                            >
+                                                {{ label }}
+                                            </v-chip>
+                                        </v-card-text>
+                                        <v-card-text v-else class="text-body-2 text-medium-emphasis">No labels assigned.</v-card-text>
+                                    </v-card>
                                 </section>
 
                                 <section class="mb-6">
@@ -473,6 +637,54 @@ function githubPullRequestKey(pullRequest: JiraIssueGithubPullRequestReference):
                                                 <dd>{{ issue.storyPoints ?? '—' }}</dd>
                                             </div>
                                             <div>
+                                                <dt>Linked Boards</dt>
+                                                <dd>
+                                                    <div v-if="linkedBoards.length" class="jira-issue-linked-items">
+                                                        <RouterLink
+                                                            v-for="linkedBoard in linkedBoards"
+                                                            :key="`${issue.id}-board-${linkedBoard.id}`"
+                                                            :to="{ name: 'Jira Board Details', params: { projectId, boardId: linkedBoard.id } }"
+                                                            class="text-decoration-none"
+                                                        >
+                                                            <v-chip size="small" color="primary" variant="tonal">
+                                                                {{ linkedBoard.label }}
+                                                            </v-chip>
+                                                        </RouterLink>
+                                                    </div>
+                                                    <span
+                                                        v-else-if="boardListLoading"
+                                                        class="text-caption text-medium-emphasis jira-issue-linked-loading"
+                                                    >
+                                                        Resolving board links…
+                                                    </span>
+                                                    <span v-else>—</span>
+                                                </dd>
+                                            </div>
+                                            <div>
+                                                <dt>Linked Sprints</dt>
+                                                <dd>
+                                                    <div v-if="linkedSprints.length" class="jira-issue-linked-items">
+                                                        <RouterLink
+                                                            v-for="linkedSprint in linkedSprints"
+                                                            :key="`${issue.id}-sprint-${linkedSprint.id}`"
+                                                            :to="{ name: 'Jira Sprint Details', params: { projectId, sprintId: linkedSprint.id } }"
+                                                            class="text-decoration-none"
+                                                        >
+                                                            <v-chip size="small" color="primary" variant="tonal">
+                                                                {{ linkedSprint.label }}
+                                                            </v-chip>
+                                                        </RouterLink>
+                                                    </div>
+                                                    <span
+                                                        v-else-if="sprintListLoading"
+                                                        class="text-caption text-medium-emphasis jira-issue-linked-loading"
+                                                    >
+                                                        Resolving sprint links…
+                                                    </span>
+                                                    <span v-else>—</span>
+                                                </dd>
+                                            </div>
+                                            <div>
                                                 <dt>Parent</dt>
                                                 <dd>
                                                     <RouterLink
@@ -577,12 +789,12 @@ function githubPullRequestKey(pullRequest: JiraIssueGithubPullRequestReference):
                                                 <dd>{{ issue.jiraIssueTypeId }}</dd>
                                             </div>
                                             <div>
-                                                <dt>Board ID</dt>
-                                                <dd>{{ issue.jiraBoardId || '—' }}</dd>
+                                                <dt>Linked Board IDs</dt>
+                                                <dd>{{ linkedBoardIds.join(', ') || '—' }}</dd>
                                             </div>
                                             <div>
-                                                <dt>Sprint ID</dt>
-                                                <dd>{{ issue.jiraSprintId || '—' }}</dd>
+                                                <dt>Linked Sprint IDs</dt>
+                                                <dd>{{ linkedSprintIds.join(', ') || '—' }}</dd>
                                             </div>
                                             <div>
                                                 <dt>Parent ID</dt>
@@ -774,7 +986,25 @@ function githubPullRequestKey(pullRequest: JiraIssueGithubPullRequestReference):
 .jira-issue-detail-list--compact {
     gap: 0.9rem;
 }
+
+.jira-issue-linked-items {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.jira-issue-linked-loading {
+    display: inline-block;
+    margin-top: 0.5rem;
+}
 </style>
+
+
+
+
+
+
+
 
 
 

@@ -253,7 +253,7 @@ async function save(payload: JiraProjectFormSubmitPayload) {
                         <td class="text-subtitle-1 text-no-wrap col-name">
                             <RouterLink
                                 v-if="item.name"
-                                :to="{ name: 'Jira Project Details', params: { projectKey: item.name } }"
+                                :to="{ name: 'Jira Project Details', params: { projectId: item.id } }"
                                 class="text-primary text-decoration-none font-weight-medium"
                             >
                                 {{ item.name }}

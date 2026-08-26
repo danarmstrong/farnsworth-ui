@@ -23,7 +23,9 @@ const DEFAULT_IDENTITY = {
 };
 
 interface Props {
-    projectKey: string;
+    projectId: string;
+    sprintId?: string;
+    boardId?: string;
 }
 
 const props = defineProps<Props>();
@@ -40,13 +42,16 @@ const hasPagination = computed(() => store.totalPages > 1);
 const isBusy = computed(() => store.loading);
 
 watch(
-    () => props.projectKey,
-    (projectKey) => {
+    () => [props.projectId, props.sprintId, props.boardId],
+    ([projectId]) => {
+        const normalizedProjectId = projectId?.trim() || '';
         search.value = '';
         statusFilter.value = 'open-default';
         page.value = 1;
         pageSize.value = JIRA_PROJECT_ISSUES_DEFAULT_PAGE_SIZE;
-        void loadPage(projectKey, 1);
+        if (normalizedProjectId) {
+            void loadPage(normalizedProjectId, 1);
+        }
     },
     { immediate: true }
 );
@@ -59,6 +64,19 @@ const projectIssueCount = computed(() => {
 });
 
 const scopedIssueCount = computed(() => store.totalCount);
+const isSprintScoped = computed(() => Boolean(props.sprintId?.trim()));
+const isBoardScoped = computed(() => Boolean(props.boardId?.trim()));
+const scopeLabel = computed(() => {
+    if (isSprintScoped.value) {
+        return 'sprint';
+    }
+
+    if (isBoardScoped.value) {
+        return 'board';
+    }
+
+    return 'project';
+});
 
 const openTicketCount = computed(() => {
     const counts = statusCategoryCounts.value;
@@ -92,6 +110,18 @@ const activeFilterLabel = computed(() => {
     }
 });
 
+const scopeSummaryPrefix = computed(() => {
+    if (isSprintScoped.value) {
+        return `Viewing ${scopedIssueCount.value} ${activeFilterLabel.value} in this sprint.`;
+    }
+
+    if (isBoardScoped.value) {
+        return `Viewing ${scopedIssueCount.value} ${activeFilterLabel.value} in this board.`;
+    }
+
+    return `Viewing ${scopedIssueCount.value} ${activeFilterLabel.value} from ${projectIssueCount.value} total project issues.`;
+});
+
 const filteredIssues = computed(() => {
     const normalizedSearch = search.value.trim().toLowerCase();
 
@@ -103,7 +133,7 @@ const filteredIssues = computed(() => {
         const haystack = [
             issueKey(issue),
             issueSummary(issue),
-            status,
+            issueStatus(issue),
             issueStatusCategory(issue),
             issueAssignee(issue),
             issueReporter(issue),
@@ -147,7 +177,7 @@ async function applyStatusFilter(nextFilter: JiraIssueStatusFilter): Promise<voi
     }
 
     statusFilter.value = nextFilter;
-    await loadPage(props.projectKey, 1);
+    await loadPage(props.projectId, 1);
 }
 
 function issueKey(issue: JiraIssueListItem): string {
@@ -302,9 +332,30 @@ function statusTone(status: string): 'success' | 'warning' | 'error' | 'default'
     return 'default';
 }
 
-async function loadPage(projectKey: string, targetPage: number): Promise<void> {
+async function loadPage(projectId: string, targetPage: number): Promise<void> {
     page.value = Math.max(1, targetPage);
-    await store.fetchProjectIssues(projectKey, {
+    const normalizedSprintId = props.sprintId?.trim() || '';
+    const normalizedBoardId = props.boardId?.trim() || '';
+
+    if (normalizedSprintId) {
+        await store.fetchSprintIssues(projectId, normalizedSprintId, {
+            page: page.value,
+            pageSize: pageSize.value,
+            statusCategory: statusCategoryForFilter(statusFilter.value)
+        });
+        return;
+    }
+
+    if (normalizedBoardId) {
+        await store.fetchBoardIssues(projectId, normalizedBoardId, {
+            page: page.value,
+            pageSize: pageSize.value,
+            statusCategory: statusCategoryForFilter(statusFilter.value)
+        });
+        return;
+    }
+
+    await store.fetchProjectIssues(projectId, {
         page: page.value,
         pageSize: pageSize.value,
         statusCategory: statusCategoryForFilter(statusFilter.value)
@@ -316,16 +367,16 @@ async function changePage(nextPage: number): Promise<void> {
         return;
     }
 
-    await loadPage(props.projectKey, nextPage);
+    await loadPage(props.projectId, nextPage);
 }
 
 async function changePageSize(nextPageSize: number): Promise<void> {
     pageSize.value = nextPageSize;
-    await loadPage(props.projectKey, 1);
+    await loadPage(props.projectId, 1);
 }
 
 async function refreshIssues(): Promise<void> {
-    await loadPage(props.projectKey, page.value);
+    await loadPage(props.projectId, page.value);
 }
 
 function clearStoreError(): void {
@@ -371,9 +422,7 @@ function clearStoreError(): void {
         </v-col>
     </v-row>
 
-    <p class="text-body-2 text-medium-emphasis mb-4">
-        Viewing {{ scopedIssueCount }} {{ activeFilterLabel }} from {{ projectIssueCount }} total project issues.
-    </p>
+    <p class="text-body-2 text-medium-emphasis mb-4">{{ scopeSummaryPrefix }}</p>
 
     <div class="d-sm-flex justify-space-between align-center my-5 gap-3">
         <v-btn color="primary" class="rounded-pill" :loading="isBusy" :disabled="isBusy" @click="refreshIssues">Refresh Issues</v-btn>
@@ -409,7 +458,7 @@ function clearStoreError(): void {
             </thead>
             <tbody>
                 <tr v-if="store.loading && !store.issues.length">
-                    <td colspan="12" class="text-subtitle-1 text-center py-6">Loading Jira issues...</td>
+                    <td colspan="12" class="text-subtitle-1 text-center py-6">Loading Jira {{ scopeLabel }} issues...</td>
                 </tr>
                 <tr v-else-if="!filteredIssues.length">
                     <td colspan="12" class="text-subtitle-1 text-center py-6">No Jira issues found.</td>
@@ -417,7 +466,7 @@ function clearStoreError(): void {
                 <tr v-else v-for="issue in filteredIssues" :key="issueKey(issue)">
                     <td class="text-subtitle-1 text-no-wrap col-key">
                         <RouterLink
-                            :to="{ name: 'Jira Issue Details', params: { projectKey: props.projectKey, issueId: issue.id } }"
+                            :to="{ name: 'Jira Issue Details', params: { projectId: props.projectId, issueId: issue.id } }"
                             class="text-primary text-decoration-none font-weight-medium"
                         >
                             {{ issueKey(issue) }}

@@ -46,6 +46,10 @@ function normalizeStatusCategoryCounts(
     };
 }
 
+function normalizeRequiredId(value: string): string {
+    return value.trim();
+}
+
 export const useJiraProjectIssueStore = defineStore('jiraProjectIssues', () => {
     const issues = ref<JiraIssueListItem[]>([]);
     const loading = ref(false);
@@ -58,7 +62,7 @@ export const useJiraProjectIssueStore = defineStore('jiraProjectIssues', () => {
     const totalCount = ref(0);
     const totalPages = ref(0);
     const statusCategoryCounts = ref<JiraIssueStatusCategoryCounts>({ ...DEFAULT_STATUS_CATEGORY_COUNTS });
-    const activeProjectKey = ref<string>('');
+    const activeProjectId = ref<string>('');
 
     function applyPage(data: JiraIssuePageResponse): void {
         issues.value = data.items;
@@ -79,24 +83,20 @@ export const useJiraProjectIssueStore = defineStore('jiraProjectIssues', () => {
         issues.value[index] = issue;
     }
 
-    async function fetchProjectIssues(projectKey: string, options: FetchJiraProjectIssuesOptions = {}): Promise<JiraIssuePageResponse | null> {
-        error.value = null;
+    function resetIssueListing(): void {
+        issues.value = [];
+        totalCount.value = 0;
+        totalPages.value = 0;
+        statusCategoryCounts.value = { ...DEFAULT_STATUS_CATEGORY_COUNTS };
+    }
 
-        const normalizedKey = projectKey.trim();
-        if (!normalizedKey) {
-            issues.value = [];
-            totalCount.value = 0;
-            totalPages.value = 0;
-            statusCategoryCounts.value = { ...DEFAULT_STATUS_CATEGORY_COUNTS };
-            return null;
-        }
-
+    async function fetchIssuesForPath(path: string, projectId: string, options: FetchJiraProjectIssuesOptions = {}): Promise<JiraIssuePageResponse | null> {
         loading.value = true;
         try {
             const requestPage = normalizePositiveInteger(options.page, 1);
             const requestPageSize = normalizePositiveInteger(options.pageSize, JIRA_PROJECT_ISSUES_DEFAULT_PAGE_SIZE);
             const requestStatusCategory = options.statusCategory;
-            const { data } = await axios.get<JiraIssuePageResponse>(`${jiraProjectIssuesPath}/${encodeURIComponent(normalizedKey)}/issues`, {
+            const { data } = await axios.get<JiraIssuePageResponse>(path, {
                 params: {
                     page: requestPage,
                     pageSize: requestPageSize,
@@ -104,29 +104,69 @@ export const useJiraProjectIssueStore = defineStore('jiraProjectIssues', () => {
                 }
             });
 
-            activeProjectKey.value = normalizedKey;
+            activeProjectId.value = projectId;
             applyPage(data);
             return data;
         } catch (err) {
-            error.value = setErrorMessage(err, 'Failed to fetch Jira project issues');
+            error.value = setErrorMessage(err, 'Failed to fetch Jira issues');
             return null;
         } finally {
             loading.value = false;
         }
     }
 
-    async function getProjectIssue(projectKey: string, issueId: string): Promise<JiraIssue | null> {
+    async function fetchProjectIssues(projectId: string, options: FetchJiraProjectIssuesOptions = {}): Promise<JiraIssuePageResponse | null> {
+        error.value = null;
+
+        const normalizedProjectId = normalizeRequiredId(projectId);
+        if (!normalizedProjectId) {
+            resetIssueListing();
+            return null;
+        }
+
+        return fetchIssuesForPath(`${jiraProjectIssuesPath}/${encodeURIComponent(normalizedProjectId)}/issues`, normalizedProjectId, options);
+    }
+
+    async function fetchSprintIssues(projectId: string, sprintId: string, options: FetchJiraProjectIssuesOptions = {}): Promise<JiraIssuePageResponse | null> {
+        error.value = null;
+
+        const normalizedProjectId = normalizeRequiredId(projectId);
+        const normalizedSprintId = normalizeRequiredId(sprintId);
+        if (!normalizedProjectId || !normalizedSprintId) {
+            resetIssueListing();
+            return null;
+        }
+
+        const path = `${jiraProjectIssuesPath}/${encodeURIComponent(normalizedProjectId)}/sprints/${encodeURIComponent(normalizedSprintId)}/issues`;
+        return fetchIssuesForPath(path, normalizedProjectId, options);
+    }
+
+    async function fetchBoardIssues(projectId: string, boardId: string, options: FetchJiraProjectIssuesOptions = {}): Promise<JiraIssuePageResponse | null> {
+        error.value = null;
+
+        const normalizedProjectId = normalizeRequiredId(projectId);
+        const normalizedBoardId = normalizeRequiredId(boardId);
+        if (!normalizedProjectId || !normalizedBoardId) {
+            resetIssueListing();
+            return null;
+        }
+
+        const path = `${jiraProjectIssuesPath}/${encodeURIComponent(normalizedProjectId)}/boards/${encodeURIComponent(normalizedBoardId)}/issues`;
+        return fetchIssuesForPath(path, normalizedProjectId, options);
+    }
+
+    async function getProjectIssue(projectId: string, issueId: string): Promise<JiraIssue | null> {
         selectedIssueError.value = null;
 
-        const normalizedKey = projectKey.trim();
+        const normalizedProjectId = projectId.trim();
         const normalizedIssueId = issueId.trim();
 
-        if (!normalizedKey || !normalizedIssueId) {
+        if (!normalizedProjectId || !normalizedIssueId) {
             selectedIssue.value = null;
             return null;
         }
 
-        if (selectedIssue.value?.id === normalizedIssueId && selectedIssue.value.projectKey === normalizedKey) {
+        if (selectedIssue.value?.id === normalizedIssueId && activeProjectId.value === normalizedProjectId) {
             return selectedIssue.value;
         }
 
@@ -134,10 +174,10 @@ export const useJiraProjectIssueStore = defineStore('jiraProjectIssues', () => {
         selectedIssueLoading.value = true;
         try {
             const { data } = await axios.get<JiraIssue>(
-                `${jiraProjectIssuesPath}/${encodeURIComponent(normalizedKey)}/issues/${encodeURIComponent(normalizedIssueId)}`
+                `${jiraProjectIssuesPath}/${encodeURIComponent(normalizedProjectId)}/issues/${encodeURIComponent(normalizedIssueId)}`
             );
 
-            activeProjectKey.value = normalizedKey;
+            activeProjectId.value = normalizedProjectId;
             selectedIssue.value = data;
             upsertIssue(data);
             return data;
@@ -183,8 +223,10 @@ export const useJiraProjectIssueStore = defineStore('jiraProjectIssues', () => {
         totalCount,
         totalPages,
         statusCategoryCounts,
-        activeProjectKey,
+        activeProjectId,
         fetchProjectIssues,
+        fetchSprintIssues,
+        fetchBoardIssues,
         getProjectIssue,
         clearError,
         clearSelectedIssueError,

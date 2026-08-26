@@ -62,17 +62,16 @@ const pullRequestSections = computed<ActivitySection<StaffMemberGithubPullReques
 ]);
 
 function jiraIssueRoute(issue: StaffMemberJiraIssueSlim) {
-    const [projectKey] = issue.key.split('-');
-    const normalizedProjectKey = projectKey?.trim() || '';
+    const normalizedProjectId = issue.jiraProjectId?.trim() || '';
 
-    if (!normalizedProjectKey || !issue.id) {
+    if (!normalizedProjectId || !issue.id) {
         return null;
     }
 
     return {
         name: 'Jira Issue Details',
         params: {
-            projectKey: normalizedProjectKey,
+            projectId: normalizedProjectId,
             issueId: issue.id
         }
     };
@@ -222,6 +221,7 @@ function issueKey(issue: StaffMemberJiraIssueSlim): string {
     padding-right: 0.25rem;
 }
 </style>
+
 
 
 

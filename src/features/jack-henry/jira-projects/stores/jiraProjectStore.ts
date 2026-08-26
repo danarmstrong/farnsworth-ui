@@ -1,9 +1,11 @@
 import { defineStore } from 'pinia';
 import axios from '@/utils/axios';
 import type {
+    JiraProjectBoardListResponse,
     CreateJiraProjectDto,
     JiraProject,
     JiraProjectPageResponse,
+    JiraProjectSprintListResponse,
     JiraProjectSyncQueueResponse,
     UpdateJiraProjectDto
 } from '@/features/jack-henry/jira-projects/types/JiraProject';
@@ -12,6 +14,7 @@ import { isAxiosError } from 'axios';
 
 const jiraProjectsPath = '/config/jira/projects';
 export const JIRA_PROJECTS_DEFAULT_PAGE_SIZE = 10;
+const JIRA_PROJECTS_ALL_PAGE_SIZE = 1000;
 
 type FetchJiraProjectsOptions = {
     page?: number;
@@ -103,6 +106,15 @@ export const useJiraProjectStore = defineStore('jiraProjects', () => {
         }
     }
 
+    async function fetchAllJiraProjects(): Promise<JiraProject[] | null> {
+        const result = await fetchJiraProjects({ page: 1, pageSize: JIRA_PROJECTS_ALL_PAGE_SIZE });
+        if (!result) {
+            return null;
+        }
+
+        return result.items;
+    }
+
     async function getJiraProject(id: string): Promise<JiraProject | null> {
         error.value = null;
 
@@ -189,6 +201,28 @@ export const useJiraProjectStore = defineStore('jiraProjects', () => {
         }
     }
 
+    async function getJiraProjectSprints(id: string): Promise<JiraProjectSprintListResponse | null> {
+        error.value = null;
+        try {
+            const { data } = await axios.get<JiraProjectSprintListResponse>(`${jiraProjectsPath}/${id}/sprints`);
+            return data;
+        } catch (err) {
+            error.value = setErrorMessage(err, 'Failed to fetch Jira project sprints');
+            return null;
+        }
+    }
+
+    async function getJiraProjectBoards(id: string): Promise<JiraProjectBoardListResponse | null> {
+        error.value = null;
+        try {
+            const { data } = await axios.get<JiraProjectBoardListResponse>(`${jiraProjectsPath}/${id}/boards`);
+            return data;
+        } catch (err) {
+            error.value = setErrorMessage(err, 'Failed to fetch Jira project boards');
+            return null;
+        }
+    }
+
     function clearError() {
         error.value = null;
     }
@@ -210,11 +244,14 @@ export const useJiraProjectStore = defineStore('jiraProjects', () => {
         totalCount,
         totalPages,
         fetchJiraProjects,
+        fetchAllJiraProjects,
         getJiraProject,
         createJiraProject,
         updateJiraProject,
         deleteJiraProject,
         queueSyncJiraProject,
+        getJiraProjectSprints,
+        getJiraProjectBoards,
         clearError
     };
 });

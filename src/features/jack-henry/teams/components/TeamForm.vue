@@ -1,14 +1,26 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue';
 import { useStaffMemberStore } from '@/features/jack-henry/staff-members/stores/staffMemberStore';
+import { useGithubRepoStore } from '@/features/jack-henry/repositories/stores/githubRepoStore';
+import { useJiraProjectStore } from '@/features/jack-henry/jira-projects/stores/jiraProjectStore';
 import type { StaffMember } from '@/features/jack-henry/staff-members/types/StaffMember';
 import type { SelectOption } from '@/types/SelectOption';
 import type { TeamDto } from '@/features/jack-henry/teams/types/Team';
+
+type TeamFormModel = {
+    id: string;
+    name: string;
+    staffMemberIds: string[];
+    githubRepoIds: string[];
+    jiraProjectIds: string[];
+};
 
 type TeamFormSubmitPayload = {
     id?: string;
     name: string;
     staffMemberIds: string[];
+    githubRepoIds: string[];
+    jiraProjectIds: string[];
 };
 
 interface Props {
@@ -29,11 +41,15 @@ const emit = defineEmits<{
 const dialog = ref(false);
 const mode = ref<'create' | 'edit'>('create');
 const staffMemberStore = useStaffMemberStore();
+const githubRepoStore = useGithubRepoStore();
+const jiraProjectStore = useJiraProjectStore();
 
-const item = ref<TeamDto>({
+const item = ref<TeamFormModel>({
     id: '',
     name: '',
-    staffMemberIds: []
+    staffMemberIds: [],
+    githubRepoIds: [],
+    jiraProjectIds: []
 });
 
 const formTitle = computed(() => (mode.value === 'create' ? 'New Team' : 'Edit Team'));
@@ -46,9 +62,31 @@ const staffMemberOptions = computed<SelectOption<string>[]>(() => {
     }));
 });
 
+const githubRepoOptions = computed<SelectOption<string>[]>(() => {
+    return githubRepoStore.githubRepos.map((repo) => ({
+        label: repo.name,
+        value: repo.id
+    }));
+});
+
+const jiraProjectOptions = computed<SelectOption<string>[]>(() => {
+    return jiraProjectStore.jiraProjects.map((project) => ({
+        label: project.name,
+        value: project.id
+    }));
+});
+
 onMounted(() => {
     if (!staffMemberStore.staffMembers.length) {
         void staffMemberStore.fetchStaffMembers();
+    }
+
+    if (!githubRepoStore.githubRepos.length) {
+        void githubRepoStore.fetchGithubRepos();
+    }
+
+    if (!jiraProjectStore.jiraProjects.length) {
+        void jiraProjectStore.fetchAllJiraProjects();
     }
 });
 
@@ -60,7 +98,9 @@ function resetForm() {
     item.value = {
         id: '',
         name: '',
-        staffMemberIds: []
+        staffMemberIds: [],
+        githubRepoIds: [],
+        jiraProjectIds: []
     };
     mode.value = 'create';
 }
@@ -78,11 +118,19 @@ function openCreate() {
     dialog.value = true;
 }
 
-function openEdit(team: TeamDto) {
+function openEdit(team: TeamDto, staffMemberIds: string[] = []) {
     mode.value = 'edit';
+    const activeStaffMemberIds = (team.teamMembers ?? [])
+        .filter((member) => member.isActive)
+        .map((member) => member.staffMember?.id)
+        .filter((id): id is string => Boolean(id));
+
     item.value = {
-        ...team,
-        staffMemberIds: [...team.staffMemberIds]
+        id: team.id,
+        name: team.name,
+        staffMemberIds: [...new Set(staffMemberIds.length ? staffMemberIds : activeStaffMemberIds)],
+        githubRepoIds: [...(team.githubRepos ?? []).map((repo) => repo.id)],
+        jiraProjectIds: [...(team.jiraProjects ?? []).map((project) => project.id)]
     };
     dialog.value = true;
 }
@@ -96,7 +144,9 @@ function save() {
     emit('submit', {
         id: mode.value === 'edit' ? item.value.id : undefined,
         name,
-        staffMemberIds: [...item.value.staffMemberIds]
+        staffMemberIds: [...item.value.staffMemberIds],
+        githubRepoIds: [...item.value.githubRepoIds],
+        jiraProjectIds: [...item.value.jiraProjectIds]
     });
 }
 
@@ -143,6 +193,36 @@ defineExpose({
                                 clearable
                             />
                         </v-col>
+                        <v-col cols="12">
+                            <v-autocomplete
+                                v-model="item.githubRepoIds"
+                                :items="githubRepoOptions"
+                                item-title="label"
+                                item-value="value"
+                                variant="outlined"
+                                hide-details="auto"
+                                label="GitHub repositories"
+                                multiple
+                                chips
+                                closable-chips
+                                clearable
+                            />
+                        </v-col>
+                        <v-col cols="12">
+                            <v-autocomplete
+                                v-model="item.jiraProjectIds"
+                                :items="jiraProjectOptions"
+                                item-title="label"
+                                item-value="value"
+                                variant="outlined"
+                                hide-details="auto"
+                                label="Jira projects"
+                                multiple
+                                chips
+                                closable-chips
+                                clearable
+                            />
+                        </v-col>
                     </v-row>
                 </v-form>
             </v-card-text>
@@ -163,4 +243,6 @@ defineExpose({
         </v-card>
     </v-dialog>
 </template>
+
+
 

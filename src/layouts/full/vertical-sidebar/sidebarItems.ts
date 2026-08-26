@@ -30,12 +30,6 @@ const sidebarItems: menu[] = [
         to: '/staff-members'
     },
     {
-        title: 'Repositories',
-        icon: 'code-2-line-duotone',
-        BgColor: 'info',
-        to: '/repositories'
-    },
-    {
         title: 'Teams',
         icon: 'users-group-rounded-line-duotone',
         BgColor: 'success',
@@ -59,6 +53,12 @@ const sidebarItems: menu[] = [
         icon: 'chart-2-line-duotone',
         BgColor: 'info',
         to: '/cap-reports',
+        children: []
+    },
+    {
+        title: 'Jira',
+        icon: 'bug-line-duotone',
+        BgColor: 'warning',
         children: []
     },
     {

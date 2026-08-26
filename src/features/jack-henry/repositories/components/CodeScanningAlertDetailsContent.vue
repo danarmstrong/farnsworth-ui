@@ -41,13 +41,13 @@ const pageTitle = computed(() => {
 });
 
 const breadcrumbs = computed(() => [
-    { text: 'Repositories', disabled: false, to: '/repositories' },
+    { text: 'Repositories', disabled: false, to: '/configuration/repositories' },
     {
         text: repository.value?.name || 'Repository',
         disabled: false,
         to: repositoryId.value
             ? { name: 'Repository Detail', params: { id: repositoryId.value }, query: { tab: 'code-scanning-alerts' } }
-            : '/repositories'
+            : '/configuration/repositories'
     },
     { text: pageTitle.value, disabled: true, href: '#' }
 ]);

@@ -19,11 +19,6 @@ const MainRoutes = {
             component: () => import('@/views/jack-henry/staff-members/StaffMembersView.vue')
         },
         {
-            name: 'Repositories',
-            path: '/repositories',
-            component: () => import('@/views/jack-henry/repositories/RepositoriesView.vue')
-        },
-        {
             name: 'Repository Detail',
             path: '/repositories/:id',
             component: () => import('@/views/jack-henry/repositories/RepositoryDetailsView.vue')
@@ -74,6 +69,11 @@ const MainRoutes = {
             redirect: '/configuration/salary-plans',
             component: () => import('@/views/configuration/ConfigurationLayout.vue'),
             children: [
+                {
+                    name: 'Repositories',
+                    path: 'repositories',
+                    component: () => import('@/views/jack-henry/repositories/RepositoriesView.vue')
+                },
                 {
                     name: 'Salary Plans',
                     path: 'salary-plans',
@@ -138,14 +138,32 @@ const MainRoutes = {
                     component: () => import('@/views/admin/JiraProjectsView.vue')
                 },
                 {
-                    name: 'Jira Issue Details',
-                    path: 'jira-projects/:projectKey/issues/:issueId',
-                    component: () => import('@/views/admin/JiraIssueDetailsView.vue')
+                    path: 'jira-projects/:projectId/boards/:boardId',
+                    redirect: (to: RouteLocationNormalized) => ({
+                        path: `/jira-projects/${String(to.params.projectId ?? '').trim()}/boards/${String(to.params.boardId ?? '').trim()}`,
+                        query: to.query
+                    })
                 },
                 {
-                    name: 'Jira Project Details',
-                    path: 'jira-projects/:projectKey',
-                    component: () => import('@/views/admin/JiraProjectDetailsView.vue')
+                    path: 'jira-projects/:projectId/sprints/:sprintId',
+                    redirect: (to: RouteLocationNormalized) => ({
+                        path: `/jira-projects/${String(to.params.projectId ?? '').trim()}/sprints/${String(to.params.sprintId ?? '').trim()}`,
+                        query: to.query
+                    })
+                },
+                {
+                    path: 'jira-projects/:projectId/issues/:issueId',
+                    redirect: (to: RouteLocationNormalized) => ({
+                        path: `/jira-projects/${String(to.params.projectId ?? '').trim()}/issues/${String(to.params.issueId ?? '').trim()}`,
+                        query: to.query
+                    })
+                },
+                {
+                    path: 'jira-projects/:projectId',
+                    redirect: (to: RouteLocationNormalized) => ({
+                        path: `/jira-projects/${String(to.params.projectId ?? '').trim()}`,
+                        query: to.query
+                    })
                 },
                 {
                     name: 'Jira Board Watchers',
@@ -158,6 +176,58 @@ const MainRoutes = {
                     component: () => import('@/views/admin/AdvancedView.vue')
                 }
             ]
+        },
+        {
+            path: '/repositories',
+            redirect: '/configuration/repositories'
+        },
+        {
+            path: '/configuration/repositories/:id',
+            redirect: (to: RouteLocationNormalized) => ({
+                path: `/repositories/${String(to.params.id ?? '').trim()}`,
+                query: to.query
+            })
+        },
+        {
+            path: '/configuration/repositories/:id/pull-requests/:pullRequestId',
+            redirect: (to: RouteLocationNormalized) => ({
+                path: `/repositories/${String(to.params.id ?? '').trim()}/pull-requests/${String(to.params.pullRequestId ?? '').trim()}`,
+                query: to.query
+            })
+        },
+        {
+            path: '/configuration/repositories/:id/dependabot-alerts/:alertId',
+            redirect: (to: RouteLocationNormalized) => ({
+                path: `/repositories/${String(to.params.id ?? '').trim()}/dependabot-alerts/${String(to.params.alertId ?? '').trim()}`,
+                query: to.query
+            })
+        },
+        {
+            path: '/configuration/repositories/:id/code-scanning-alerts/:alertId',
+            redirect: (to: RouteLocationNormalized) => ({
+                path: `/repositories/${String(to.params.id ?? '').trim()}/code-scanning-alerts/${String(to.params.alertId ?? '').trim()}`,
+                query: to.query
+            })
+        },
+        {
+            name: 'Jira Project Details',
+            path: '/jira-projects/:projectId',
+            component: () => import('@/views/admin/JiraProjectDetailsView.vue')
+        },
+        {
+            name: 'Jira Board Details',
+            path: '/jira-projects/:projectId/boards/:boardId',
+            component: () => import('@/views/admin/JiraBoardDetailsView.vue')
+        },
+        {
+            name: 'Jira Sprint Details',
+            path: '/jira-projects/:projectId/sprints/:sprintId',
+            component: () => import('@/views/admin/JiraSprintDetailsView.vue')
+        },
+        {
+            name: 'Jira Issue Details',
+            path: '/jira-projects/:projectId/issues/:issueId',
+            component: () => import('@/views/admin/JiraIssueDetailsView.vue')
         },
         // Legacy /admin/* URLs → configuration
         { path: '/admin/salary-plans', redirect: '/configuration/salary-plans' },
@@ -185,16 +255,30 @@ const MainRoutes = {
         },
         { path: '/admin/jira-projects', redirect: '/configuration/jira-projects' },
         {
-            path: '/admin/jira-projects/:projectKey',
+            path: '/admin/jira-projects/:projectId',
             redirect: (to: RouteLocationNormalized) => ({
-                path: `/configuration/jira-projects/${String(to.params.projectKey ?? '').trim()}`,
+                path: `/jira-projects/${String(to.params.projectId ?? '').trim()}`,
                 query: to.query
             })
         },
         {
-            path: '/admin/jira-projects/:projectKey/issues/:issueId',
+            path: '/admin/jira-projects/:projectId/boards/:boardId',
             redirect: (to: RouteLocationNormalized) => ({
-                path: `/configuration/jira-projects/${String(to.params.projectKey ?? '').trim()}/issues/${String(to.params.issueId ?? '').trim()}`,
+                path: `/jira-projects/${String(to.params.projectId ?? '').trim()}/boards/${String(to.params.boardId ?? '').trim()}`,
+                query: to.query
+            })
+        },
+        {
+            path: '/admin/jira-projects/:projectId/sprints/:sprintId',
+            redirect: (to: RouteLocationNormalized) => ({
+                path: `/jira-projects/${String(to.params.projectId ?? '').trim()}/sprints/${String(to.params.sprintId ?? '').trim()}`,
+                query: to.query
+            })
+        },
+        {
+            path: '/admin/jira-projects/:projectId/issues/:issueId',
+            redirect: (to: RouteLocationNormalized) => ({
+                path: `/jira-projects/${String(to.params.projectId ?? '').trim()}/issues/${String(to.params.issueId ?? '').trim()}`,
                 query: to.query
             })
         },

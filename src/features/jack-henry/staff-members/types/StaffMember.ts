@@ -2,6 +2,7 @@ import type { GithubPullRequestState } from '@/features/jack-henry/repositories/
 
 export interface StaffMemberJiraIssueSlim {
     id: string;
+    jiraProjectId?: string | null;
     key: string;
     summary: string;
 }

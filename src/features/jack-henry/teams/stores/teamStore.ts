@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import axios from '@/utils/axios';
 import type { Team, TeamCreateRequest, TeamDto, TeamUpsertRequest } from '@/features/jack-henry/teams/types/Team';
+import type { TeamMemberDto } from '@/features/jack-henry/teams/types/TeamMember';
 import { ref } from 'vue';
 import { isAxiosError } from 'axios';
 
@@ -10,7 +11,30 @@ function normalizeTeam(raw: TeamDto): TeamDto {
     return {
         ...raw,
         name: raw.name ?? '',
-        staffMemberIds: raw.staffMemberIds ?? []
+        teamMembers: raw.teamMembers ?? [],
+        githubRepos: raw.githubRepos ?? [],
+        jiraProjects: raw.jiraProjects ?? [],
+        activeMemberCount: raw.activeMemberCount ?? 0
+    };
+}
+
+function normalizeTeamMember(raw: TeamMemberDto): TeamMemberDto {
+    return {
+        ...raw,
+        team: {
+            id: raw.team?.id ?? '',
+            name: raw.team?.name ?? ''
+        },
+        staffMember: {
+            id: raw.staffMember?.id ?? '',
+            displayName: raw.staffMember?.displayName ?? ''
+        },
+        stats: {
+            development: raw.stats?.development ?? 0,
+            testing: raw.stats?.testing ?? 0,
+            reviewing: raw.stats?.reviewing ?? 0,
+            security: raw.stats?.security ?? 0
+        }
     };
 }
 
@@ -64,13 +88,14 @@ export const useTeamStore = defineStore('teams', () => {
         return null;
     }
 
-    async function createTeam(request: TeamCreateRequest): Promise<void> {
+    async function createTeam(request: TeamCreateRequest): Promise<TeamDto | null> {
         error.value = null;
         loading.value = true;
         try {
             const { data } = await axios.post<TeamDto>(teamsPath, request);
             if (data?.id) {
                 mergeTeamIntoList(data);
+                return normalizeTeam(data);
             } else {
                 await fetchTeams();
             }
@@ -79,6 +104,8 @@ export const useTeamStore = defineStore('teams', () => {
         } finally {
             loading.value = false;
         }
+
+        return null;
     }
 
     async function updateTeam(id: string, request: TeamUpsertRequest): Promise<void> {
@@ -93,6 +120,20 @@ export const useTeamStore = defineStore('teams', () => {
             }
         } catch (err) {
             error.value = setErrorMessage(err, 'Failed to update team');
+        } finally {
+            loading.value = false;
+        }
+    }
+
+    async function getTeamMembers(teamId: string): Promise<TeamMemberDto[] | null> {
+        error.value = null;
+        loading.value = true;
+        try {
+            const { data } = await axios.get<TeamMemberDto[]>(`${teamsPath}/${teamId}/team-members`);
+            return data.map(normalizeTeamMember);
+        } catch (err) {
+            error.value = setErrorMessage(err, 'Failed to load team members');
+            return null;
         } finally {
             loading.value = false;
         }
@@ -128,10 +169,13 @@ export const useTeamStore = defineStore('teams', () => {
         error,
         fetchTeams,
         getTeam,
+        getTeamMembers,
         createTeam,
         updateTeam,
         deleteTeam,
         clearError
     };
 });
+
+
 

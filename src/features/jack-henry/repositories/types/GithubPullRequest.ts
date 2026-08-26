@@ -9,6 +9,7 @@ export interface GithubPullRequestStaffMemberSlimReference {
 
 export interface GithubPullRequestJiraIssueSlimReference {
     id: string;
+    jiraProjectId?: string | null;
     key: string;
     summary: string;
 }
@@ -45,3 +46,4 @@ export interface GithubPullRequestPageResponse {
     totalCount: number;
     totalPages: number;
 }
+
