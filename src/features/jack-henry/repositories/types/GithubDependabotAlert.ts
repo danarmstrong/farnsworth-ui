@@ -1,6 +1,22 @@
+export interface GithubRepoSlimDto {
+    id: string;
+    name: string;
+    url: string;
+}
+
+export interface GithubAlertGithubPullRequestReferenceDto {
+    id: string;
+    externalId: string;
+    number: number;
+    title: string;
+    state: string;
+    url: string;
+}
+
 export interface GithubDependabotAlert {
     id: string;
-    githubRepoId: string;
+    githubRepo: GithubRepoSlimDto;
+    githubRepoId?: string;
     externalId: string;
     repositoryOwner: string;
     repositoryName: string;
@@ -22,6 +38,7 @@ export interface GithubDependabotAlert {
     createdAtUtc: string | null;
     dismissedAtUtc: string | null;
     fixedAtUtc: string | null;
+    githubPullRequests: GithubAlertGithubPullRequestReferenceDto[];
     syncedAtUtc: string;
 }
 

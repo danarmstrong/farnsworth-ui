@@ -103,6 +103,44 @@ function locationLineRange(): string {
 
     return String(start ?? end);
 }
+
+function securityReviewStatusLabel(): string {
+    const review = alert.value?.securityReview;
+    if (!review) {
+        return 'Not reviewed';
+    }
+    if (review.isReviewed) {
+        return review.isAffected === true ? 'Reviewed - affected' : review.isAffected === false ? 'Reviewed - not affected' : 'Reviewed';
+    }
+    return 'Not reviewed';
+}
+
+function securityReviewStatusTone(): 'success' | 'warning' | 'info' | 'error' | 'default' {
+    const review = alert.value?.securityReview;
+    if (!review) {
+        return 'default';
+    }
+    if (!review.isReviewed) {
+        return 'info';
+    }
+    if (review.isAffected === true) {
+        return 'error';
+    }
+    if (review.isAffected === false) {
+        return 'success';
+    }
+    return 'warning';
+}
+
+function formatReviewValue(value: string | number | boolean | null | undefined): string {
+    if (typeof value === 'boolean') {
+        return value ? 'Yes' : 'No';
+    }
+    if (typeof value === 'number') {
+        return Number.isFinite(value) ? String(value) : '-';
+    }
+    return value || '-';
+}
 </script>
 
 <template>
@@ -138,6 +176,10 @@ function locationLineRange(): string {
                                 :tone="alertSeverityTone(alert.securitySeverityLevel || alert.ruleSeverity)"
                             />
                             <RepositoryStatusChip :label="securityAlertStateLabel(alert.state)" :tone="securityAlertStateTone(alert.state)" />
+                            <RepositoryStatusChip
+                                :label="securityReviewStatusLabel()"
+                                :tone="securityReviewStatusTone()"
+                            />
                         </div>
 
                         <h1 class="text-h4 font-weight-bold mb-2 alert-title">{{ alert.ruleDescription || 'No rule description provided.' }}</h1>
@@ -165,6 +207,58 @@ function locationLineRange(): string {
                                 {{ alert.mostRecentInstanceMessage?.trim() ? alert.mostRecentInstanceMessage : 'No instance message provided.' }}
                             </div>
                         </section>
+
+                        <v-card variant="outlined" class="mb-4">
+                            <v-card-text>
+                                <h2 class="text-h6 font-weight-semibold mb-4">Security Review</h2>
+                                <dl class="alert-detail-list">
+                                    <div>
+                                        <dt>Reviewed</dt>
+                                        <dd>{{ formatReviewValue(alert.securityReview?.isReviewed) }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Affected</dt>
+                                        <dd>{{ formatReviewValue(alert.securityReview?.isAffected) }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Probability</dt>
+                                        <dd>{{ formatReviewValue(alert.securityReview?.affectedProbability) }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Confidence</dt>
+                                        <dd>{{ formatReviewValue(alert.securityReview?.confidence) }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Provider</dt>
+                                        <dd>{{ alert.securityReview?.provider || '-' }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Model</dt>
+                                        <dd>{{ alert.securityReview?.model || '-' }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Stage</dt>
+                                        <dd>{{ alert.securityReview?.stage || '-' }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Reviewed at</dt>
+                                        <dd>{{ formatDate(alert.securityReview?.reviewedAtUtc) }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Last attempted</dt>
+                                        <dd>{{ formatDate(alert.securityReview?.lastAttemptedAtUtc) }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Review message</dt>
+                                        <dd>{{ alert.securityReview?.message || '-' }}</dd>
+                                    </div>
+                                    <div>
+                                        <dt>Last error</dt>
+                                        <dd>{{ alert.securityReview?.lastError || '-' }}</dd>
+                                    </div>
+                                </dl>
+                            </v-card-text>
+                        </v-card>
                     </v-col>
 
                     <v-col cols="12" md="4">

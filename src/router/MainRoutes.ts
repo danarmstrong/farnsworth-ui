@@ -171,9 +171,14 @@ const MainRoutes = {
                     component: () => import('@/views/admin/JiraBoardWatchersView.vue')
                 },
                 {
-                    name: 'Advanced',
-                    path: 'advanced',
-                    component: () => import('@/views/admin/AdvancedView.vue')
+                    name: 'Copilot Link',
+                    path: 'copilot-link',
+                    component: () => import('@/views/admin/CopilotLinkView.vue')
+                },
+                {
+                    name: 'Background Jobs',
+                    path: 'background-jobs',
+                    component: () => import('@/views/admin/BackgroundJobsView.vue')
                 }
             ]
         },
@@ -283,7 +288,6 @@ const MainRoutes = {
             })
         },
         { path: '/admin/jira-board-watchers', redirect: '/configuration/jira-board-watchers' },
-        { path: '/admin/advanced', redirect: '/configuration/advanced' },
         // Legacy template routes
         {
             name: 'dashboard',

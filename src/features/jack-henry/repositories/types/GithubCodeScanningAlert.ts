@@ -1,6 +1,28 @@
+export interface GithubRepoSlimDto {
+    id: string;
+    name: string;
+    url: string;
+}
+
+export interface GithubCodeScanningAlertSecurityReviewDto {
+    isReviewed: boolean;
+    isAffected: boolean | null;
+    affectedProbability: number | null;
+    confidence: number | null;
+    message: string | null;
+    provider: string | null;
+    model: string | null;
+    stage: string | null;
+    confidenceThreshold: number | null;
+    reviewedAtUtc: string | null;
+    lastAttemptedAtUtc: string | null;
+    lastError: string | null;
+}
+
 export interface GithubCodeScanningAlert {
     id: string;
-    githubRepoId: string;
+    githubRepo: GithubRepoSlimDto;
+    githubRepoId?: string;
     externalId: string;
     repositoryOwner: string;
     repositoryName: string;
@@ -26,6 +48,7 @@ export interface GithubCodeScanningAlert {
     createdAtUtc: string | null;
     dismissedAtUtc: string | null;
     fixedAtUtc: string | null;
+    securityReview: GithubCodeScanningAlertSecurityReviewDto;
     syncedAtUtc: string;
 }
 
